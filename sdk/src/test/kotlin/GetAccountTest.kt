@@ -7,6 +7,8 @@ import io.grpc.ManagedChannelBuilder
 import io.grpc.Metadata
 import io.grpc.stub.MetadataUtils
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
@@ -43,13 +45,21 @@ class GetAccountTest {
         val accountStub = AccountsServiceGrpcKt.AccountsServiceCoroutineStub(channel)
         val header = Metadata()
         header.put(Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), authResponse.token)
+        val accountId = tokenDetailsResponse.accountIdsList.first()
         val getAccountResponse = accountStub
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(header))
             .getAccount(
                 GetAccountRequest.newBuilder()
-                    .setAccountId(tokenDetailsResponse.accountIdsList.first())
+                    .setAccountId(accountId)
                     .build()
             )
+        assertEquals(accountId, getAccountResponse.accountId)
+        assertTrue(getAccountResponse.type.isNotBlank())
+        assertTrue(getAccountResponse.status.isNotBlank())
+        assertTrue(getAccountResponse.hasEquity())
+        assertTrue(getAccountResponse.hasUnrealizedProfit())
+        assertTrue(getAccountResponse.positionsCount > 0)
+        assertTrue(getAccountResponse.cashCount > 0)
 
         println(getAccountResponse)
     }
