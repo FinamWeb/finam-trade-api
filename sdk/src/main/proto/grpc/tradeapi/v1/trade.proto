@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package grpc.tradeapi.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/decimal.proto";
+import "grpc/tradeapi/v1/side.proto";
+
+option go_package = "trade_api/v1/trade";
+option java_multiple_files = true;
+
+// Информация о сделке
+message AccountTrade {
+  // Идентификатор сделки
+  string trade_id = 1;
+  // Символ инструмента
+  string symbol = 2;
+  // Цена исполнения
+  google.type.Decimal price = 3;
+  // Размер в шт.
+  google.type.Decimal size = 4;
+  // Сторона сделки (long или short)
+  Side side = 5;
+  // Метка времени
+  google.protobuf.Timestamp timestamp = 6;
+  // Идентификатор заявки
+  string order_id = 7;
+}
