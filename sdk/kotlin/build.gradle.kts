@@ -4,7 +4,6 @@ plugins {
     id("com.google.protobuf") version "0.9.5"
 }
 
-
 group = "ru.finam.tradeapi"
 version = "2.7.0"
 
@@ -71,6 +70,9 @@ protobuf {
                 create("kotlin")
             }
         }
+    }
+    sourceSets.main {
+        proto.srcDir("../../proto")
     }
 }
 
