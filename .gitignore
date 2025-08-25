@@ -1,1 +1,7 @@
-.idea
+.gradle/
+.kotlin/
+.idea/*
+!.idea/codeStyles
+build/
+out/
+*.iml
