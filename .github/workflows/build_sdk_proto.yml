@@ -1,4 +1,4 @@
-name: build sdk proto
+name: Build SDK proto
 
 on:
   push:
