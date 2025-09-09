@@ -21,7 +21,7 @@ jobs:
 
       - name: Publish package
         run: |
-          cd sdk/kotlin
+          cd kotlin
           ./gradlew publish
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
