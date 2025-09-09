@@ -10,42 +10,45 @@
 
 1.  Перейдите на портал [Finam Trade API](https://tradeapi.finam.ru/docs/tokens/).
 2.  Следуйте инструкциям для создания нового ключа API (secret key).
-3.  Скопируйте полученный ключ. Он понадобится вам для запуска тестов.
+3.  Скопируйте полученный ключ. Он понадобится вам для запуска примеров.
 
 ## Тестирование
 
 В качестве примера предоставляется базовый тест, который демонстрирует основной цикл работы с API: аутентификация и получение данных.
 
-### Тест `GetAccount`
+### `GetAccount`
 
 Этот тест выполняет следующие шаги:
 
-1.  **Аутентификация:** Используя предоставленный секретный ключ (`secret`), тест отправляет запрос на эндпоинт `/v1/sessions` для получения JWT-токена.
+1.  **Аутентификация:** Используя предоставленный секретный ключ (`secret`), тест отправляет запрос на эндпоинт `/v1/auth` для получения JWT-токена.
 2.  **Запрос данных:** Полученный токен используется для аутентификации запроса на эндпоинт `/v1/accounts/{account_id}` для получения информации о счете.
 3.  **Проверка:** Тест проверяет, что ответ успешен и содержит ожидаемые данные.
 
-### Запуск теста
+### Запуск
 
-Для запуска теста вам необходимо:
-1. перейти в директорию с примерами: `examples/kotlin`.
+Для запуска вам необходимо:
+1. выбрать пример для запуска.
 2. передать ваш секретный ключ, созданный ранее, в качестве переменной окружения.
 
 **macOS/Linux:**
 ```bash
 export FINAM_SECRET_KEY="your-secret-key"
-./gradlew test --tests "GetAccountTest"
+export APP_MAIN_CLASS=example.GetAccount
+./gradlew :example:run
 ```
 
 **Windows (Command Prompt):**
 ```cmd
 set FINAM_SECRET_KEY="your-secret-key"
-gradlew.bat test --tests "GetAccountTest"
+set APP_MAIN_CLASS="example.GetAccount"
+gradlew.bat :example:run
 ```
 
 **Windows (PowerShell):**
 ```powershell
 $env:FINAM_SECRET_KEY="your-secret-key"
-./gradlew test --tests "GetAccountTest"
+$env:APP_MAIN_CLASS="example.GetAccount"
+./gradlew :example:run
 ```
 
 Замените `"your-secret-key"` на ваш реальный ключ API.

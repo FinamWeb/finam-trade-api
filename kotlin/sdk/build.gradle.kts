@@ -1,8 +1,6 @@
 import java.net.URI
 
 plugins {
-    id("java")
-    kotlin("jvm") version "2.2.0"
     id("com.google.protobuf") version "0.9.5"
     id("maven-publish")
 }
