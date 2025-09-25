@@ -44,6 +44,10 @@ service AuthService {
       body: "*"
     };
   };
+
+  // Подписка на обновление JWT токена. Стрим метод
+  rpc SubscribeJwtRenewal(SubscribeJwtRenewalRequest) returns (stream SubscribeJwtRenewalResponse);
+
 }
 
 // Запрос авторизации
@@ -74,6 +78,8 @@ message TokenDetailsResponse {
   repeated MDPermission md_permissions = 3;
   // Идентификаторы аккаунтов
   repeated string account_ids = 4;
+  // Сессия и торговые счета в токене будут помечены readonly
+  bool readonly = 5;
 }
 
 // Информация о доступе к рыночным данным
@@ -108,4 +114,16 @@ message MDPermission {
     // Весь мир 
     bool worldwide = 6;
   }
+}
+
+// Запрос подписки на обновление JWT токена
+message SubscribeJwtRenewalRequest {
+  // API токен (secret key)
+  string secret = 1;
+}
+
+// Обновленный токен. Стрим
+message SubscribeJwtRenewalResponse {
+  // Полученный JWT-токен
+  string token = 1;
 }

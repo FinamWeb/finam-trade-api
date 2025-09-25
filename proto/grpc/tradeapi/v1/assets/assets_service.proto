@@ -171,11 +171,15 @@ message GetAssetParamsResponse {
   // Ставка риска для операции в Лонг
   google.type.Decimal long_risk_rate = 6;
   // Сумма обеспечения для поддержания позиции Лонг
-  google.type.Money long_collateral = 7;
+  google.type.Money long_collateral = 7 [deprecated = true];
   // Ставка риска для операции в Шорт
   google.type.Decimal short_risk_rate = 8;
   // Сумма обеспечения для поддержания позиции Шорт
-  google.type.Money short_collateral = 9;
+  google.type.Money short_collateral = 9 [deprecated = true];
+  // Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть лонг позицию, для FORTS счетов равен биржевому ГО
+  google.type.Money long_initial_margin = 10;
+  // Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть шорт позицию, для FORTS счетов равен биржевому ГО
+  google.type.Money short_initial_margin = 11;
 }
 
 // Запрос получения цепочки опционов

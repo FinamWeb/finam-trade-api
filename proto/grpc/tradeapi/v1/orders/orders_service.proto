@@ -154,7 +154,7 @@ enum StopCondition {
   STOP_CONDITION_UNSPECIFIED = 0;
   // Цена срабатывания больше текущей цены
   STOP_CONDITION_LAST_UP = 1;
-  //Цена срабатывания меньше текущей цены 
+  // Цена срабатывания меньше текущей цены 
   STOP_CONDITION_LAST_DOWN = 2;
 }
 
@@ -187,6 +187,9 @@ message Order {
 
   // Уникальный идентификатор заявки. Автоматически генерируется, если не отправлен. (максимум 20 символов)
   string client_order_id = 11;
+
+  // Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT
+  ValidBefore valid_before = 12;
 }
 
 // Лег
@@ -297,4 +300,16 @@ message CancelOrderRequest {
   string account_id = 1;
   // Идентификатор заявки
   string order_id = 2;
+}
+
+// Срок действия условной заявки
+enum ValidBefore {
+  // Значение не указано
+  VALID_BEFORE_UNSPECIFIED = 0;
+  // До конца торгового дня
+  VALID_BEFORE_END_OF_DAY = 1;
+  // До отмены
+  VALID_BEFORE_GOOD_TILL_CANCEL = 2;
+  // До указанной даты-времени. Данный тип на текущий момент не поддерживается при выставлении заявки
+  VALID_BEFORE_GOOD_TILL_DATE = 3;
 }
