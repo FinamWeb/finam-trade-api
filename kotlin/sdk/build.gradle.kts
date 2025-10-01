@@ -1,3 +1,4 @@
+import com.google.protobuf.gradle.id
 import org.jreleaser.model.Active
 import org.jreleaser.model.Signing.Mode
 
@@ -11,6 +12,7 @@ val coroutinesVersion: String by project
 val protobufVersion: String by project
 val grpcVersion: String by project
 val grpcKotlinVersion: String by project
+val slf4jVersion: String by project
 
 val group = project.group.toString()
 val projectName = rootProject.name
@@ -20,6 +22,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+
     // Kotlin Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
@@ -49,10 +53,10 @@ protobuf {
         artifact = "com.google.protobuf:protoc:$protobufVersion"
     }
     plugins {
-        create("grpc") {
+        id("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
         }
-        create("grpckt") {
+        id("grpckt") {
             artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk8@jar"
         }
     }

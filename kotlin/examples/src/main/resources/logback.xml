@@ -1,0 +1,18 @@
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <appender name="stdout_info" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{dd.MM.YYYY HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="ru.finam" level="DEBUG" />
+    <logger name="example" level="DEBUG" />
+
+    <root level="INFO">
+        <appender-ref ref="stdout_info"/>
+    </root>
+
+</configuration>
