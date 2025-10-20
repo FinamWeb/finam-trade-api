@@ -1,0 +1,34 @@
+name: Build Go
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go 1.21.x
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.1'
+
+      - name: Display Go version
+        run: go version
+
+      - name: Install dependencies
+        run: |
+          cd finam-trade-api-go 
+          go install tool
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Build proto
+        run: |
+          cd finam-trade-api-go
+          ./gradlew build

@@ -1,0 +1,41 @@
+name: Build Go
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      JRELEASER_GPG_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
+      JRELEASER_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
+      JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME }}
+      JRELEASER_MAVENCENTRAL_SONATYPE_TOKEN: ${{ secrets.JRELEASER_MAVENCENTRAL_SONATYPE_TOKEN }}
+      JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.JRELEASER_GPG_PUBLIC_KEY }}
+      JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go 1.21.x
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.1'
+
+      - name: Display Go version
+        run: go version
+
+      - name: Install dependencies
+        run: |
+          cd finam-trade-api-go 
+          go install tool
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Build proto
+        run: |
+          cd finam-trade-api-go
+          ./gradlew build publish
