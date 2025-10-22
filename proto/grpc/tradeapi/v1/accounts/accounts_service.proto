@@ -87,6 +87,15 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/trades"
     };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан интервал"
+        },
+      }
+    };
   };
 
   // Получение списка транзакций аккаунта
@@ -100,6 +109,15 @@ service AccountsService {
   rpc Transactions(TransactionsRequest) returns (TransactionsResponse) {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/transactions"
+    };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан интервал"
+        },
+      }
     };
   };
 }

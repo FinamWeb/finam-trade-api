@@ -8,9 +8,59 @@ import "google/type/decimal.proto";
 import "google/type/interval.proto";
 import "google/type/money.proto";
 import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "trade_api/v1/assets/assets_service";
 option java_multiple_files = true;
+option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: HTTP;
+  responses: {
+    key: "default";
+    value: {
+      schema: {
+        json_schema:{
+          ref: "googletypeStatus"
+        }
+      }
+    }
+  }
+  responses: {
+    key: "500";
+    value: {
+      description: "Внутренняя ошибка сервиса. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "503";
+    value: {
+      description: "Сервис на данный момент не доступен. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "429";
+    value: {
+      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+    }
+  }
+  responses: {
+    key: "401"
+    value: {
+      description: "Срок действия токена истек или токен недействителен"
+    }
+  }
+  responses: {
+    key: "504"
+    value: {
+      description: "Крайний срок истек до завершения операции"
+    }
+  }
+  responses: {
+    key: "404";
+    value: {
+      description: "Инструмент не найден"
+    },
+  }
+};
 
 // Сервис счетов
 service AssetsService {
@@ -47,6 +97,15 @@ service AssetsService {
     option (google.api.http) = {
       get: "/v1/assets/{symbol}"
     };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан символ или счет. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
+        },
+      }
+    };
   };
 
   // Получение торговых параметров по инструменту
@@ -61,6 +120,15 @@ service AssetsService {
     option (google.api.http) = {
       get: "/v1/assets/{symbol}/params"
     };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан символ или счет. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
+        },
+      }
+    };
   };
 
   // Получение цепочки опционов для базового актива
@@ -71,6 +139,15 @@ service AssetsService {
     option (google.api.http) = {
       get: "/v1/assets/{underlying_symbol}/options"
     };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
+        },
+      }
+    };
   };
 
   // Получение расписания торгов для инструмента
@@ -80,6 +157,15 @@ service AssetsService {
   rpc Schedule(ScheduleRequest) returns (ScheduleResponse) {
     option (google.api.http) = {
       get: "/v1/assets/{symbol}/schedule"
+    };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
+        },
+      }
     };
   };
 

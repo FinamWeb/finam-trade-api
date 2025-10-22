@@ -1,4 +1,4 @@
-name: Build Go
+name: Publish Go to the Maven Central Repository
 on:
   release:
     types: [ created ]
@@ -38,4 +38,10 @@ jobs:
       - name: Build proto
         run: |
           cd finam-trade-api-go
-          ./gradlew build publish
+          ./gradlew jreleaserConfig build jreleaserFullRelease
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./finam-trade-api-go/build/distributions/*.zip
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
