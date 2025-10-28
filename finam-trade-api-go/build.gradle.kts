@@ -1,24 +1,20 @@
 import com.google.protobuf.gradle.remove
 import groovy.json.JsonSlurper
-import org.jreleaser.model.Active
-import org.jreleaser.model.Signing.Mode
 import shadow.com.google.gson.GsonBuilder
 
 plugins {
     id("java")
     id("com.google.protobuf") version "0.9.5"
     id("maven-publish")
-    id("org.jreleaser") version "1.19.0"
 }
-
-group = "ru.finam.protobuf"
-version = "1.0"
 
 repositories {
     mavenCentral()
     gradlePluginPortal()
 }
 
+val group: String by project
+val version: String by project
 val grpcVersion: String by project
 val protobufVersion: String by project
 
@@ -164,64 +160,10 @@ publishing {
         create<MavenPublication>("golangPublication") {
             artifactId = rootProject.name + "-golang"
             artifact(tasks["golangZip"])
-            pom {
-                name.set("Finam Trade API")
-                description.set("Go Finam Trade API")
-                url.set("https://github.com/FinamWeb/finam-trade-api")
-                issueManagement {
-                    url.set("https://github.com/FinamWeb/finam-trade-api/issues")
-                }
-                licenses {
-                    license {
-                        name.set("The Apache Software License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        distribution.set("repo")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("FinamTrade")
-                        name.set("FinamTrade")
-                        url.set("https://tradeapi.finam.ru/")
-                    }
-                }
-                scm {
-                    connection.set("scm:git://github.com/FinamWeb/finam-trade-api.git")
-                    developerConnection.set("scm:git://github.com/FinamWeb/finam-trade-api.git")
-                    url.set("https://github.com/FinamWeb/finam-trade-api")
-                }
-            }
         }
         create<MavenPublication>("openapiv2Publication") {
             artifactId = rootProject.name + "-openapiv2"
             artifact(tasks["openapiv2Zip"])
-            pom {
-                name.set("Finam Trade API")
-                description.set("Go Finam Trade API")
-                url.set("https://github.com/FinamWeb/finam-trade-api")
-                issueManagement {
-                    url.set("https://github.com/FinamWeb/finam-trade-api/issues")
-                }
-                licenses {
-                    license {
-                        name.set("The Apache Software License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        distribution.set("repo")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("FinamTrade")
-                        name.set("FinamTrade")
-                        url.set("https://tradeapi.finam.ru/")
-                    }
-                }
-                scm {
-                    connection.set("scm:git://github.com/FinamWeb/finam-trade-api.git")
-                    developerConnection.set("scm:git://github.com/FinamWeb/finam-trade-api.git")
-                    url.set("https://github.com/FinamWeb/finam-trade-api")
-                }
-            }
         }
     }
     repositories {
@@ -231,36 +173,3 @@ publishing {
         }
     }
 }
-
-jreleaser {
-    gitRootSearch = true
-    project {
-        inceptionYear.set("2025")
-        author("FinamTrade")
-    }
-    signing {
-        active = Active.ALWAYS
-        armored = true
-        mode = Mode.MEMORY
-        verify = true
-    }
-    deploy {
-        maven {
-            mavenCentral.create("sonatype") {
-                active = Active.ALWAYS
-                url = "https://central.sonatype.com/api/v1/publisher"
-                stagingRepository("build/pre-deploy")
-                setAuthorization("Basic")
-                retryDelay = 60
-            }
-        }
-    }
-    release {
-        github {
-            enabled = true
-            skipRelease = true
-            skipTag = true
-        }
-    }
-}
-
