@@ -13,6 +13,8 @@ val protobufVersion: String by project
 val grpcVersion: String by project
 val grpcKotlinVersion: String by project
 val slf4jVersion: String by project
+val ktorVersion: String by project
+val jacksonVersion: String by project
 
 val group = project.group.toString()
 val projectName = rootProject.name
@@ -42,6 +44,16 @@ dependencies {
     // gRPC Kotlin
     implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
     implementation(kotlin("stdlib-jdk8"))
+
+    //ktor
+    implementation("io.ktor:ktor-client-core:${ktorVersion}")
+    implementation("io.ktor:ktor-client-cio:${ktorVersion}")
+    implementation("io.ktor:ktor-client-websockets:${ktorVersion}")
+    implementation("io.ktor:ktor-serialization-jackson:${ktorVersion}")
+
+    //jackson
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
+
 }
 
 kotlin {
