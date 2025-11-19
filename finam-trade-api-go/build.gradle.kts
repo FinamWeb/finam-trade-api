@@ -42,11 +42,15 @@ protobuf {
         all().configureEach {
             ofSourceSet("main")
             builtins {
-                create("go")
+                create("go") {
+                     // аналог --go_opt=paths=source_relative
+                     option("paths=source_relative")
+                }
                 create("openapiv2").apply {
                     option("logtostderr=true")
                 }
                 create("go-grpc") {
+                    option("paths=source_relative")
                     outputSubDir = "go"
                 }
                 remove("java")
@@ -132,6 +136,34 @@ tasks.register("mergeAllJsonFiles") {
 
         println("Слияние завершено. Результат сохранен в: ${outputFile.absolutePath}")
     }
+}
+
+tasks.register<Copy>("syncGoToRoot") {
+    // Таска должна выполняться после генерации прото
+    dependsOn("generateProto")
+
+    // Откуда копируем (build/generated/sources/proto/main/go и go-grpc)
+    from("${protobuf.generatedFilesBaseDir}/main/go")
+
+    // Куда копируем: корневая папка go рядом с проектом finam-trade-api-go
+    into("$rootDir/../go")
+
+    // Перед копированием чистим старые сгенерированные Go-файлы в корне go
+    doFirst {
+        delete(
+            fileTree("$rootDir/../go") {
+                include("**/*.pb.go", "**/*.gw.go", "**/*_grpc.pb.go")
+            }
+        )
+    }
+}
+
+// Запускает `go mod tidy` в каталоге ../go после syncGoToRoot
+tasks.register<Exec>("generateGoPackage") {
+    dependsOn("syncGoToRoot")
+
+    workingDir = file("$rootDir/../go")
+    commandLine("go", "mod", "tidy")
 }
 
 tasks.register<Zip>("golangZip") {

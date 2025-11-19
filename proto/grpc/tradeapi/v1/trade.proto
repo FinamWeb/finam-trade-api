@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/type/decimal.proto";
 import "grpc/tradeapi/v1/side.proto";
 
-option go_package = "trade_api/v1/trade";
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1";
 option java_multiple_files = true;
 
 // Информация о сделке

@@ -9,7 +9,7 @@ import "grpc/tradeapi/v1/side.proto";
 import "grpc/tradeapi/v1/trade.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "trade_api/v1/orders/orders_service";
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/orders";
 option java_multiple_files = true;
 option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   schemes: HTTP;
