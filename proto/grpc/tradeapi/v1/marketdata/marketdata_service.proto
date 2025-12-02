@@ -220,7 +220,7 @@ message Quote {
 
   // Аск. 0 при отсутствии активного аска
   google.type.Decimal ask = 3;
-  // Размер аска 
+  // Размер аска
   google.type.Decimal ask_size = 4;
   // Бид. 0 при отсутствии активного бида
   google.type.Decimal bid = 5;
@@ -247,7 +247,7 @@ message Quote {
   // Изменение цены (last минус close)
   google.type.Decimal change = 15;
 
-// Информация об опционе
+  // Информация об опционе
   message Option {
     // Открытый интерес
     google.type.Decimal open_interest = 1;
@@ -279,7 +279,7 @@ message OrderBook {
   message Row {
     // Команда
     enum Action {
-      // Действие не указано 
+      // Действие не указано
       ACTION_UNSPECIFIED = 0;
       // Удалить
       ACTION_REMOVE = 1;
@@ -342,7 +342,7 @@ message StreamOrderBook {
   message Row {
     // Команда
     enum Action {
-      // Действие не указано 
+      // Действие не указано
       ACTION_UNSPECIFIED = 0;
       // Удалить
       ACTION_REMOVE = 1;
@@ -351,7 +351,7 @@ message StreamOrderBook {
       // Обновить
       ACTION_UPDATE = 3;
     }
-    
+
     // Цена
     google.type.Decimal price = 1;
 
