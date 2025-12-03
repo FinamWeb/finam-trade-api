@@ -8,6 +8,7 @@ import "google/type/decimal.proto";
 import "google/type/interval.proto";
 import "google/type/money.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 option go_package = "trade_api/v1/assets/assets_service";
 option java_multiple_files = true;
@@ -146,6 +147,8 @@ message GetAssetResponse{
   google.type.Decimal lot_size = 9;
   // Дата экспирации фьючерса
   google.type.Date expiration_date = 12;
+  //Валюта котировки, может не совпадать с валютой режима торгов инструмента
+  string quote_currency = 13;
 }
 
 // Запрос торговых параметров инструмента
@@ -163,8 +166,10 @@ message GetAssetParamsResponse {
   // ID аккаунта для которого подбираются торговые параметры
   string account_id = 2;
   // Доступны ли торговые операции
-  bool tradeable = 3;
-  // Доступны ли операции в Лонг 
+  // Старое поле, помечено как устаревшее.
+  // Клиентам следует перейти на is_tradeable.
+  bool tradeable = 3 [deprecated = true];
+  // Доступны ли операции в Лонг
   Longable longable = 4;
   // Доступны ли операции в Шорт
   Shortable shortable = 5;
@@ -180,12 +185,21 @@ message GetAssetParamsResponse {
   google.type.Money long_initial_margin = 10;
   // Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть шорт позицию, для FORTS счетов равен биржевому ГО
   google.type.Money short_initial_margin = 11;
+  // Доступны ли торговые операции
+  // Новое поле. Позволяет различать false и "не установлено".
+  google.protobuf.BoolValue is_tradable = 12;
 }
 
 // Запрос получения цепочки опционов
 message OptionsChainRequest {
   // Символ базового актива опциона
   string underlying_symbol = 1;
+  // Опциональный параметр. Актуален для опционов на фьючерсы, по типу (недельные, месячные).
+  // Если параметр не указан, будут возвращены опционы с ближайшей датой экспирации.
+  string root = 2;
+  // Опциональный фильтр по дате экспирации опционов.
+  // Если параметр не указан, будут возвращены опционы с ближайшей датой экспирации.
+  google.type.Date expiration_date = 3;
 }
 
 // Информация о цепочке опционов

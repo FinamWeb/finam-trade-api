@@ -65,11 +65,20 @@ service OrdersService {
   }
 
   // Подписка на собственные заявки и сделки. Стрим метод
-  rpc SubscribeOrderTrade(stream OrderTradeRequest) returns (stream OrderTradeResponse);
+  rpc SubscribeOrderTrade(stream OrderTradeRequest) returns (stream OrderTradeResponse) {
+    option deprecated = true;
+  };
+
+  // Подписка на собственные заявки. Стрим метод
+  rpc SubscribeOrders(SubscribeOrdersRequest) returns (stream SubscribeOrdersResponse);
+
+  // Подписка на собственные сделки. Стрим метод
+  rpc SubscribeTrades(SubscribeTradesRequest) returns (stream SubscribeTradesResponse);
 }
 
 // Запрос подписки на собственные заявки и сделки. Стрим
 message OrderTradeRequest {
+  option deprecated = true;
   // Доступные действия
   enum Action {
     // Подписаться
@@ -96,10 +105,35 @@ message OrderTradeRequest {
 
 // Список собственных заявок и сделок
 message OrderTradeResponse {
+  option deprecated = true;
   // Заявки
   repeated OrderState orders = 1;
   // Сделки
   repeated AccountTrade trades = 2;
+}
+
+// Запрос подписки на собственные заявки. Стрим
+message SubscribeOrdersRequest {
+  // Идентификатор аккаунта
+  string account_id = 1;
+}
+
+// Список собственных заявок
+message SubscribeOrdersResponse {
+  // Заявки
+  repeated OrderState orders = 1;
+}
+
+// Запрос подписки на собственные сделки. Стрим
+message SubscribeTradesRequest {
+  // Идентификатор аккаунта
+  string account_id = 1;
+}
+
+// Список собственных сделок
+message SubscribeTradesResponse {
+  // Сделки
+  repeated AccountTrade trades = 1;
 }
 
 // Запрос на получение конкретного ордера
@@ -190,6 +224,9 @@ message Order {
 
   // Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT
   ValidBefore valid_before = 12;
+
+  // Метка заявки. (максимум 128 символов)
+  string comment = 13;
 }
 
 // Лег
