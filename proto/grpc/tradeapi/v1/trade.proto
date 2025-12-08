@@ -27,4 +27,6 @@ message AccountTrade {
   string order_id = 7;
   // Идентификатор аккаунта
   string account_id = 8;
+  // Метка заявки. (максимум 128 символов)
+  string comment = 9;
 }

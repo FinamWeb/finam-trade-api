@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package grpc.tradeapi.v1.metrics;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "trade_api/v1/metrics/usage_metrics_service";
+option java_multiple_files = true;
+
+// Сервис для получения метрик использования TradeAPI.
+// Позволяет клиентам отслеживать свою активность, включая информацию о текущих квотах и лимитах,
+// чтобы избегать превышения установленных ограничений.
+service UsageMetricsService {
+  // Получение текущих метрик использования для пользователя
+  // Пример HTTP запроса:
+  // GET /v1/usage
+  // Authorization: <token>
+  rpc GetUsageMetrics(GetUsageMetricsRequest) returns (GetUsageMetricsResponse) {
+    option (google.api.http) = {
+      get: "/v1/usage"
+    };
+  };
+}
+
+// Запрос получения текущих метрик использования
+message GetUsageMetricsRequest {}
+
+// Информация о текущих метриках использования
+message GetUsageMetricsResponse {
+  // Квота
+  message QuotaUsage
+  {
+    // Название метода
+    string name = 1;
+    // Общий лимит по данной квоте.
+    int64 limit = 2;
+    // Сколько осталось доступных единиц в текущем окне.
+    int64 remaining = 3;
+    // Время, когда счетчик квоты будет сброшен (начало нового окна).
+    google.protobuf.Timestamp reset_time = 4;
+  }
+
+  // Список текущих квот и их использование.
+  repeated QuotaUsage quotas = 1;
+}
