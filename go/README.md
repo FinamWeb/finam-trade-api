@@ -65,3 +65,46 @@ func main() {
 ```
 
 Подключайте и используйте другие сервисы аналогично, импортируя соответствующие пакеты из каталога `grpc/tradeapi/v1`.
+
+## Как собрать локально
+
+Ниже — шаги, чтобы локально сгенерировать Go-клиента и OpenAPI-спецификацию из `.proto`.
+
+1) Подготовка окружения
+- Установите Go и настройте рабочее окружение: см. [Go Wiki](https://go.dev/wiki/#getting-started-with-go).
+- Установите `protoc` (Protocol Buffers compiler): см. официальную инструкцию — [Protocol Buffer Compiler Installation](https://grpc.io/docs/protoc-installation).
+- Убедитесь, что `$GOBIN` (или `%GOBIN%` на Windows) добавлен в `PATH`. По умолчанию, если `GOBIN` не задан, бинарники ставятся в `$(go env GOPATH)/bin` — добавьте и его в `PATH`.
+
+2) Установка генераторов
+- В проекте используется блок `tool` в `go.mod`. Для установки всех требуемых генераторов выполните:
+```sh
+go install tool
+```
+В результате в `$GOBIN` появятся бинарники:
+- `protoc-gen-grpc-gateway`
+- `protoc-gen-openapiv2`
+- `protoc-gen-go`
+- `protoc-gen-go-grpc`
+
+Проверьте, что утилиты доступны: например, `protoc-gen-go --version` и `protoc --version` выполняются без ошибок.
+
+3) Генерация кода и спецификации
+- Запустите следующую команду ИЗ КОРНЯ репозитория:
+```sh
+protoc \
+  --proto_path=proto \
+  --go_out=go --go_opt=paths=source_relative \
+  --go-grpc_out=go --go-grpc_opt=paths=source_relative \
+  --openapiv2_out=docs/swagger \
+  --openapiv2_opt=logtostderr=true,allow_merge=true,merge_file_name=api \
+  ./proto/grpc/tradeapi/v1/*.proto \
+  ./proto/grpc/tradeapi/v1/accounts/*.proto \
+  ./proto/grpc/tradeapi/v1/assets/*.proto \
+  ./proto/grpc/tradeapi/v1/auth/*.proto \
+  ./proto/grpc/tradeapi/v1/marketdata/*.proto \
+  ./proto/grpc/tradeapi/v1/orders/*.proto
+```
+
+Что получится
+- Go-код будет сгенерирован в каталоге `go/grpc/tradeapi/v1/...` (относительно корня репозитория).
+- OpenAPI-спецификация будет обновлена/собрана в `docs/swagger/api.swagger.json`.
