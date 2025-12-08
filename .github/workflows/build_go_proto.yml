@@ -1,7 +1,7 @@
 name: Build Go Proto
 on:
   push:
-    branches: [ "go-build" ]
+    branches: [ "main" ]
     paths:
       - 'proto/grpc/**'
 
