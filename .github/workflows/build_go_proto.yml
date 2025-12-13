@@ -1,0 +1,76 @@
+name: Build Go Proto
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'proto/grpc/**'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.0'
+
+      - name: Display Go version
+        run: go version
+
+      - name: Add GOPATH/bin to PATH
+        shell: bash
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Install Go codegen tools
+        shell: bash
+        run: |
+          cd go
+          go install tool
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Generate Go code and Swagger from proto/grpc
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROTO_DIR="proto/grpc"
+          # Collect all .proto files under proto/grpc
+          mapfile -t PROTOS < <(find "$PROTO_DIR" -type f -name "*.proto" | sort)
+          if [ ${#PROTOS[@]} -eq 0 ]; then
+            echo "No .proto files found under $PROTO_DIR. Nothing to do."
+            exit 0
+          fi
+
+          # Run protoc with plugins installed via `go install tool`
+          protoc \
+            --proto_path=proto \
+            --go_out=go --go_opt=paths=source_relative \
+            --go-grpc_out=go --go-grpc_opt=paths=source_relative \
+            --openapiv2_out=docs/swagger \
+            --openapiv2_opt=logtostderr=true,allow_merge=true,merge_file_name=api \
+            "${PROTOS[@]}"
+
+      - name: Commit and push generated files
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Stage only generated outputs
+          git add go docs/swagger/api.swagger.json || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Auto-generate Go gRPC code and Swagger from proto/grpc"
+          git push

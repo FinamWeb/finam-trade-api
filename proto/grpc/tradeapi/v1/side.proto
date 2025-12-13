@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package grpc.tradeapi.v1;
 
-option go_package = "trade_api/v1/side";
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1";
 option java_multiple_files = true;
 
 // Сторона сделки

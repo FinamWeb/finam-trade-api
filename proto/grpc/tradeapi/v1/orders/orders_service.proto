@@ -7,9 +7,53 @@ import "google/protobuf/timestamp.proto";
 import "google/type/decimal.proto";
 import "grpc/tradeapi/v1/side.proto";
 import "grpc/tradeapi/v1/trade.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "trade_api/v1/orders/orders_service";
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/orders";
 option java_multiple_files = true;
+option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: HTTP;
+  responses: {
+    key: "default";
+    value: {
+      schema: {
+        json_schema:{
+          ref: "googletypeStatus"
+        }
+      }
+    }
+  }
+  responses: {
+    key: "500";
+    value: {
+      description: "Внутренняя ошибка сервиса. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "503";
+    value: {
+      description: "Сервис на данный момент не доступен. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "429";
+    value: {
+      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+    }
+  }
+  responses: {
+    key: "401"
+    value: {
+      description: "Срок действия токена истек или токен недействителен"
+    }
+  }
+  responses: {
+    key: "504"
+    value: {
+      description: "Крайний срок истек до завершения операции"
+    }
+  }
+};
 
 // Сервис ордеров
 service OrdersService {
@@ -38,6 +82,21 @@ service OrdersService {
       post: "/v1/accounts/{account_id}/orders"
       body: "*"
     };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP
+      responses: {
+        key: "404";
+        value: {
+          description: "Счёт или инструмент не были найдены"
+        },
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Не верно переданы торговые параметры"
+        },
+      }
+    };
   }
 
   // Отмена биржевой заявки
@@ -46,6 +105,21 @@ service OrdersService {
   // Authorization: <token>
   rpc CancelOrder(CancelOrderRequest) returns (OrderState) {
     option (google.api.http) = {delete: "/v1/accounts/{account_id}/orders/{order_id}"};
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP
+      responses: {
+        key: "404";
+        value: {
+          description: "Счёт или заявка не были найдены"
+        },
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Заявка не может быть отменена так как она уже исполнена"
+        },
+      }
+    };
   }
 
   // Получение списка заявок для аккаунта
@@ -54,6 +128,15 @@ service OrdersService {
   // Authorization: <token>
   rpc GetOrders(OrdersRequest) returns (OrdersResponse) {
     option (google.api.http) = {get: "/v1/accounts/{account_id}/orders"};
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP
+      responses: {
+        key: "404";
+        value: {
+          description: "Счёт не был найден"
+        },
+      }
+    };
   }
 
   // Получение информации о конкретном ордере
@@ -62,6 +145,15 @@ service OrdersService {
   // Authorization: <token>
   rpc GetOrder(GetOrderRequest) returns (OrderState) {
     option (google.api.http) = {get: "/v1/accounts/{account_id}/orders/{order_id}"};
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP
+      responses: {
+        key: "404";
+        value: {
+          description: "Счёт или заявка не были найдены"
+        },
+      }
+    };
   }
 
   // Подписка на собственные заявки и сделки. Стрим метод
@@ -174,7 +266,7 @@ enum TimeInForce {
   TIME_IN_FORCE_EXT = 4;
   // На открытии биржи
   TIME_IN_FORCE_ON_OPEN = 5;
-  // На закрытии биржи 
+  // На закрытии биржи
   TIME_IN_FORCE_ON_CLOSE = 6;
   // Исполнить немедленно или отменить
   TIME_IN_FORCE_IOC = 7;
@@ -188,7 +280,7 @@ enum StopCondition {
   STOP_CONDITION_UNSPECIFIED = 0;
   // Цена срабатывания больше текущей цены
   STOP_CONDITION_LAST_UP = 1;
-  // Цена срабатывания меньше текущей цены 
+  // Цена срабатывания меньше текущей цены
   STOP_CONDITION_LAST_DOWN = 2;
 }
 

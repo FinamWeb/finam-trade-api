@@ -2,3 +2,4 @@
 build/
 out/
 *.iml
+/finam-trade-api-go/.gradle/

@@ -1,0 +1,2907 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "grpc/tradeapi/v1/accounts/accounts_service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "AccountsService"
+    },
+    {
+      "name": "AssetsService"
+    },
+    {
+      "name": "AuthService"
+    },
+    {
+      "name": "MarketDataService"
+    },
+    {
+      "name": "OrdersService"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/accounts/{accountId}": {
+      "get": {
+        "summary": "Получение информации по конкретному аккаунту\nПример HTTP запроса:\nGET /v1/accounts/A12345\nAuthorization: \u003ctoken\u003e",
+        "operationId": "AccountsService_GetAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountsGetAccountResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accountId",
+            "description": "Идентификатор аккаунта",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AccountsService"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/orders": {
+      "get": {
+        "summary": "Получение списка заявок для аккаунта\nПример HTTP запроса:\nGET /v1/accounts/A12345/orders\nAuthorization: \u003ctoken\u003e",
+        "operationId": "OrdersService_GetOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ordersOrdersResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accountId",
+            "description": "Идентификатор аккаунта",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrdersService"
+        ]
+      },
+      "post": {
+        "summary": "Выставление биржевой заявки\nПример HTTP запроса:\nPOST /v1/accounts/A12345/orders\nContent-Type: application/json\nAuthorization: \u003ctoken\u003e",
+        "description": "{\n  \"symbol\": \"SBER@MISX\",\n  \"quantity\": {\n\t\t\t \"value\": \"10\"\n\t\t },\n  \"side\": \"SIDE_BUY\",\n  \"type\": \"ORDER_TYPE_LIMIT\",\n  \"time_in_force\": \"TIME_IN_FORCE_DAY\",\n  \"limit_price\": {\n\t\t\t \"value\": \"150.50\"\n\t\t }\n}\n\nПоле account_id берется из URL-пути, остальные поля передаются в теле запроса",
+        "operationId": "OrdersService_PlaceOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ordersOrderState"
+            }
+          },
+          "400": {
+            "description": "Не верно переданы торговые параметры",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт или инструмент не были найдены",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accountId",
+            "description": "Идентификатор аккаунта",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrdersServicePlaceOrderBody"
+            }
+          }
+        ],
+        "tags": [
+          "OrdersService"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/orders/{orderId}": {
+      "get": {
+        "summary": "Получение информации о конкретном ордере\nПример HTTP запроса:\nGET /v1/accounts/A12345/orders/ORD789012\nAuthorization: \u003ctoken\u003e",
+        "operationId": "OrdersService_GetOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ordersOrderState"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт или заявка не были найдены",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accountId",
+            "description": "Идентификатор аккаунта",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orderId",
+            "description": "Идентификатор заявки",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrdersService"
+        ]
+      },
+      "delete": {
+        "summary": "Отмена биржевой заявки\nПример HTTP запроса:\nDELETE /v1/accounts/A12345/orders/ORD789012\nAuthorization: \u003ctoken\u003e",
+        "operationId": "OrdersService_CancelOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ordersOrderState"
+            }
+          },
+          "400": {
+            "description": "Заявка не может быть отменена так как она уже исполнена",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт или заявка не были найдены",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accountId",
+            "description": "Идентификатор аккаунта",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orderId",
+            "description": "Идентификатор заявки",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrdersService"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/trades": {
+      "get": {
+        "summary": "Получение истории по сделкам аккаунта\nПример HTTP запроса:\nGET /v1/accounts/A12345/trades?limit=50\u0026interval.start_time=2023-01-01T00:00:00Z\u0026interval.end_time=2023-01-31T23:59:59Z\nAuthorization: \u003ctoken\u003e",
+        "description": "Параметры:\n- account_id - передается в URL пути\n- limit и interval - передаются как query-параметры",
+        "operationId": "AccountsService_Trades",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountsTradesResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан интервал",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accountId",
+            "description": "Идентификатор аккаунта",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "description": "Лимит количества сделок",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "interval.startTime",
+            "description": "Optional. Inclusive start of the interval.\n\nIf specified, a Timestamp matching this interval will have to be the same\nor after the start.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "interval.endTime",
+            "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "AccountsService"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/transactions": {
+      "get": {
+        "summary": "Получение списка транзакций аккаунта\nПример HTTP запроса:\nGET /v1/accounts/A12345/transactions?limit=50\u0026interval.start_time=2023-01-01T00:00:00Z\u0026interval.end_time=2023-01-31T23:59:59Z\nAuthorization: \u003ctoken\u003e",
+        "description": "Параметры:\n- account_id - передается в URL пути\n- limit и interval - передаются как query-параметры",
+        "operationId": "AccountsService_Transactions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/accountsTransactionsResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан интервал",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accountId",
+            "description": "Идентификатор аккаунта",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "description": "Лимит количества транзакций",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "interval.startTime",
+            "description": "Optional. Inclusive start of the interval.\n\nIf specified, a Timestamp matching this interval will have to be the same\nor after the start.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "interval.endTime",
+            "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "AccountsService"
+        ]
+      }
+    },
+    "/v1/assets": {
+      "get": {
+        "summary": "Получение списка доступных инструментов, их описание\nПример HTTP запроса:\nGET /v1/assets\nAuthorization: \u003ctoken\u003e",
+        "operationId": "AssetsService_Assets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsAssetsResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AssetsService"
+        ]
+      }
+    },
+    "/v1/assets/clock": {
+      "get": {
+        "summary": "Получение времени на сервере\nПример HTTP запроса:\nGET /v1/assets/clock\nAuthorization: \u003ctoken\u003e",
+        "operationId": "AssetsService_Clock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsClockResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AssetsService"
+        ]
+      }
+    },
+    "/v1/assets/{symbol}": {
+      "get": {
+        "summary": "Получение информации по конкретному инструменту\nПример HTTP запроса:\nGET /v1/assets/SBER@MISX?account_id=1440399\nAuthorization: \u003ctoken\u003e",
+        "description": "Параметры:\n- symbol - передается в URL пути\n- account_id - передаётся как query-параметр",
+        "operationId": "AssetsService_GetAsset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsGetAssetResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан символ или счет. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Символ инструмента",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "accountId",
+            "description": "ID аккаунта для которого будет подбираться информация по инструменту",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AssetsService"
+        ]
+      }
+    },
+    "/v1/assets/{symbol}/params": {
+      "get": {
+        "summary": "Получение торговых параметров по инструменту\nПример HTTP запроса:\nGET /v1/assets/SBER@MISX/params?account_id=1440399\nAuthorization: \u003ctoken\u003e",
+        "description": "Параметры:\n- symbol - передается в URL пути\n- account_id - передаётся как query-параметр",
+        "operationId": "AssetsService_GetAssetParams",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsGetAssetParamsResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан символ или счет. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Символ инструмента",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "accountId",
+            "description": "ID аккаунта для которого будут подбираться торговые параметры",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AssetsService"
+        ]
+      }
+    },
+    "/v1/assets/{symbol}/schedule": {
+      "get": {
+        "summary": "Получение расписания торгов для инструмента\nПример HTTP запроса:\nGET /v1/assets/SBER@MISX/schedule\nAuthorization: \u003ctoken\u003e",
+        "operationId": "AssetsService_Schedule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsScheduleResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Символ инструмента",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AssetsService"
+        ]
+      }
+    },
+    "/v1/assets/{underlyingSymbol}/options": {
+      "get": {
+        "summary": "Получение цепочки опционов для базового актива\nПример HTTP запроса:\nGET /v1/assets/SBER@MISX/options\nAuthorization: \u003ctoken\u003e",
+        "operationId": "AssetsService_OptionsChain",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsOptionsChainResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "underlyingSymbol",
+            "description": "Символ базового актива опциона",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AssetsService"
+        ]
+      }
+    },
+    "/v1/exchanges": {
+      "get": {
+        "summary": "Получение списка доступных бирж, названия и mic коды\nПример HTTP запроса:\nGET /v1/exchanges\nAuthorization: \u003ctoken\u003e",
+        "operationId": "AssetsService_Exchanges",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsExchangesResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AssetsService"
+        ]
+      }
+    },
+    "/v1/instruments/{symbol}/bars": {
+      "get": {
+        "summary": "Получение исторических данных по инструменту (агрегированные свечи)\nПример HTTP запроса:\nGET /v1/instruments/SBER@MISX/bars?timeframe=TIME_FRAME_D\u0026interval.start_time=2023-01-01T00:00:00Z\u0026interval.end_time=2023-01-31T23:59:59Z\nAuthorization: \u003ctoken\u003e",
+        "description": "Параметры:\n- symbol - передается в URL пути\n- timeframe и interval - передаются как query-параметры",
+        "operationId": "MarketDataService_Bars",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/marketdataBarsResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан символ или интервал. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Символ инструмента",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "timeframe",
+            "description": "Необходимый таймфрейм\n\n - TIME_FRAME_UNSPECIFIED: Таймфрейм не указан\n - TIME_FRAME_M1: 1 минута. Глубина данных 7 дней.\n - TIME_FRAME_M5: 5 минут. Глубина данных 30 дней.\n - TIME_FRAME_M15: 15 минут. Глубина данных 30 дней.\n - TIME_FRAME_M30: 30 минут. Глубина данных 30 дней.\n - TIME_FRAME_H1: 1 час. Глубина данных 30 дней.\n - TIME_FRAME_H2: 2 часа. Глубина данных 30 дней.\n - TIME_FRAME_H4: 4 часа. Глубина данных 30 дней.\n - TIME_FRAME_H8: 8 часов. Глубина данных 30 дней.\n - TIME_FRAME_D: День. Глубина данных 365 дней.\n - TIME_FRAME_W: Неделя. Глубина данных 365*5 дней.\n - TIME_FRAME_MN: Месяц. Глубина данных 365*5 дней.\n - TIME_FRAME_QR: Квартал. Глубина данных 365*5 дней.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "TIME_FRAME_UNSPECIFIED",
+              "TIME_FRAME_M1",
+              "TIME_FRAME_M5",
+              "TIME_FRAME_M15",
+              "TIME_FRAME_M30",
+              "TIME_FRAME_H1",
+              "TIME_FRAME_H2",
+              "TIME_FRAME_H4",
+              "TIME_FRAME_H8",
+              "TIME_FRAME_D",
+              "TIME_FRAME_W",
+              "TIME_FRAME_MN",
+              "TIME_FRAME_QR"
+            ],
+            "default": "TIME_FRAME_UNSPECIFIED"
+          },
+          {
+            "name": "interval.startTime",
+            "description": "Optional. Inclusive start of the interval.\n\nIf specified, a Timestamp matching this interval will have to be the same\nor after the start.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "interval.endTime",
+            "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "MarketDataService"
+        ]
+      }
+    },
+    "/v1/instruments/{symbol}/orderbook": {
+      "get": {
+        "summary": "Получение текущего стакана по инструменту\nПример HTTP запроса:\nGET /v1/instruments/SBER@MISX/orderbook\nAuthorization: \u003ctoken\u003e",
+        "operationId": "MarketDataService_OrderBook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/marketdataOrderBookResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Символ инструмента",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MarketDataService"
+        ]
+      }
+    },
+    "/v1/instruments/{symbol}/quotes/latest": {
+      "get": {
+        "summary": "Получение последней котировки по инструменту\nПример HTTP запроса:\nGET /v1/instruments/SBER@MISX/quotes/latest\nAuthorization: \u003ctoken\u003e",
+        "operationId": "MarketDataService_LastQuote",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/marketdataQuoteResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Символ инструмента",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MarketDataService"
+        ]
+      }
+    },
+    "/v1/instruments/{symbol}/trades/latest": {
+      "get": {
+        "summary": "Получение списка последних сделок по инструменту\nПример HTTP запроса:\nGET /v1/instruments/SBER@MISX/trades/latest\nAuthorization: \u003ctoken\u003e",
+        "operationId": "MarketDataService_LatestTrades",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/marketdataLatestTradesResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "symbol",
+            "description": "Символ инструмента",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MarketDataService"
+        ]
+      }
+    },
+    "/v1/sessions": {
+      "post": {
+        "summary": "Получение JWT токена из API токена\nПример HTTP запроса:\nPOST /v1/sessions\nContent-Type: application/json",
+        "description": "{\n  \"secret\": \"your-api-secret-key\"\n}\n\nВсе поля передаются в теле запроса",
+        "operationId": "AuthService_Auth",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authAuthResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authAuthRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/sessions/details": {
+      "post": {
+        "summary": "Получение информации о токене сессии\nПример HTTP запроса:\nPOST /v1/sessions/details\nContent-Type: application/json",
+        "description": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}\n\nТокен передается в теле запроса для безопасности\nПолучение информации о токене. Также включает список доступных счетов.",
+        "operationId": "AuthService_TokenDetails",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authTokenDetailsResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authTokenDetailsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "MDPermissionQuoteLevel": {
+      "type": "string",
+      "enum": [
+        "QUOTE_LEVEL_UNSPECIFIED",
+        "QUOTE_LEVEL_LAST_PRICE",
+        "QUOTE_LEVEL_BEST_BID_OFFER",
+        "QUOTE_LEVEL_DEPTH_OF_MARKET",
+        "QUOTE_LEVEL_DEPTH_OF_BOOK",
+        "QUOTE_LEVEL_ACCESS_FORBIDDEN"
+      ],
+      "default": "QUOTE_LEVEL_UNSPECIFIED",
+      "description": "- QUOTE_LEVEL_UNSPECIFIED: Значение не указано\n - QUOTE_LEVEL_LAST_PRICE: Последняя цена\n - QUOTE_LEVEL_BEST_BID_OFFER: Бид аск\n - QUOTE_LEVEL_DEPTH_OF_MARKET: Агрегированный стакан\n - QUOTE_LEVEL_DEPTH_OF_BOOK: Полный стакан\n - QUOTE_LEVEL_ACCESS_FORBIDDEN: Доступ запрещен",
+      "title": "Уровень котировок"
+    },
+    "OrderTradeRequestDataType": {
+      "type": "string",
+      "enum": [
+        "DATA_TYPE_ALL",
+        "DATA_TYPE_ORDERS",
+        "DATA_TYPE_TRADES"
+      ],
+      "default": "DATA_TYPE_ALL",
+      "description": "- DATA_TYPE_ALL: Все: заявки и сделки\n - DATA_TYPE_ORDERS: Заявки\n - DATA_TYPE_TRADES: Сделки",
+      "title": "Тип подписки"
+    },
+    "OrdersServicePlaceOrderBody": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "quantity": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Количество в шт."
+        },
+        "side": {
+          "$ref": "#/definitions/v1Side",
+          "title": "Сторона (long или short)"
+        },
+        "type": {
+          "$ref": "#/definitions/ordersOrderType",
+          "title": "Тип заявки"
+        },
+        "timeInForce": {
+          "$ref": "#/definitions/ordersTimeInForce",
+          "title": "Срок действия заявки"
+        },
+        "limitPrice": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Необходимо для лимитной и стоп лимитной заявки"
+        },
+        "stopPrice": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Необходимо для стоп рыночной и стоп лимитной заявки"
+        },
+        "stopCondition": {
+          "$ref": "#/definitions/ordersStopCondition",
+          "title": "Необходимо для стоп рыночной и стоп лимитной заявки"
+        },
+        "legs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ordersLeg"
+          },
+          "title": "Необходимо для мульти лег заявки"
+        },
+        "clientOrderId": {
+          "type": "string",
+          "title": "Уникальный идентификатор заявки. Автоматически генерируется, если не отправлен. (максимум 20 символов)"
+        },
+        "validBefore": {
+          "$ref": "#/definitions/ordersValidBefore",
+          "title": "Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT"
+        }
+      },
+      "title": "Информация о заявке"
+    },
+    "ScheduleResponseSessions": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Тип сессии"
+        },
+        "interval": {
+          "$ref": "#/definitions/typeInterval",
+          "title": "Интервал сессии"
+        }
+      },
+      "title": "Сессии"
+    },
+    "TransactionTransactionCategory": {
+      "type": "string",
+      "enum": [
+        "OTHERS",
+        "DEPOSIT",
+        "WITHDRAW",
+        "INCOME",
+        "COMMISSION",
+        "TAX",
+        "INHERITANCE",
+        "TRANSFER",
+        "CONTRACT_TERMINATION",
+        "OUTCOMES",
+        "FINE",
+        "LOAN"
+      ],
+      "default": "OTHERS",
+      "description": "Категории транзакции.\n\n - OTHERS: Прочее\n - DEPOSIT: Ввод ДС\n - WITHDRAW: Вывод ДС\n - INCOME: Доход\n - COMMISSION: Комиссия\n - TAX: Налог\n - INHERITANCE: Наследство\n - TRANSFER: Перевод ДС\n - CONTRACT_TERMINATION: Расторжение договора\n - OUTCOMES: Расходы\n - FINE: Штраф\n - LOAN: Займ"
+    },
+    "accountsFORTS": {
+      "type": "object",
+      "properties": {
+        "availableCash": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Сумма собственных денежных средств на счете, доступная для торговли. Включает маржинальные средства."
+        },
+        "moneyReserved": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Минимальная маржа (необходимая сумма обеспечения под открытые позици)"
+        }
+      },
+      "description": "Тип портфеля для торговли на срочном рынке Московской Биржи.\nПредназначен для работы с производными финансовыми инструментами: фьючерсами и опционами."
+    },
+    "accountsGetAccountResponse": {
+      "type": "object",
+      "properties": {
+        "accountId": {
+          "type": "string",
+          "title": "Идентификатор аккаунта"
+        },
+        "type": {
+          "type": "string",
+          "title": "Тип аккаунта"
+        },
+        "status": {
+          "type": "string",
+          "title": "Статус аккаунта"
+        },
+        "equity": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Доступные средства плюс стоимость открытых позиций"
+        },
+        "unrealizedProfit": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Нереализованная прибыль"
+        },
+        "positions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/accountsPosition"
+          },
+          "title": "Позиции. Открытые, плюс теоретические (по неисполненным активным заявкам)"
+        },
+        "cash": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typeMoney"
+          },
+          "description": "Сумма собственных денежных средств на счете, доступная для торговли. Не включает маржинальные средства."
+        },
+        "portfolioMc": {
+          "$ref": "#/definitions/accountsMC",
+          "description": "Общий тип для счетов Московской Биржи. Включает в себя как единые, так и моно счета."
+        },
+        "portfolioMct": {
+          "$ref": "#/definitions/accountsMCT",
+          "description": "Тип портфеля для счетов на американских рынках."
+        },
+        "portfolioForts": {
+          "$ref": "#/definitions/accountsFORTS",
+          "description": "Тип портфеля для торговли на срочном рынке Московской Биржи."
+        }
+      },
+      "title": "Информация о конкретном аккаунте"
+    },
+    "accountsMC": {
+      "type": "object",
+      "properties": {
+        "availableCash": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Сумма собственных денежных средств на счете, доступная для торговли. Включает маржинальные средства."
+        },
+        "initialMargin": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Начальная маржа"
+        },
+        "maintenanceMargin": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Минимальная маржа"
+        }
+      },
+      "description": "Общий тип для счетов Московской Биржи. Включает в себя как единые, так и специализированные (моно) счета для разных секций биржи.\nЕдиный торговый счет (ЕТС): Позволяет торговать на нескольких рынках (фондовый, валютный. срочный, spb, иностранные бумаги, иностранные фьючерсы) с единой денежной позиции.\nМоно-счет фондового рынка MOEX: Изолированный счет для торговли акциями, облигациями и паями.\nМоно-счет валютного рынка MOEX: Изолированный счет для операций с валютными парами (например, CNYRUB_TOM)."
+    },
+    "accountsMCT": {
+      "type": "object",
+      "description": "Тип портфеля для счетов на американских рынках.\nПредоставляет доступ к биржам США: NYSE, NASDAQ, CBOE, CME, сделки с американскими акциями, фьючерсами и опционами."
+    },
+    "accountsPosition": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "quantity": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Количество в шт., значение со знаком определяющее (long-short)"
+        },
+        "averagePrice": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Средняя цена. Не заполняется для FORTS позиций"
+        },
+        "currentPrice": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Текущая цена"
+        },
+        "maintenanceMargin": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Поддерживающее гарантийное обеспечение. Заполняется только для FORTS позиций"
+        },
+        "dailyPnl": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Прибыль или убыток за текущий день (PnL). Не заполняется для FORTS позиций"
+        },
+        "unrealizedPnl": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Суммарная нереализованная прибыль или убыток (PnL) текущей позиции"
+        }
+      },
+      "title": "Информация о позиции"
+    },
+    "accountsTradesResponse": {
+      "type": "object",
+      "properties": {
+        "trades": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AccountTrade"
+          },
+          "title": "Сделки по аккаунту"
+        }
+      },
+      "title": "История по сделкам"
+    },
+    "accountsTransaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Идентификатор транзакции"
+        },
+        "category": {
+          "type": "string",
+          "title": "Тип транзакции из TransactionCategory"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        },
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "change": {
+          "$ref": "#/definitions/typeMoney",
+          "title": "Изменение в деньгах"
+        },
+        "trade": {
+          "$ref": "#/definitions/accountsTransactionTrade",
+          "title": "Информация о сделке"
+        },
+        "transactionCategory": {
+          "$ref": "#/definitions/TransactionTransactionCategory",
+          "description": "Категория транзакции из TransactionCategory."
+        },
+        "transactionName": {
+          "type": "string",
+          "title": "Наименование транзакции"
+        }
+      },
+      "title": "Информация о транзакции"
+    },
+    "accountsTransactionTrade": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Количество в шт."
+        },
+        "price": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Цена сделки за штуку. Цена исполнения/Размер премии по опциону. Это цена заключения, значение берется из сделки."
+        },
+        "accruedInterest": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "НКД. Заполнено если в сделке есть НКД"
+        }
+      },
+      "title": "Объект заполняется для торговых типов транзакций"
+    },
+    "accountsTransactionsResponse": {
+      "type": "object",
+      "properties": {
+        "transactions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/accountsTransaction"
+          },
+          "title": "Транзакции по аккаунту"
+        }
+      },
+      "title": "Список транзакций"
+    },
+    "assetsAsset": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента ticker@mic"
+        },
+        "id": {
+          "type": "string",
+          "title": "Идентификатор инструмента"
+        },
+        "ticker": {
+          "type": "string",
+          "title": "Тикер инструмента"
+        },
+        "mic": {
+          "type": "string",
+          "title": "mic идентификатор биржи"
+        },
+        "isin": {
+          "type": "string",
+          "title": "Isin идентификатор инструмента"
+        },
+        "type": {
+          "type": "string",
+          "title": "Тип инструмента"
+        },
+        "name": {
+          "type": "string",
+          "title": "Наименование инструмента"
+        }
+      },
+      "title": "Информация об инструменте"
+    },
+    "assetsAssetsResponse": {
+      "type": "object",
+      "properties": {
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/assetsAsset"
+          },
+          "title": "Информация об инструменте"
+        }
+      },
+      "title": "Список доступных инструментов"
+    },
+    "assetsClockResponse": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        }
+      },
+      "title": "Время на сервере"
+    },
+    "assetsExchange": {
+      "type": "object",
+      "properties": {
+        "mic": {
+          "type": "string",
+          "title": "Идентификатор биржи mic"
+        },
+        "name": {
+          "type": "string",
+          "title": "Наименование биржи"
+        }
+      },
+      "title": "Информация о бирже"
+    },
+    "assetsExchangesResponse": {
+      "type": "object",
+      "properties": {
+        "exchanges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/assetsExchange"
+          },
+          "title": "Информация о бирже"
+        }
+      },
+      "title": "Список доступных бирж"
+    },
+    "assetsGetAssetParamsResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "accountId": {
+          "type": "string",
+          "title": "ID аккаунта для которого подбираются торговые параметры"
+        },
+        "tradeable": {
+          "type": "boolean",
+          "title": "Доступны ли торговые операции"
+        },
+        "longable": {
+          "$ref": "#/definitions/assetsLongable",
+          "title": "Доступны ли операции в Лонг"
+        },
+        "shortable": {
+          "$ref": "#/definitions/assetsShortable",
+          "title": "Доступны ли операции в Шорт"
+        },
+        "longRiskRate": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Ставка риска для операции в Лонг"
+        },
+        "longCollateral": {
+          "$ref": "#/definitions/typeMoney",
+          "title": "Сумма обеспечения для поддержания позиции Лонг"
+        },
+        "shortRiskRate": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Ставка риска для операции в Шорт"
+        },
+        "shortCollateral": {
+          "$ref": "#/definitions/typeMoney",
+          "title": "Сумма обеспечения для поддержания позиции Шорт"
+        },
+        "longInitialMargin": {
+          "$ref": "#/definitions/typeMoney",
+          "title": "Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть лонг позицию, для FORTS счетов равен биржевому ГО"
+        },
+        "shortInitialMargin": {
+          "$ref": "#/definitions/typeMoney",
+          "title": "Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть шорт позицию, для FORTS счетов равен биржевому ГО"
+        }
+      },
+      "title": "Торговые параметры инструмента"
+    },
+    "assetsGetAssetResponse": {
+      "type": "object",
+      "properties": {
+        "board": {
+          "type": "string",
+          "title": "Код режима торгов"
+        },
+        "id": {
+          "type": "string",
+          "title": "Идентификатор инструмента"
+        },
+        "ticker": {
+          "type": "string",
+          "title": "Тикер инструмента"
+        },
+        "mic": {
+          "type": "string",
+          "title": "mic идентификатор биржи"
+        },
+        "isin": {
+          "type": "string",
+          "title": "Isin идентификатор инструмента"
+        },
+        "type": {
+          "type": "string",
+          "title": "Тип инструмента"
+        },
+        "name": {
+          "type": "string",
+          "title": "Наименование инструмента"
+        },
+        "decimals": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Кол-во десятичных знаков в цене"
+        },
+        "minStep": {
+          "type": "string",
+          "format": "int64",
+          "title": "Минимальный шаг цены. Для расчета финального ценового шага: min_step/(10ˆdecimals)"
+        },
+        "lotSize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Кол-во штук в лоте"
+        },
+        "expirationDate": {
+          "$ref": "#/definitions/typeDate",
+          "title": "Дата экспирации фьючерса"
+        }
+      },
+      "title": "Список информации по конкретному инструменту"
+    },
+    "assetsLongable": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/assetsLongableStatus",
+          "title": "Статус инструмента"
+        },
+        "haltedDays": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Сколько дней действует запрет на операции в Лонг (если есть)"
+        }
+      },
+      "title": "Доступны ли операции в Лонг"
+    },
+    "assetsLongableStatus": {
+      "type": "string",
+      "enum": [
+        "NOT_AVAILABLE",
+        "AVAILABLE",
+        "ACCOUNT_NOT_APPROVED"
+      ],
+      "default": "NOT_AVAILABLE",
+      "description": "- NOT_AVAILABLE: Не доступен\n - AVAILABLE: Доступен\n - ACCOUNT_NOT_APPROVED: Запрещено на уровне счета",
+      "title": "Статус"
+    },
+    "assetsOptionType": {
+      "type": "string",
+      "enum": [
+        "TYPE_UNSPECIFIED",
+        "TYPE_CALL",
+        "TYPE_PUT"
+      ],
+      "default": "TYPE_UNSPECIFIED",
+      "description": "- TYPE_UNSPECIFIED: Неопределенное значение\n - TYPE_CALL: Колл\n - TYPE_PUT: Пут",
+      "title": "Тип опциона"
+    },
+    "assetsOptionsChainResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ базового актива опциона"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1assetsOption"
+          },
+          "title": "Информация об опционе"
+        }
+      },
+      "title": "Информация о цепочке опционов"
+    },
+    "assetsScheduleResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "sessions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ScheduleResponseSessions"
+          },
+          "title": "Сессии инструмента"
+        }
+      },
+      "title": "Расписание инструмента"
+    },
+    "assetsShortable": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/assetsShortableStatus",
+          "title": "Статус инструмента"
+        },
+        "haltedDays": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Сколько дней действует запрет на операции в Шорт (если есть)"
+        }
+      },
+      "title": "Доступны ли операции в Шорт"
+    },
+    "assetsShortableStatus": {
+      "type": "string",
+      "enum": [
+        "NOT_AVAILABLE",
+        "AVAILABLE",
+        "HTB",
+        "ACCOUNT_NOT_APPROVED",
+        "AVAILABLE_STRATEGY"
+      ],
+      "default": "NOT_AVAILABLE",
+      "description": "- NOT_AVAILABLE: Не доступен\n - AVAILABLE: Доступен\n - HTB: Признак того, что бумага Hard To Borrow (если есть)\n - ACCOUNT_NOT_APPROVED: Запрещено на уровне счета\n - AVAILABLE_STRATEGY: Разрешено в составе стратегии",
+      "title": "Статус"
+    },
+    "authAuthRequest": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string",
+          "title": "API токен (secret key)"
+        }
+      },
+      "title": "Запрос авторизации"
+    },
+    "authAuthResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "Полученный JWT-токен"
+        }
+      },
+      "title": "Информация об авторизации"
+    },
+    "authMDPermission": {
+      "type": "object",
+      "properties": {
+        "quoteLevel": {
+          "$ref": "#/definitions/MDPermissionQuoteLevel",
+          "title": "Уровень котировок"
+        },
+        "delayMinutes": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Задержка в минутах"
+        },
+        "mic": {
+          "type": "string",
+          "title": "Идентификатор биржи mic"
+        },
+        "country": {
+          "type": "string",
+          "title": "Страна"
+        },
+        "continent": {
+          "type": "string",
+          "title": "Континент"
+        },
+        "worldwide": {
+          "type": "boolean",
+          "title": "Весь мир"
+        }
+      },
+      "title": "Информация о доступе к рыночным данным"
+    },
+    "authSubscribeJwtRenewalResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "Полученный JWT-токен"
+        }
+      },
+      "title": "Обновленный токен. Стрим"
+    },
+    "authTokenDetailsRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "JWT-токен"
+        }
+      },
+      "title": "Запрос информации о токене"
+    },
+    "authTokenDetailsResponse": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата и время создания"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата и время экспирации"
+        },
+        "mdPermissions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/authMDPermission"
+          },
+          "title": "Информация о доступе к рыночным данным"
+        },
+        "accountIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Идентификаторы аккаунтов"
+        },
+        "readonly": {
+          "type": "boolean",
+          "title": "Сессия и торговые счета в токене будут помечены readonly"
+        }
+      },
+      "title": "Информация о токене"
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "marketdataBar": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        },
+        "open": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена открытия свечи"
+        },
+        "high": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Максимальная цена свечи"
+        },
+        "low": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Минимальная цена свечи"
+        },
+        "close": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена закрытия свечи"
+        },
+        "volume": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Объём торгов за свечу в шт."
+        }
+      },
+      "title": "Информация об агрегированной свече"
+    },
+    "marketdataBarsResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "bars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/marketdataBar"
+          },
+          "title": "Агрегированная свеча"
+        }
+      },
+      "title": "Список агрегированных свеч"
+    },
+    "marketdataLatestTradesResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "trades": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1marketdataTrade"
+          },
+          "title": "Список последних сделок"
+        }
+      },
+      "title": "Список последних сделок по инструменту"
+    },
+    "marketdataOrderBookResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "orderbook": {
+          "$ref": "#/definitions/v1marketdataOrderBook",
+          "title": "Стакан"
+        }
+      },
+      "title": "Текущий стакан по инструменту"
+    },
+    "marketdataOrderBookRow": {
+      "type": "object",
+      "properties": {
+        "price": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена"
+        },
+        "sellSize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер на продажу"
+        },
+        "buySize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер на покупку"
+        },
+        "action": {
+          "$ref": "#/definitions/marketdataOrderBookRowAction",
+          "title": "Команда"
+        },
+        "mpid": {
+          "type": "string",
+          "title": "Идентификатор участника рынка"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        }
+      },
+      "title": "Информация об уровне в стакане (строке)"
+    },
+    "marketdataOrderBookRowAction": {
+      "type": "string",
+      "enum": [
+        "ACTION_UNSPECIFIED",
+        "ACTION_REMOVE",
+        "ACTION_ADD",
+        "ACTION_UPDATE"
+      ],
+      "default": "ACTION_UNSPECIFIED",
+      "description": "- ACTION_UNSPECIFIED: Действие не указано\n - ACTION_REMOVE: Удалить\n - ACTION_ADD: Добавить\n - ACTION_UPDATE: Обновить",
+      "title": "Команда"
+    },
+    "marketdataQuote": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        },
+        "ask": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Аск. 0 при отсутствии активного аска"
+        },
+        "askSize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер аска"
+        },
+        "bid": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Бид. 0 при отсутствии активного бида"
+        },
+        "bidSize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер бида"
+        },
+        "last": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена последней сделки"
+        },
+        "lastSize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер последней сделки"
+        },
+        "volume": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Дневной объем сделок"
+        },
+        "turnover": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Дневной оборот сделок"
+        },
+        "open": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена открытия. Дневная"
+        },
+        "high": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Максимальная цена. Дневная"
+        },
+        "low": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Минимальная цена. Дневная"
+        },
+        "close": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена закрытия. Дневная"
+        },
+        "change": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Изменение цены (last минус close)"
+        },
+        "option": {
+          "$ref": "#/definitions/marketdataQuoteOption",
+          "title": "Информация об опционе"
+        }
+      },
+      "title": "Информация о котировке"
+    },
+    "marketdataQuoteOption": {
+      "type": "object",
+      "properties": {
+        "openInterest": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Открытый интерес"
+        },
+        "impliedVolatility": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Подразумеваемая волатильность"
+        },
+        "theoreticalPrice": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Теоретическая цена"
+        },
+        "delta": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Delta"
+        },
+        "gamma": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Gamma"
+        },
+        "theta": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Theta"
+        },
+        "vega": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Vega"
+        },
+        "rho": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Rho"
+        }
+      },
+      "title": "Информация об опционе"
+    },
+    "marketdataQuoteResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "quote": {
+          "$ref": "#/definitions/marketdataQuote",
+          "title": "Цена последней сделки"
+        }
+      },
+      "title": "Последняя котировка по инструменту"
+    },
+    "marketdataStreamError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Код ошибки"
+        },
+        "description": {
+          "type": "string",
+          "title": "Описание ошибки"
+        }
+      },
+      "title": "Ошибка стрим сервиса"
+    },
+    "marketdataStreamOrderBook": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/marketdataStreamOrderBookRow"
+          },
+          "title": "Уровни стакана"
+        }
+      },
+      "title": "Стакан по инструменту. Стрим"
+    },
+    "marketdataStreamOrderBookRow": {
+      "type": "object",
+      "properties": {
+        "price": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена"
+        },
+        "sellSize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер на продажу"
+        },
+        "buySize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер на покупку"
+        },
+        "action": {
+          "$ref": "#/definitions/marketdataStreamOrderBookRowAction",
+          "title": "Команда"
+        },
+        "mpid": {
+          "type": "string",
+          "title": "Идентификатор участника рынка"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        }
+      },
+      "title": "Информация об уровне в стакане (строке)"
+    },
+    "marketdataStreamOrderBookRowAction": {
+      "type": "string",
+      "enum": [
+        "ACTION_UNSPECIFIED",
+        "ACTION_REMOVE",
+        "ACTION_ADD",
+        "ACTION_UPDATE"
+      ],
+      "default": "ACTION_UNSPECIFIED",
+      "description": "- ACTION_UNSPECIFIED: Действие не указано\n - ACTION_REMOVE: Удалить\n - ACTION_ADD: Добавить\n - ACTION_UPDATE: Обновить",
+      "title": "Команда"
+    },
+    "marketdataSubscribeBarsResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "bars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/marketdataBar"
+          },
+          "title": "Агрегированная свеча"
+        }
+      },
+      "title": "Список агрегированных свеч. Стрим"
+    },
+    "marketdataSubscribeLatestTradesResponse": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "trades": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1marketdataTrade"
+          },
+          "title": "Список сделок"
+        }
+      },
+      "title": "Список последних сделок по инструменту. Стрим"
+    },
+    "marketdataSubscribeOrderBookResponse": {
+      "type": "object",
+      "properties": {
+        "orderBook": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/marketdataStreamOrderBook"
+          },
+          "title": "Список стакан стримов"
+        }
+      },
+      "title": "Стакан по инструменту. Стрим"
+    },
+    "marketdataSubscribeQuoteResponse": {
+      "type": "object",
+      "properties": {
+        "quote": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/marketdataQuote"
+          },
+          "title": "Список котировок"
+        },
+        "error": {
+          "$ref": "#/definitions/marketdataStreamError",
+          "title": "Ошибка стрим сервиса"
+        }
+      },
+      "title": "Котировки по инструменту. Стрим"
+    },
+    "marketdataTimeFrame": {
+      "type": "string",
+      "enum": [
+        "TIME_FRAME_UNSPECIFIED",
+        "TIME_FRAME_M1",
+        "TIME_FRAME_M5",
+        "TIME_FRAME_M15",
+        "TIME_FRAME_M30",
+        "TIME_FRAME_H1",
+        "TIME_FRAME_H2",
+        "TIME_FRAME_H4",
+        "TIME_FRAME_H8",
+        "TIME_FRAME_D",
+        "TIME_FRAME_W",
+        "TIME_FRAME_MN",
+        "TIME_FRAME_QR"
+      ],
+      "default": "TIME_FRAME_UNSPECIFIED",
+      "description": "- TIME_FRAME_UNSPECIFIED: Таймфрейм не указан\n - TIME_FRAME_M1: 1 минута. Глубина данных 7 дней.\n - TIME_FRAME_M5: 5 минут. Глубина данных 30 дней.\n - TIME_FRAME_M15: 15 минут. Глубина данных 30 дней.\n - TIME_FRAME_M30: 30 минут. Глубина данных 30 дней.\n - TIME_FRAME_H1: 1 час. Глубина данных 30 дней.\n - TIME_FRAME_H2: 2 часа. Глубина данных 30 дней.\n - TIME_FRAME_H4: 4 часа. Глубина данных 30 дней.\n - TIME_FRAME_H8: 8 часов. Глубина данных 30 дней.\n - TIME_FRAME_D: День. Глубина данных 365 дней.\n - TIME_FRAME_W: Неделя. Глубина данных 365*5 дней.\n - TIME_FRAME_MN: Месяц. Глубина данных 365*5 дней.\n - TIME_FRAME_QR: Квартал. Глубина данных 365*5 дней.",
+      "title": "Доступные таймфреймы для свечей"
+    },
+    "ordersLeg": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "quantity": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Количество"
+        },
+        "side": {
+          "$ref": "#/definitions/v1Side",
+          "title": "Сторона"
+        }
+      },
+      "title": "Лег"
+    },
+    "ordersOrder": {
+      "type": "object",
+      "properties": {
+        "accountId": {
+          "type": "string",
+          "title": "Идентификатор аккаунта"
+        },
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "quantity": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Количество в шт."
+        },
+        "side": {
+          "$ref": "#/definitions/v1Side",
+          "title": "Сторона (long или short)"
+        },
+        "type": {
+          "$ref": "#/definitions/ordersOrderType",
+          "title": "Тип заявки"
+        },
+        "timeInForce": {
+          "$ref": "#/definitions/ordersTimeInForce",
+          "title": "Срок действия заявки"
+        },
+        "limitPrice": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Необходимо для лимитной и стоп лимитной заявки"
+        },
+        "stopPrice": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Необходимо для стоп рыночной и стоп лимитной заявки"
+        },
+        "stopCondition": {
+          "$ref": "#/definitions/ordersStopCondition",
+          "title": "Необходимо для стоп рыночной и стоп лимитной заявки"
+        },
+        "legs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ordersLeg"
+          },
+          "title": "Необходимо для мульти лег заявки"
+        },
+        "clientOrderId": {
+          "type": "string",
+          "title": "Уникальный идентификатор заявки. Автоматически генерируется, если не отправлен. (максимум 20 символов)"
+        },
+        "validBefore": {
+          "$ref": "#/definitions/ordersValidBefore",
+          "title": "Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT"
+        }
+      },
+      "title": "Информация о заявке"
+    },
+    "ordersOrderState": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "title": "Идентификатор заявки"
+        },
+        "execId": {
+          "type": "string",
+          "title": "Идентификатор исполнения"
+        },
+        "status": {
+          "$ref": "#/definitions/ordersOrderStatus",
+          "title": "Статус заявки"
+        },
+        "order": {
+          "$ref": "#/definitions/ordersOrder",
+          "title": "Заявка"
+        },
+        "transactAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата и время выставления заявки"
+        },
+        "acceptAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата и время принятия заявки"
+        },
+        "withdrawAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата и время  отмены заявки"
+        }
+      },
+      "title": "Состояние заявки"
+    },
+    "ordersOrderStatus": {
+      "type": "string",
+      "enum": [
+        "ORDER_STATUS_UNSPECIFIED",
+        "ORDER_STATUS_NEW",
+        "ORDER_STATUS_PARTIALLY_FILLED",
+        "ORDER_STATUS_FILLED",
+        "ORDER_STATUS_DONE_FOR_DAY",
+        "ORDER_STATUS_CANCELED",
+        "ORDER_STATUS_REPLACED",
+        "ORDER_STATUS_PENDING_CANCEL",
+        "ORDER_STATUS_REJECTED",
+        "ORDER_STATUS_SUSPENDED",
+        "ORDER_STATUS_PENDING_NEW",
+        "ORDER_STATUS_EXPIRED",
+        "ORDER_STATUS_FAILED",
+        "ORDER_STATUS_FORWARDING",
+        "ORDER_STATUS_WAIT",
+        "ORDER_STATUS_DENIED_BY_BROKER",
+        "ORDER_STATUS_REJECTED_BY_EXCHANGE",
+        "ORDER_STATUS_WATCHING",
+        "ORDER_STATUS_EXECUTED",
+        "ORDER_STATUS_DISABLED",
+        "ORDER_STATUS_LINK_WAIT",
+        "ORDER_STATUS_SL_GUARD_TIME",
+        "ORDER_STATUS_SL_EXECUTED",
+        "ORDER_STATUS_SL_FORWARDING",
+        "ORDER_STATUS_TP_GUARD_TIME",
+        "ORDER_STATUS_TP_EXECUTED",
+        "ORDER_STATUS_TP_CORRECTION",
+        "ORDER_STATUS_TP_FORWARDING",
+        "ORDER_STATUS_TP_CORR_GUARD_TIME"
+      ],
+      "default": "ORDER_STATUS_UNSPECIFIED",
+      "description": "- ORDER_STATUS_UNSPECIFIED: Неопределенное значение\n - ORDER_STATUS_NEW: Новая заявка\n - ORDER_STATUS_PARTIALLY_FILLED: Частично исполненная\n - ORDER_STATUS_FILLED: Исполненная\n - ORDER_STATUS_DONE_FOR_DAY: Действует в течение дня\n - ORDER_STATUS_CANCELED: Отменена\n - ORDER_STATUS_REPLACED: Заменена на другую\n - ORDER_STATUS_PENDING_CANCEL: Ожидает отмены\n - ORDER_STATUS_REJECTED: Отклонена\n - ORDER_STATUS_SUSPENDED: Приостановлена\n - ORDER_STATUS_PENDING_NEW: В ожидании новой\n - ORDER_STATUS_EXPIRED: Истекла\n - ORDER_STATUS_FAILED: Ошибка\n - ORDER_STATUS_FORWARDING: Пересылка\n - ORDER_STATUS_WAIT: Ожидает\n - ORDER_STATUS_DENIED_BY_BROKER: Отклонено брокером\n - ORDER_STATUS_REJECTED_BY_EXCHANGE: Отклонено биржей\n - ORDER_STATUS_WATCHING: Наблюдение\n - ORDER_STATUS_EXECUTED: Исполнена\n - ORDER_STATUS_DISABLED: Отключена\n - ORDER_STATUS_LINK_WAIT: Ожидание ссылки\n - ORDER_STATUS_SL_GUARD_TIME: Защитное время SL\n - ORDER_STATUS_SL_EXECUTED: Исполнена по SL\n - ORDER_STATUS_SL_FORWARDING: Пересылка SL\n - ORDER_STATUS_TP_GUARD_TIME: Защитное время TP\n - ORDER_STATUS_TP_EXECUTED: Исполнена по TP\n - ORDER_STATUS_TP_CORRECTION: Коррекция TP\n - ORDER_STATUS_TP_FORWARDING: Пересылка TP\n - ORDER_STATUS_TP_CORR_GUARD_TIME: Коррекция TP в защитное время",
+      "title": "Статус заявки"
+    },
+    "ordersOrderTradeRequestAction": {
+      "type": "string",
+      "enum": [
+        "ACTION_SUBSCRIBE",
+        "ACTION_UNSUBSCRIBE"
+      ],
+      "default": "ACTION_SUBSCRIBE",
+      "description": "- ACTION_SUBSCRIBE: Подписаться\n - ACTION_UNSUBSCRIBE: Отписаться",
+      "title": "Доступные действия"
+    },
+    "ordersOrderTradeResponse": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ordersOrderState"
+          },
+          "title": "Заявки"
+        },
+        "trades": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AccountTrade"
+          },
+          "title": "Сделки"
+        }
+      },
+      "title": "Список собственных заявок и сделок"
+    },
+    "ordersOrderType": {
+      "type": "string",
+      "enum": [
+        "ORDER_TYPE_UNSPECIFIED",
+        "ORDER_TYPE_MARKET",
+        "ORDER_TYPE_LIMIT",
+        "ORDER_TYPE_STOP",
+        "ORDER_TYPE_STOP_LIMIT",
+        "ORDER_TYPE_MULTI_LEG"
+      ],
+      "default": "ORDER_TYPE_UNSPECIFIED",
+      "description": "- ORDER_TYPE_UNSPECIFIED: Значение не указано\n - ORDER_TYPE_MARKET: Рыночная\n - ORDER_TYPE_LIMIT: Лимитная\n - ORDER_TYPE_STOP: Стоп заявка рыночная\n - ORDER_TYPE_STOP_LIMIT: Стоп заявка лимитная\n - ORDER_TYPE_MULTI_LEG: Мульти лег заявка",
+      "title": "Тип заявки"
+    },
+    "ordersOrdersResponse": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ordersOrderState"
+          },
+          "title": "Заявки"
+        }
+      },
+      "title": "Список торговых заявок"
+    },
+    "ordersStopCondition": {
+      "type": "string",
+      "enum": [
+        "STOP_CONDITION_UNSPECIFIED",
+        "STOP_CONDITION_LAST_UP",
+        "STOP_CONDITION_LAST_DOWN"
+      ],
+      "default": "STOP_CONDITION_UNSPECIFIED",
+      "description": "- STOP_CONDITION_UNSPECIFIED: Значение не указано\n - STOP_CONDITION_LAST_UP: Цена срабатывания больше текущей цены\n - STOP_CONDITION_LAST_DOWN: Цена срабатывания меньше текущей цены",
+      "title": "Условие срабатывания стоп заявки"
+    },
+    "ordersTimeInForce": {
+      "type": "string",
+      "enum": [
+        "TIME_IN_FORCE_UNSPECIFIED",
+        "TIME_IN_FORCE_DAY",
+        "TIME_IN_FORCE_GOOD_TILL_CANCEL",
+        "TIME_IN_FORCE_GOOD_TILL_CROSSING",
+        "TIME_IN_FORCE_EXT",
+        "TIME_IN_FORCE_ON_OPEN",
+        "TIME_IN_FORCE_ON_CLOSE",
+        "TIME_IN_FORCE_IOC",
+        "TIME_IN_FORCE_FOK"
+      ],
+      "default": "TIME_IN_FORCE_UNSPECIFIED",
+      "description": "- TIME_IN_FORCE_UNSPECIFIED: Значение не указано\n - TIME_IN_FORCE_DAY: До конца дня\n - TIME_IN_FORCE_GOOD_TILL_CANCEL: Действителен до отмены\n - TIME_IN_FORCE_GOOD_TILL_CROSSING: Действителен до пересечения\n - TIME_IN_FORCE_EXT: Внебиржевая торговля\n - TIME_IN_FORCE_ON_OPEN: На открытии биржи\n - TIME_IN_FORCE_ON_CLOSE: На закрытии биржи\n - TIME_IN_FORCE_IOC: Исполнить немедленно или отменить\n - TIME_IN_FORCE_FOK: Исполнить полностью или отменить",
+      "title": "Срок действия заявки"
+    },
+    "ordersValidBefore": {
+      "type": "string",
+      "enum": [
+        "VALID_BEFORE_UNSPECIFIED",
+        "VALID_BEFORE_END_OF_DAY",
+        "VALID_BEFORE_GOOD_TILL_CANCEL",
+        "VALID_BEFORE_GOOD_TILL_DATE"
+      ],
+      "default": "VALID_BEFORE_UNSPECIFIED",
+      "description": "- VALID_BEFORE_UNSPECIFIED: Значение не указано\n - VALID_BEFORE_END_OF_DAY: До конца торгового дня\n - VALID_BEFORE_GOOD_TILL_CANCEL: До отмены\n - VALID_BEFORE_GOOD_TILL_DATE: До указанной даты-времени. Данный тип на текущий момент не поддерживается при выставлении заявки",
+      "title": "Срок действия условной заявки"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "typeDate": {
+      "type": "object",
+      "properties": {
+        "year": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Year of the date. Must be from 1 to 9999, or 0 to specify a date without\na year."
+        },
+        "month": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Month of a year. Must be from 1 to 12, or 0 to specify a year without a\nmonth and day."
+        },
+        "day": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Day of a month. Must be from 1 to 31 and valid for the year and month, or 0\nto specify a year by itself or a year and month where the day isn't\nsignificant."
+        }
+      },
+      "description": "* A full date, with non-zero year, month, and day values\n* A month and day value, with a zero year, such as an anniversary\n* A year on its own, with zero month and day values\n* A year and month value, with a zero day, such as a credit card expiration\ndate\n\nRelated types are [google.type.TimeOfDay][google.type.TimeOfDay] and\n`google.protobuf.Timestamp`.",
+      "title": "Represents a whole or partial calendar date, such as a birthday. The time of\nday and time zone are either specified elsewhere or are insignificant. The\ndate is relative to the Gregorian Calendar. This can represent one of the\nfollowing:"
+    },
+    "typeDecimal": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "The decimal value, as a string.\n\nThe string representation consists of an optional sign, `+` (`U+002B`)\nor `-` (`U+002D`), followed by a sequence of zero or more decimal digits\n(\"the integer\"), optionally followed by a fraction, optionally followed\nby an exponent.\n\nThe fraction consists of a decimal point followed by zero or more decimal\ndigits. The string must contain at least one digit in either the integer\nor the fraction. The number formed by the sign, the integer and the\nfraction is referred to as the significand.\n\nThe exponent consists of the character `e` (`U+0065`) or `E` (`U+0045`)\nfollowed by one or more decimal digits.\n\nServices **should** normalize decimal values before storing them by:\n\n  - Removing an explicitly-provided `+` sign (`+2.5` -\u003e `2.5`).\n  - Replacing a zero-length integer value with `0` (`.5` -\u003e `0.5`).\n  - Coercing the exponent character to lower-case (`2.5E8` -\u003e `2.5e8`).\n  - Removing an explicitly-provided zero exponent (`2.5e0` -\u003e `2.5`).\n\nServices **may** perform additional normalization based on its own needs\nand the internal decimal implementation selected, such as shifting the\ndecimal point and exponent value together (example: `2.5e-1` \u003c-\u003e `0.25`).\nAdditionally, services **may** preserve trailing zeroes in the fraction\nto indicate increased precision, but are not required to do so.\n\nNote that only the `.` character is supported to divide the integer\nand the fraction; `,` **should not** be supported regardless of locale.\nAdditionally, thousand separators **should not** be supported. If a\nservice does support them, values **must** be normalized.\n\nThe ENBF grammar is:\n\n    DecimalString =\n      [Sign] Significand [Exponent];\n\n    Sign = '+' | '-';\n\n    Significand =\n      Digits ['.'] [Digits] | [Digits] '.' Digits;\n\n    Exponent = ('e' | 'E') [Sign] Digits;\n\n    Digits = { '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' };\n\nServices **should** clearly document the range of supported values, the\nmaximum supported precision (total number of digits), and, if applicable,\nthe scale (number of digits after the decimal point), as well as how it\nbehaves when receiving out-of-bounds values.\n\nServices **may** choose to accept values passed as input even when the\nvalue has a higher precision or scale than the service supports, and\n**should** round the value to fit the supported scale. Alternatively, the\nservice **may** error with `400 Bad Request` (`INVALID_ARGUMENT` in gRPC)\nif precision would be lost.\n\nServices **should** error with `400 Bad Request` (`INVALID_ARGUMENT` in\ngRPC) if the service receives a value outside of the supported range."
+        }
+      },
+      "description": "A representation of a decimal value, such as 2.5. Clients may convert values\ninto language-native decimal formats, such as Java's [BigDecimal][] or\nPython's [decimal.Decimal][].\n\n[BigDecimal]:\nhttps://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/math/BigDecimal.html\n[decimal.Decimal]: https://docs.python.org/3/library/decimal.html"
+    },
+    "typeInterval": {
+      "type": "object",
+      "properties": {
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional. Inclusive start of the interval.\n\nIf specified, a Timestamp matching this interval will have to be the same\nor after the start."
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend."
+        }
+      },
+      "description": "Represents a time interval, encoded as a Timestamp start (inclusive) and a\nTimestamp end (exclusive).\n\nThe start must be less than or equal to the end.\nWhen the start equals the end, the interval is empty (matches no time).\nWhen both start and end are unspecified, the interval matches any time."
+    },
+    "typeMoney": {
+      "type": "object",
+      "properties": {
+        "currencyCode": {
+          "type": "string",
+          "description": "The three-letter currency code defined in ISO 4217."
+        },
+        "units": {
+          "type": "string",
+          "format": "int64",
+          "description": "The whole units of the amount.\nFor example if `currencyCode` is `\"USD\"`, then 1 unit is one US dollar."
+        },
+        "nanos": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of nano (10^-9) units of the amount.\nThe value must be between -999,999,999 and +999,999,999 inclusive.\nIf `units` is positive, `nanos` must be positive or zero.\nIf `units` is zero, `nanos` can be positive, zero, or negative.\nIf `units` is negative, `nanos` must be negative or zero.\nFor example $-1.75 is represented as `units`=-1 and `nanos`=-750,000,000."
+        }
+      },
+      "description": "Represents an amount of money with its currency type."
+    },
+    "v1AccountTrade": {
+      "type": "object",
+      "properties": {
+        "tradeId": {
+          "type": "string",
+          "title": "Идентификатор сделки"
+        },
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "price": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена исполнения"
+        },
+        "size": {
+          "$ref": "#/definitions/typeDecimal",
+          "description": "Размер в шт."
+        },
+        "side": {
+          "$ref": "#/definitions/v1Side",
+          "title": "Сторона сделки (long или short)"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        },
+        "orderId": {
+          "type": "string",
+          "title": "Идентификатор заявки"
+        },
+        "accountId": {
+          "type": "string",
+          "title": "Идентификатор аккаунта"
+        }
+      },
+      "title": "Информация о сделке"
+    },
+    "v1Side": {
+      "type": "string",
+      "enum": [
+        "SIDE_UNSPECIFIED",
+        "SIDE_BUY",
+        "SIDE_SELL"
+      ],
+      "default": "SIDE_UNSPECIFIED",
+      "description": "- SIDE_UNSPECIFIED: Сторона сделки не указана\n - SIDE_BUY: Покупка\n - SIDE_SELL: Продажа",
+      "title": "Сторона сделки"
+    },
+    "v1assetsOption": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "title": "Символ инструмента"
+        },
+        "type": {
+          "$ref": "#/definitions/assetsOptionType",
+          "title": "Тип инструмента"
+        },
+        "contractSize": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Лот, количество базового актива в инструменте"
+        },
+        "tradeFirstDay": {
+          "$ref": "#/definitions/typeDate",
+          "title": "Дата старта торговли"
+        },
+        "tradeLastDay": {
+          "$ref": "#/definitions/typeDate",
+          "title": "Дата окончания торговли"
+        },
+        "strike": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена исполнения опциона"
+        },
+        "multiplier": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Множитель опциона"
+        },
+        "expirationFirstDay": {
+          "$ref": "#/definitions/typeDate",
+          "title": "Дата начала экспирации"
+        },
+        "expirationLastDay": {
+          "$ref": "#/definitions/typeDate",
+          "title": "Дата окончания экспирации"
+        }
+      },
+      "title": "Информация об опционе"
+    },
+    "v1marketdataOrderBook": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/marketdataOrderBookRow"
+          },
+          "title": "Уровни стакана"
+        }
+      },
+      "title": "Информация о стакане"
+    },
+    "v1marketdataTrade": {
+      "type": "object",
+      "properties": {
+        "tradeId": {
+          "type": "string",
+          "title": "Идентификатор сделки, отправленный биржей"
+        },
+        "mpid": {
+          "type": "string",
+          "title": "Идентификатор участника рынка"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Метка времени"
+        },
+        "price": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Цена сделки"
+        },
+        "size": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Размер сделки"
+        },
+        "side": {
+          "$ref": "#/definitions/v1Side",
+          "title": "Сторона сделки (buy или sell)"
+        }
+      },
+      "title": "Информация о сделке"
+    }
+  }
+}

@@ -9,9 +9,59 @@ import "google/type/interval.proto";
 import "google/type/money.proto";
 import "grpc/tradeapi/v1/side.proto";
 import "grpc/tradeapi/v1/trade.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "trade_api/v1/accounts/accounts_service";
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/accounts";
 option java_multiple_files = true;
+option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: HTTP;
+  responses: {
+    key: "default";
+    value: {
+      schema: {
+        json_schema:{
+          ref: "googletypeStatus"
+        }
+      }
+    }
+  }
+  responses: {
+    key: "500";
+    value: {
+      description: "Внутренняя ошибка сервиса. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "503";
+    value: {
+      description: "Сервис на данный момент не доступен. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "429";
+    value: {
+      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+    }
+  }
+  responses: {
+    key: "401"
+    value: {
+      description: "Срок действия токена истек или токен недействителен"
+    }
+  }
+  responses: {
+    key: "504"
+    value: {
+      description: "Крайний срок истек до завершения операции"
+    }
+  }
+  responses: {
+    key: "404";
+    value: {
+      description: "Счёт не был найден в токене"
+    },
+  }
+};
 
 // Сервис аккаунтов
 service AccountsService {
@@ -37,6 +87,15 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/trades"
     };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан интервал"
+        },
+      }
+    };
   };
 
   // Получение списка транзакций аккаунта
@@ -50,6 +109,15 @@ service AccountsService {
   rpc Transactions(TransactionsRequest) returns (TransactionsResponse) {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/transactions"
+    };
+    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      schemes: HTTP;
+      responses: {
+        key: "400";
+        value: {
+          description: "Неверно передан интервал"
+        },
+      }
     };
   };
 }
