@@ -18,6 +18,9 @@
       "name": "MarketDataService"
     },
     {
+      "name": "UsageMetricsService"
+    },
+    {
       "name": "OrdersService"
     }
   ],
@@ -851,6 +854,37 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "root",
+            "description": "Опциональный параметр. Актуален для опционов на фьючерсы, по типу (недельные, месячные).\nЕсли параметр не указан, будут возвращены опционы с ближайшей датой экспирации.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "expirationDate.year",
+            "description": "Year of the date. Must be from 1 to 9999, or 0 to specify a date without\na year.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "expirationDate.month",
+            "description": "Month of a year. Must be from 1 to 12, or 0 to specify a year without a\nmonth and day.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "expirationDate.day",
+            "description": "Day of a month. Must be from 1 to 31 and valid for the year and month, or 0\nto specify a year by itself or a year and month where the day isn't\nsignificant.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -1288,9 +1322,81 @@
           "AuthService"
         ]
       }
+    },
+    "/v1/usage": {
+      "get": {
+        "summary": "Получение текущих метрик использования для пользователя\nПример HTTP запроса:\nGET /v1/usage\nAuthorization: \u003ctoken\u003e",
+        "operationId": "UsageMetricsService_GetUsageMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metricsGetUsageMetricsResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "UsageMetricsService"
+        ]
+      }
     }
   },
   "definitions": {
+    "GetUsageMetricsResponseQuotaUsage": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Название метода"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64",
+          "description": "Общий лимит по данной квоте."
+        },
+        "remaining": {
+          "type": "string",
+          "format": "int64",
+          "description": "Сколько осталось доступных единиц в текущем окне."
+        },
+        "resetTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Время, когда счетчик квоты будет сброшен (начало нового окна)."
+        }
+      },
+      "title": "Квота"
+    },
     "MDPermissionQuoteLevel": {
       "type": "string",
       "enum": [
@@ -1366,6 +1472,10 @@
         "validBefore": {
           "$ref": "#/definitions/ordersValidBefore",
           "title": "Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT"
+        },
+        "comment": {
+          "type": "string",
+          "title": "Метка заявки. (максимум 128 символов)"
         }
       },
       "title": "Информация о заявке"
@@ -1467,6 +1577,21 @@
         "portfolioForts": {
           "$ref": "#/definitions/accountsFORTS",
           "description": "Тип портфеля для торговли на срочном рынке Московской Биржи."
+        },
+        "openAccountDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата открытия счета"
+        },
+        "firstTradeDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата первой торговой транзакции"
+        },
+        "firstNonTradeDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Дата первой неторговой транзакции"
         }
       },
       "title": "Информация о конкретном аккаунте"
@@ -1576,6 +1701,10 @@
         "transactionName": {
           "type": "string",
           "title": "Наименование транзакции"
+        },
+        "changeQty": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Изменение в штуках, только для трансфера бумаг (для TransactionCategory = TRANSFER)"
         }
       },
       "title": "Информация о транзакции"
@@ -1712,7 +1841,7 @@
         },
         "tradeable": {
           "type": "boolean",
-          "title": "Доступны ли торговые операции"
+          "description": "Доступны ли торговые операции\nСтарое поле, помечено как устаревшее.\nКлиентам следует перейти на is_tradeable."
         },
         "longable": {
           "$ref": "#/definitions/assetsLongable",
@@ -1745,6 +1874,10 @@
         "shortInitialMargin": {
           "$ref": "#/definitions/typeMoney",
           "title": "Начальные требования, сколько на счету должно быть свободных денежных средств, чтобы открыть шорт позицию, для FORTS счетов равен биржевому ГО"
+        },
+        "isTradable": {
+          "type": "boolean",
+          "description": "Доступны ли торговые операции\nНовое поле. Позволяет различать false и \"не установлено\"."
         }
       },
       "title": "Торговые параметры инструмента"
@@ -1797,6 +1930,10 @@
         "expirationDate": {
           "$ref": "#/definitions/typeDate",
           "title": "Дата экспирации фьючерса"
+        },
+        "quoteCurrency": {
+          "type": "string",
+          "title": "Валюта котировки, может не совпадать с валютой режима торгов инструмента"
         }
       },
       "title": "Список информации по конкретному инструменту"
@@ -2439,6 +2576,20 @@
       "description": "- TIME_FRAME_UNSPECIFIED: Таймфрейм не указан\n - TIME_FRAME_M1: 1 минута. Глубина данных 7 дней.\n - TIME_FRAME_M5: 5 минут. Глубина данных 30 дней.\n - TIME_FRAME_M15: 15 минут. Глубина данных 30 дней.\n - TIME_FRAME_M30: 30 минут. Глубина данных 30 дней.\n - TIME_FRAME_H1: 1 час. Глубина данных 30 дней.\n - TIME_FRAME_H2: 2 часа. Глубина данных 30 дней.\n - TIME_FRAME_H4: 4 часа. Глубина данных 30 дней.\n - TIME_FRAME_H8: 8 часов. Глубина данных 30 дней.\n - TIME_FRAME_D: День. Глубина данных 365 дней.\n - TIME_FRAME_W: Неделя. Глубина данных 365*5 дней.\n - TIME_FRAME_MN: Месяц. Глубина данных 365*5 дней.\n - TIME_FRAME_QR: Квартал. Глубина данных 365*5 дней.",
       "title": "Доступные таймфреймы для свечей"
     },
+    "metricsGetUsageMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "quotas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/GetUsageMetricsResponseQuotaUsage"
+          },
+          "description": "Список текущих квот и их использование."
+        }
+      },
+      "title": "Информация о текущих метриках использования"
+    },
     "ordersLeg": {
       "type": "object",
       "properties": {
@@ -2511,6 +2662,10 @@
         "validBefore": {
           "$ref": "#/definitions/ordersValidBefore",
           "title": "Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT"
+        },
+        "comment": {
+          "type": "string",
+          "title": "Метка заявки. (максимум 128 символов)"
         }
       },
       "title": "Информация о заявке"
@@ -2660,6 +2815,34 @@
       "description": "- STOP_CONDITION_UNSPECIFIED: Значение не указано\n - STOP_CONDITION_LAST_UP: Цена срабатывания больше текущей цены\n - STOP_CONDITION_LAST_DOWN: Цена срабатывания меньше текущей цены",
       "title": "Условие срабатывания стоп заявки"
     },
+    "ordersSubscribeOrdersResponse": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ordersOrderState"
+          },
+          "title": "Заявки"
+        }
+      },
+      "title": "Список собственных заявок"
+    },
+    "ordersSubscribeTradesResponse": {
+      "type": "object",
+      "properties": {
+        "trades": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AccountTrade"
+          },
+          "title": "Сделки"
+        }
+      },
+      "title": "Список собственных сделок"
+    },
     "ordersTimeInForce": {
       "type": "string",
       "enum": [
@@ -2801,6 +2984,10 @@
         "accountId": {
           "type": "string",
           "title": "Идентификатор аккаунта"
+        },
+        "comment": {
+          "type": "string",
+          "title": "Метка заявки. (максимум 128 символов)"
         }
       },
       "title": "Информация о сделке"
