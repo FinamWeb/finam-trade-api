@@ -1133,9 +1133,15 @@ type OrderState struct {
 	// Дата и время принятия заявки
 	AcceptAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=accept_at,json=acceptAt,proto3" json:"accept_at,omitempty"`
 	// Дата и время  отмены заявки
-	WithdrawAt    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=withdraw_at,json=withdrawAt,proto3" json:"withdraw_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	WithdrawAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=withdraw_at,json=withdrawAt,proto3" json:"withdraw_at,omitempty"`
+	// Начальный объем
+	InitialQuantity *decimal.Decimal `protobuf:"bytes,8,opt,name=initial_quantity,json=initialQuantity,proto3" json:"initial_quantity,omitempty"`
+	// Исполненный объем
+	ExecutedQuantity *decimal.Decimal `protobuf:"bytes,9,opt,name=executed_quantity,json=executedQuantity,proto3" json:"executed_quantity,omitempty"`
+	// Оставшийся объем
+	RemainingQuantity *decimal.Decimal `protobuf:"bytes,10,opt,name=remaining_quantity,json=remainingQuantity,proto3" json:"remaining_quantity,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *OrderState) Reset() {
@@ -1213,6 +1219,27 @@ func (x *OrderState) GetAcceptAt() *timestamppb.Timestamp {
 func (x *OrderState) GetWithdrawAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.WithdrawAt
+	}
+	return nil
+}
+
+func (x *OrderState) GetInitialQuantity() *decimal.Decimal {
+	if x != nil {
+		return x.InitialQuantity
+	}
+	return nil
+}
+
+func (x *OrderState) GetExecutedQuantity() *decimal.Decimal {
+	if x != nil {
+		return x.ExecutedQuantity
+	}
+	return nil
+}
+
+func (x *OrderState) GetRemainingQuantity() *decimal.Decimal {
+	if x != nil {
+		return x.RemainingQuantity
 	}
 	return nil
 }
@@ -1419,7 +1446,7 @@ const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
 	"\x03Leg\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x120\n" +
 	"\bquantity\x18\x02 \x01(\v2\x14.google.type.DecimalR\bquantity\x12*\n" +
-	"\x04side\x18\x03 \x01(\x0e2\x16.grpc.tradeapi.v1.SideR\x04side\"\xe7\x02\n" +
+	"\x04side\x18\x03 \x01(\x0e2\x16.grpc.tradeapi.v1.SideR\x04side\"\xb0\x04\n" +
 	"\n" +
 	"OrderState\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x17\n" +
@@ -1430,7 +1457,11 @@ const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
 	"transactAt\x127\n" +
 	"\taccept_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\bacceptAt\x12;\n" +
 	"\vwithdraw_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"withdrawAt\".\n" +
+	"withdrawAt\x12?\n" +
+	"\x10initial_quantity\x18\b \x01(\v2\x14.google.type.DecimalR\x0finitialQuantity\x12A\n" +
+	"\x11executed_quantity\x18\t \x01(\v2\x14.google.type.DecimalR\x10executedQuantity\x12C\n" +
+	"\x12remaining_quantity\x18\n" +
+	" \x01(\v2\x14.google.type.DecimalR\x11remainingQuantity\".\n" +
 	"\rOrdersRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\"M\n" +
@@ -1594,26 +1625,29 @@ var file_grpc_tradeapi_v1_orders_orders_service_proto_depIdxs = []int32{
 	23, // 19: grpc.tradeapi.v1.orders.OrderState.transact_at:type_name -> google.protobuf.Timestamp
 	23, // 20: grpc.tradeapi.v1.orders.OrderState.accept_at:type_name -> google.protobuf.Timestamp
 	23, // 21: grpc.tradeapi.v1.orders.OrderState.withdraw_at:type_name -> google.protobuf.Timestamp
-	16, // 22: grpc.tradeapi.v1.orders.OrdersResponse.orders:type_name -> grpc.tradeapi.v1.orders.OrderState
-	14, // 23: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:input_type -> grpc.tradeapi.v1.orders.Order
-	19, // 24: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:input_type -> grpc.tradeapi.v1.orders.CancelOrderRequest
-	17, // 25: grpc.tradeapi.v1.orders.OrdersService.GetOrders:input_type -> grpc.tradeapi.v1.orders.OrdersRequest
-	13, // 26: grpc.tradeapi.v1.orders.OrdersService.GetOrder:input_type -> grpc.tradeapi.v1.orders.GetOrderRequest
-	7,  // 27: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:input_type -> grpc.tradeapi.v1.orders.OrderTradeRequest
-	9,  // 28: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:input_type -> grpc.tradeapi.v1.orders.SubscribeOrdersRequest
-	11, // 29: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:input_type -> grpc.tradeapi.v1.orders.SubscribeTradesRequest
-	16, // 30: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
-	16, // 31: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
-	18, // 32: grpc.tradeapi.v1.orders.OrdersService.GetOrders:output_type -> grpc.tradeapi.v1.orders.OrdersResponse
-	16, // 33: grpc.tradeapi.v1.orders.OrdersService.GetOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
-	8,  // 34: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:output_type -> grpc.tradeapi.v1.orders.OrderTradeResponse
-	10, // 35: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:output_type -> grpc.tradeapi.v1.orders.SubscribeOrdersResponse
-	12, // 36: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:output_type -> grpc.tradeapi.v1.orders.SubscribeTradesResponse
-	30, // [30:37] is the sub-list for method output_type
-	23, // [23:30] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	21, // 22: grpc.tradeapi.v1.orders.OrderState.initial_quantity:type_name -> google.type.Decimal
+	21, // 23: grpc.tradeapi.v1.orders.OrderState.executed_quantity:type_name -> google.type.Decimal
+	21, // 24: grpc.tradeapi.v1.orders.OrderState.remaining_quantity:type_name -> google.type.Decimal
+	16, // 25: grpc.tradeapi.v1.orders.OrdersResponse.orders:type_name -> grpc.tradeapi.v1.orders.OrderState
+	14, // 26: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:input_type -> grpc.tradeapi.v1.orders.Order
+	19, // 27: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:input_type -> grpc.tradeapi.v1.orders.CancelOrderRequest
+	17, // 28: grpc.tradeapi.v1.orders.OrdersService.GetOrders:input_type -> grpc.tradeapi.v1.orders.OrdersRequest
+	13, // 29: grpc.tradeapi.v1.orders.OrdersService.GetOrder:input_type -> grpc.tradeapi.v1.orders.GetOrderRequest
+	7,  // 30: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:input_type -> grpc.tradeapi.v1.orders.OrderTradeRequest
+	9,  // 31: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:input_type -> grpc.tradeapi.v1.orders.SubscribeOrdersRequest
+	11, // 32: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:input_type -> grpc.tradeapi.v1.orders.SubscribeTradesRequest
+	16, // 33: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
+	16, // 34: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
+	18, // 35: grpc.tradeapi.v1.orders.OrdersService.GetOrders:output_type -> grpc.tradeapi.v1.orders.OrdersResponse
+	16, // 36: grpc.tradeapi.v1.orders.OrdersService.GetOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
+	8,  // 37: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:output_type -> grpc.tradeapi.v1.orders.OrderTradeResponse
+	10, // 38: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:output_type -> grpc.tradeapi.v1.orders.SubscribeOrdersResponse
+	12, // 39: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:output_type -> grpc.tradeapi.v1.orders.SubscribeTradesResponse
+	33, // [33:40] is the sub-list for method output_type
+	26, // [26:33] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_grpc_tradeapi_v1_orders_orders_service_proto_init() }

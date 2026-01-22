@@ -1878,6 +1878,10 @@
         "isTradable": {
           "type": "boolean",
           "description": "Доступны ли торговые операции\nНовое поле. Позволяет различать false и \"не установлено\"."
+        },
+        "priceType": {
+          "$ref": "#/definitions/assetsPriceType",
+          "title": "Допустимая цена. Помогает определить можно ли выставлять ордера с отрицательной ценой для финансового инструмента"
         }
       },
       "title": "Торговые параметры инструмента"
@@ -1992,6 +1996,18 @@
         }
       },
       "title": "Информация о цепочке опционов"
+    },
+    "assetsPriceType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "POSITIVE",
+        "NON_NEGATIVE",
+        "ANY"
+      ],
+      "default": "UNKNOWN",
+      "description": "- UNKNOWN: Неизвестно\n - POSITIVE: Положительная. Больше нуля\n - NON_NEGATIVE: Неотрицательная. Больше или равна нулю\n - ANY: Любая",
+      "title": "Допустимая цена"
     },
     "assetsScheduleResponse": {
       "type": "object",
@@ -2703,6 +2719,18 @@
           "type": "string",
           "format": "date-time",
           "title": "Дата и время  отмены заявки"
+        },
+        "initialQuantity": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Начальный объем"
+        },
+        "executedQuantity": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Исполненный объем"
+        },
+        "remainingQuantity": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Оставшийся объем"
         }
       },
       "title": "Состояние заявки"
