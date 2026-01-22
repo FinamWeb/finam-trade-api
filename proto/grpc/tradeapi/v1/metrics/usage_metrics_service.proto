@@ -4,9 +4,53 @@ package grpc.tradeapi.v1.metrics;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "trade_api/v1/metrics/usage_metrics_service";
 option java_multiple_files = true;
+option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: HTTP;
+  responses: {
+    key: "default";
+    value: {
+      schema: {
+        json_schema:{
+          ref: "googletypeStatus"
+        }
+      }
+    }
+  }
+  responses: {
+    key: "500";
+    value: {
+      description: "Внутренняя ошибка сервиса. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "503";
+    value: {
+      description: "Сервис на данный момент не доступен. Попробуйте позже"
+    };
+  }
+  responses: {
+    key: "429";
+    value: {
+      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+    }
+  }
+  responses: {
+    key: "401"
+    value: {
+      description: "Срок действия токена истек или токен недействителен"
+    }
+  }
+  responses: {
+    key: "504"
+    value: {
+      description: "Крайний срок истек до завершения операции"
+    }
+  }
+};
 
 // Сервис для получения метрик использования TradeAPI.
 // Позволяет клиентам отслеживать свою активность, включая информацию о текущих квотах и лимитах,
