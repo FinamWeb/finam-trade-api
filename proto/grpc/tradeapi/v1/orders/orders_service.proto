@@ -341,9 +341,9 @@ enum OrderStatus {
   ORDER_STATUS_PARTIALLY_FILLED = 2;
   // Исполненная
   ORDER_STATUS_FILLED = 3;
-  // Действует в течение дня 
+  // Действует в течение дня
   ORDER_STATUS_DONE_FOR_DAY = 4;
-  // Отменена 
+  // Отменена
   ORDER_STATUS_CANCELED = 5;
   // Заменена на другую
   ORDER_STATUS_REPLACED = 6;
@@ -409,6 +409,12 @@ message OrderState {
   google.protobuf.Timestamp accept_at = 6;
   // Дата и время  отмены заявки
   google.protobuf.Timestamp withdraw_at = 7;
+  // Начальный объем
+  google.type.Decimal initial_quantity = 8;
+  // Исполненный объем
+  google.type.Decimal executed_quantity = 9;
+  // Оставшийся объем
+  google.type.Decimal remaining_quantity = 10;
 }
 
 // Запрос получения списка торговых заявок
