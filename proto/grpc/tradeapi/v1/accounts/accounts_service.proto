@@ -120,6 +120,9 @@ service AccountsService {
       }
     };
   };
+
+  // Подписка на информацию по аккаунту. Стрим метод
+  rpc SubscribeAccount(GetAccountRequest) returns (stream GetAccountResponse);
 }
 
 // Запрос получения информации по конкретному аккаунту
