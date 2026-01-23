@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AccountsService_GetAccount_FullMethodName   = "/grpc.tradeapi.v1.accounts.AccountsService/GetAccount"
-	AccountsService_Trades_FullMethodName       = "/grpc.tradeapi.v1.accounts.AccountsService/Trades"
-	AccountsService_Transactions_FullMethodName = "/grpc.tradeapi.v1.accounts.AccountsService/Transactions"
+	AccountsService_GetAccount_FullMethodName       = "/grpc.tradeapi.v1.accounts.AccountsService/GetAccount"
+	AccountsService_Trades_FullMethodName           = "/grpc.tradeapi.v1.accounts.AccountsService/Trades"
+	AccountsService_Transactions_FullMethodName     = "/grpc.tradeapi.v1.accounts.AccountsService/Transactions"
+	AccountsService_SubscribeAccount_FullMethodName = "/grpc.tradeapi.v1.accounts.AccountsService/SubscribeAccount"
 )
 
 // AccountsServiceClient is the client API for AccountsService service.
@@ -53,6 +54,8 @@ type AccountsServiceClient interface {
 	// - account_id - передается в URL пути
 	// - limit и interval - передаются как query-параметры
 	Transactions(ctx context.Context, in *TransactionsRequest, opts ...grpc.CallOption) (*TransactionsResponse, error)
+	// Подписка на информацию по аккаунту. Стрим метод
+	SubscribeAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetAccountResponse], error)
 }
 
 type accountsServiceClient struct {
@@ -93,6 +96,25 @@ func (c *accountsServiceClient) Transactions(ctx context.Context, in *Transactio
 	return out, nil
 }
 
+func (c *accountsServiceClient) SubscribeAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetAccountResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AccountsService_ServiceDesc.Streams[0], AccountsService_SubscribeAccount_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetAccountRequest, GetAccountResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AccountsService_SubscribeAccountClient = grpc.ServerStreamingClient[GetAccountResponse]
+
 // AccountsServiceServer is the server API for AccountsService service.
 // All implementations must embed UnimplementedAccountsServiceServer
 // for forward compatibility.
@@ -122,6 +144,8 @@ type AccountsServiceServer interface {
 	// - account_id - передается в URL пути
 	// - limit и interval - передаются как query-параметры
 	Transactions(context.Context, *TransactionsRequest) (*TransactionsResponse, error)
+	// Подписка на информацию по аккаунту. Стрим метод
+	SubscribeAccount(*GetAccountRequest, grpc.ServerStreamingServer[GetAccountResponse]) error
 	mustEmbedUnimplementedAccountsServiceServer()
 }
 
@@ -140,6 +164,9 @@ func (UnimplementedAccountsServiceServer) Trades(context.Context, *TradesRequest
 }
 func (UnimplementedAccountsServiceServer) Transactions(context.Context, *TransactionsRequest) (*TransactionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Transactions not implemented")
+}
+func (UnimplementedAccountsServiceServer) SubscribeAccount(*GetAccountRequest, grpc.ServerStreamingServer[GetAccountResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeAccount not implemented")
 }
 func (UnimplementedAccountsServiceServer) mustEmbedUnimplementedAccountsServiceServer() {}
 func (UnimplementedAccountsServiceServer) testEmbeddedByValue()                         {}
@@ -216,6 +243,17 @@ func _AccountsService_Transactions_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountsService_SubscribeAccount_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetAccountRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AccountsServiceServer).SubscribeAccount(m, &grpc.GenericServerStream[GetAccountRequest, GetAccountResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AccountsService_SubscribeAccountServer = grpc.ServerStreamingServer[GetAccountResponse]
+
 // AccountsService_ServiceDesc is the grpc.ServiceDesc for AccountsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -236,6 +274,12 @@ var AccountsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AccountsService_Transactions_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SubscribeAccount",
+			Handler:       _AccountsService_SubscribeAccount_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "grpc/tradeapi/v1/accounts/accounts_service.proto",
 }

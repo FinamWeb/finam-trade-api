@@ -1107,7 +1107,7 @@ const file_grpc_tradeapi_v1_accounts_accounts_service_proto_rawDesc = "" +
 	"\x14CONTRACT_TERMINATION\x10\f\x12\f\n" +
 	"\bOUTCOMES\x10\r\x12\b\n" +
 	"\x04FINE\x10\x0f\x12\b\n" +
-	"\x04LOAN\x10\x132\xca\x04\n" +
+	"\x04LOAN\x10\x132\xbd\x05\n" +
 	"\x0fAccountsService\x12\x8c\x01\n" +
 	"\n" +
 	"GetAccount\x12,.grpc.tradeapi.v1.accounts.GetAccountRequest\x1a-.grpc.tradeapi.v1.accounts.GetAccountResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/accounts/{account_id}\x12\xc6\x01\n" +
@@ -1116,7 +1116,8 @@ const file_grpc_tradeapi_v1_accounts_accounts_service_proto_rawDesc = "" +
 	".Неверно передан интервалR\x01\x01\x82\xd3\xe4\x93\x02\"\x12 /v1/accounts/{account_id}/trades\x12\xde\x01\n" +
 	"\fTransactions\x12..grpc.tradeapi.v1.accounts.TransactionsRequest\x1a/.grpc.tradeapi.v1.accounts.TransactionsResponse\"m\x92A<J7\n" +
 	"\x03400\x120\n" +
-	".Неверно передан интервалR\x01\x01\x82\xd3\xe4\x93\x02(\x12&/v1/accounts/{account_id}/transactionsB\xb1\x05\x92A\xe9\x04*\x01\x01Ri\n" +
+	".Неверно передан интервалR\x01\x01\x82\xd3\xe4\x93\x02(\x12&/v1/accounts/{account_id}/transactions\x12q\n" +
+	"\x10SubscribeAccount\x12,.grpc.tradeapi.v1.accounts.GetAccountRequest\x1a-.grpc.tradeapi.v1.accounts.GetAccountResponse0\x01B\xb1\x05\x92A\xe9\x04*\x01\x01Ri\n" +
 	"\x03401\x12b\n" +
 	"`Срок действия токена истек или токен недействителенR:\n" +
 	"\x03404\x123\n" +
@@ -1203,11 +1204,13 @@ var file_grpc_tradeapi_v1_accounts_accounts_service_proto_depIdxs = []int32{
 	1,  // 33: grpc.tradeapi.v1.accounts.AccountsService.GetAccount:input_type -> grpc.tradeapi.v1.accounts.GetAccountRequest
 	6,  // 34: grpc.tradeapi.v1.accounts.AccountsService.Trades:input_type -> grpc.tradeapi.v1.accounts.TradesRequest
 	8,  // 35: grpc.tradeapi.v1.accounts.AccountsService.Transactions:input_type -> grpc.tradeapi.v1.accounts.TransactionsRequest
-	2,  // 36: grpc.tradeapi.v1.accounts.AccountsService.GetAccount:output_type -> grpc.tradeapi.v1.accounts.GetAccountResponse
-	7,  // 37: grpc.tradeapi.v1.accounts.AccountsService.Trades:output_type -> grpc.tradeapi.v1.accounts.TradesResponse
-	9,  // 38: grpc.tradeapi.v1.accounts.AccountsService.Transactions:output_type -> grpc.tradeapi.v1.accounts.TransactionsResponse
-	36, // [36:39] is the sub-list for method output_type
-	33, // [33:36] is the sub-list for method input_type
+	1,  // 36: grpc.tradeapi.v1.accounts.AccountsService.SubscribeAccount:input_type -> grpc.tradeapi.v1.accounts.GetAccountRequest
+	2,  // 37: grpc.tradeapi.v1.accounts.AccountsService.GetAccount:output_type -> grpc.tradeapi.v1.accounts.GetAccountResponse
+	7,  // 38: grpc.tradeapi.v1.accounts.AccountsService.Trades:output_type -> grpc.tradeapi.v1.accounts.TradesResponse
+	9,  // 39: grpc.tradeapi.v1.accounts.AccountsService.Transactions:output_type -> grpc.tradeapi.v1.accounts.TransactionsResponse
+	2,  // 40: grpc.tradeapi.v1.accounts.AccountsService.SubscribeAccount:output_type -> grpc.tradeapi.v1.accounts.GetAccountResponse
+	37, // [37:41] is the sub-list for method output_type
+	33, // [33:37] is the sub-list for method input_type
 	33, // [33:33] is the sub-list for extension type_name
 	33, // [33:33] is the sub-list for extension extendee
 	0,  // [0:33] is the sub-list for field type_name

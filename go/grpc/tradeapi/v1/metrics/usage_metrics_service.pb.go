@@ -7,6 +7,7 @@
 package usage_metrics_service
 
 import (
+	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -183,7 +184,7 @@ var File_grpc_tradeapi_v1_metrics_usage_metrics_service_proto protoreflect.FileD
 
 const file_grpc_tradeapi_v1_metrics_usage_metrics_service_proto_rawDesc = "" +
 	"\n" +
-	"4grpc/tradeapi/v1/metrics/usage_metrics_service.proto\x12\x18grpc.tradeapi.v1.metrics\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x18\n" +
+	"4grpc/tradeapi/v1/metrics/usage_metrics_service.proto\x12\x18grpc.tradeapi.v1.metrics\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\x18\n" +
 	"\x16GetUsageMetricsRequest\"\x81\x02\n" +
 	"\x17GetUsageMetricsResponse\x12T\n" +
 	"\x06quotas\x18\x01 \x03(\v2<.grpc.tradeapi.v1.metrics.GetUsageMetricsResponse.QuotaUsageR\x06quotas\x1a\x8f\x01\n" +
@@ -195,7 +196,19 @@ const file_grpc_tradeapi_v1_metrics_usage_metrics_service_proto_rawDesc = "" +
 	"\n" +
 	"reset_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tresetTime2\xa1\x01\n" +
 	"\x13UsageMetricsService\x12\x89\x01\n" +
-	"\x0fGetUsageMetrics\x120.grpc.tradeapi.v1.metrics.GetUsageMetricsRequest\x1a1.grpc.tradeapi.v1.metrics.GetUsageMetricsResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/usageB.P\x01Z*trade_api/v1/metrics/usage_metrics_serviceb\x06proto3"
+	"\x0fGetUsageMetrics\x120.grpc.tradeapi.v1.metrics.GetUsageMetricsRequest\x1a1.grpc.tradeapi.v1.metrics.GetUsageMetricsResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/usageB\xdf\x04\x92A\xad\x04*\x01\x01Ri\n" +
+	"\x03401\x12b\n" +
+	"`Срок действия токена истек или токен недействителенRy\n" +
+	"\x03429\x12r\n" +
+	"pСлишком много запросов. Доступный лимит - 200 запросов в минутуRZ\n" +
+	"\x03500\x12S\n" +
+	"QВнутренняя ошибка сервиса. Попробуйте позжеRk\n" +
+	"\x03503\x12d\n" +
+	"bСервис на данный момент не доступен. Попробуйте позжеRV\n" +
+	"\x03504\x12O\n" +
+	"MКрайний срок истек до завершения операцииR!\n" +
+	"\adefault\x12\x16\x12\x14\n" +
+	"\x12\x1a\x10googletypeStatusP\x01Z*trade_api/v1/metrics/usage_metrics_serviceb\x06proto3"
 
 var (
 	file_grpc_tradeapi_v1_metrics_usage_metrics_service_proto_rawDescOnce sync.Once
