@@ -12,55 +12,69 @@ go get github.com/FinamWeb/finam-trade-api/go@latest
 
 ## Быстрый старт
 
-Ниже — минимальный пример подключения к gRPC‑эндпоинту и вызова метода через сгенерированный клиент. Конкретные методы и сообщения берите из импортируемых пакетов.
+Ниже — минимальный пример подключения к gRPC‑эндпоинту и вызова метода через сгенерированный клиент. 
+Конкретные методы и сообщения берите из импортируемых пакетов.
 
 ```go
 package main
 
 import (
-    "context"
-    "log"
-    "time"
+	"context"
+	"crypto/tls"
+	"log"
+	"time"
 
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/credentials/insecure"
-    "google.golang.org/grpc/metadata"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 
-    "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/accounts"
+	"github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/accounts"
+	"github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/auth"
 )
 
 func main() {
-    // Адрес gRPC‑сервера Finam Trade API
-    grpcAddr := "api.finam.ru:443" // замените на актуальный
+	ctx := context.Background()
+	// Адрес gRPC‑сервера Finam Trade API
+	grpcAddr := "api.finam.ru:443"
+	tlsConfig := tls.Config{MinVersion: tls.VersionTLS12}
 
-    // Создаем соединение (используйте TLS cred'ы вместо insecure при реальной работе)
-    conn, err := grpc.NewClient(
-        grpcAddr,
-        grpc.WithTransportCredentials(insecure.NewCredentials()),
-    )
-    if err != nil {
-        log.Fatalf("dial failed: %v", err)
-    }
-    defer conn.Close()
+	// Создаем соединение
+	conn, err := grpc.NewClient(
+		grpcAddr,
+		grpc.WithTransportCredentials(credentials.NewTLS(&tlsConfig)),
+	)
+	if err != nil {
+		log.Fatalf("dial failed: %v", err)
+	}
+	defer conn.Close()
 
-    // Токен авторизации (например, Bearer)
-    token := "YOUR_TOKEN"
+	// Приватный ключ
+	secretToken := "YOUR_TOKEN"
 
-    // Контекст с метаданными авторизации
-    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-    defer cancel()
-    ctx = metadata.AppendToOutgoingContext(ctx, "Authorization", token)
+	authService := auth.NewAuthServiceClient(conn)
+	respAuth, err := authService.Auth(ctx, &auth.AuthRequest{Secret: secretToken})
+	if err != nil {
+		log.Fatalf("auth failed: %v", err)
+	}
 
-    // Создаем клиент нужного сервиса, например AccountsService
-    accClient := accounts.NewAccountsServiceClient(conn)
+	// Токен для использования в запросах
+	token := respAuth.GetToken()
 
-    // Пример вызова метода (заполните запрос своими данными)
-    // req := &accounts.GetAccountRequest{AccountId: "A12345"}
-    // resp, err := accClient.GetAccount(ctx, req)
-    // if err != nil {
-    //     log.Fatalf("GetAccount error: %v", err)
-    // }
-    // log.Printf("Account: %+v", resp)
+	// Контекст с метаданными авторизации
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	ctx = metadata.AppendToOutgoingContext(ctx, "Authorization", token)
+
+	// Создаем клиент нужного сервиса, например AccountsService
+	accClient := accounts.NewAccountsServiceClient(conn)
+
+	// Пример вызова метода (заполните запрос своими данными)
+	req := &accounts.GetAccountRequest{AccountId: "A12345"}
+	resp, err := accClient.GetAccount(ctx, req)
+	if err != nil {
+		log.Fatalf("GetAccount error: %v", err)
+	}
+	log.Printf("Account: %+v", resp)
 }
 ```
 
