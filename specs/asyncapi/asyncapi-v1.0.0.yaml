@@ -1,0 +1,714 @@
+asyncapi: "3.0.0"
+info:
+  title: Finam Trade API (WebSocket)
+  version: "1.0.0"
+  description: |
+    WebSocket подписки на котировки/сделки/стакан/свечи/заявки.
+    Клиент шлёт запросы (subscribe/unsubscribe/unsubscribe_all) в виде JSON, сервер отвечает envelope-ами:
+    - DATA — payload с данными для разных подписок (варианты для BARS, ORDER_BOOK, QUOTES, TRADES, ORDERS)
+    - ERROR — ошибка (валидация, аутентификация,недоступность upstream и т.п.)
+    - EVENT — служебные события (HANDSHAKE_SUCCESS, CONNECTION_CLOSED и т.п.)
+
+servers:
+  production:
+    host: "api.finam.ru:443"
+    protocol: "wss"
+    description: Production WebSocket host
+    security:
+      - $ref: "#/components/securitySchemes/AuthorizationHeader"
+      - $ref: "#/components/securitySchemes/TokenInPayload"
+
+channels:
+  tradingInfo:
+    address: "/ws"
+    summary: Websocket канал для подписки на рыночные данные по инструментам, а также на данные по счетам
+    messages:
+      wsRequest:
+        $ref: "#/components/messages/wsRequest"
+      wsEnvelope:
+        $ref: "#/components/messages/wsEnvelope"
+
+operations:
+  sendRequest:
+    action: send
+    channel:
+      $ref: "#/channels/tradingInfo"
+    summary: "Клиент отправляет команды SUBSCRIBE/UNSUBSCRIBE/UNSUBSCRIBE_ALL"
+    messages:
+      - $ref: "#/channels/tradingInfo/messages/wsRequest"
+  envelopeListener:
+    action: receive
+    channel:
+      $ref: "#/channels/tradingInfo"
+    summary: "Клиент получает информацию в рамках своих подписок, а также служебные события и ошибки"
+    messages:
+      - $ref: "#/channels/tradingInfo/messages/wsEnvelope"
+
+
+components:
+
+  messages:
+    wsRequest:
+      name: WsRequest
+      summary: "Запрос клиента на подписку/отписку"
+      payload:
+        type: object
+        required:
+          - action
+          - token
+        properties:
+          action:
+            type: string
+            enum:
+              - SUBSCRIBE
+              - UNSUBSCRIBE
+              - UNSUBSCRIBE_ALL
+            description: "Действие"
+          type:
+            $ref: "#/components/schemas/SubscriptionType"
+            description: "Тип подписки (required для SUBSCRIBE/UNSUBSCRIBE)"
+          data:
+            type: object
+            description: "Данные запроса. Структура зависит от типа подписки. Подробнее в examples"
+          token:
+            type: string
+            description: "Валидный JWT"
+      examples:
+        - name: SubscribeBars
+          summary: "Подписка на агрегированные свечи"
+          payload:
+            action: SUBSCRIBE
+            type: BARS
+            data:
+              symbol: "SBERF@RTSX"
+              timeframe: TIME_FRAME_D
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeBars
+          summary: "Закрыть подписку на агрегированные свечи"
+          payload:
+            action: UNSUBSCRIBE
+            type: BARS
+            data:
+              symbol: "SBERF@RTSX"
+              timeframe: TIME_FRAME_D
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: SubscribeOrderBook
+          summary: "Подписка на стакан по инструменту"
+          payload:
+            action: SUBSCRIBE
+            type: ORDER_BOOK
+            data:
+              symbol: "SBERF@RTSX"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeOrderBook
+          summary: "Закрыть подписку на стакан по инструменту"
+          payload:
+            action: UNSUBSCRIBE
+            type: ORDER_BOOK
+            data:
+              symbol: "SBERF@RTSX"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: SubscribeQuotes
+          summary: "Подписка на котировки по инструментам"
+          payload:
+            action: SUBSCRIBE
+            type: QUOTES
+            data:
+              symbols: [ "SBERF@RTSX", "OKEY@MISX" ]
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeQuotes
+          summary: "Закрыть подписку на котировки по инструментам"
+          payload:
+            action: UNSUBSCRIBE
+            type: QUOTES
+            data:
+              symbols: [ "SBERF@RTSX", "OKEY@MISX" ]
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: SubscribeLatestTrades
+          summary: "Подписка на сделки по инструментам"
+          payload:
+            action: SUBSCRIBE
+            type: INSTRUMENT_TRADES
+            data:
+              symbol: "SBERF@RTSX"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeLatestTrades
+          summary: "Закрыть подписку на сделки по инструментам"
+          payload:
+            action: UNSUBSCRIBE
+            type: INSTRUMENT_TRADES
+            data:
+              symbol: "SBERF@RTSX"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: SubscribeOrders
+          summary: "Подписка на заявки по счету"
+          payload:
+            action: SUBSCRIBE
+            type: ORDERS
+            data:
+              account_id: "00000000"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeOrders
+          summary: "Закрыть подписку на заявки по счету"
+          payload:
+            action: UNSUBSCRIBE
+            type: ORDERS
+            data:
+              account_id: "00000000"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: SubscribeTrades
+          summary: "Подписка на сделки по счету"
+          payload:
+            action: SUBSCRIBE
+            type: TRADES
+            data:
+              account_id: "00000000"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeTrades
+          summary: "Закрыть подписку на сделки по счету"
+          payload:
+            action: UNSUBSCRIBE
+            type: TRADES
+            data:
+              account_id: "00000000"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: SubscribeAccount
+          summary: "Подписка на изменения по портфелю"
+          payload:
+            action: SUBSCRIBE
+            type: ACCOUNT
+            data:
+              account_id: "00000000"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeAccount
+          summary: "Закрыть подписку на изменения по портфелю"
+          payload:
+            action: UNSUBSCRIBE
+            type: ACCOUNT
+            data:
+              account_id: "00000000"
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+        - name: UnsubscribeAll
+          summary: "Закрыть все подписки"
+          payload:
+            action: UNSUBSCRIBE_ALL
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+
+    wsEnvelope:
+      name: WsEnvelope
+      payload:
+        type: object
+        required:
+          - type
+          - timestamp
+        properties:
+          type:
+            type: string
+            enum:
+              - DATA
+              - ERROR
+              - EVENT
+            description: "Тип сообщения"
+          subscription_key:
+            type: string
+            description: "Опциональный идентификатор подписки (если применяется)"
+          subscription_type:
+            $ref: "#/components/schemas/SubscriptionType"
+          timestamp:
+            type: integer
+            format: int64
+            description: "Метка времени в формате unix timestamp"
+          payload:
+            description: "Полезная нагрузка (тип зависит от subscriptionType)"
+            oneOf:
+              - $ref: "#/components/schemas/SubscribeQuoteResponse"
+              - $ref: "#/components/schemas/SubscribeOrderBookResponse"
+              - $ref: "#/components/schemas/SubscribeLatestTradesResponse"
+              - $ref: "#/components/schemas/SubscribeBarsResponse"
+              - $ref: "#/components/schemas/SubscribeOrdersResponse"
+              - $ref: "#/components/schemas/SubscribeTradesResponse"
+              - $ref: "#/components/schemas/SubscribeAccountResponse"
+          error_info:
+            $ref: "#/components/schemas/WsError"
+          event_info:
+            $ref: "#/components/schemas/WsEvent"
+
+  schemas:
+    SubscriptionType:
+      type: string
+      enum:
+        - ORDERS
+        - TRADES
+        - QUOTES
+        - ORDER_BOOK
+        - BARS
+        - INSTRUMENT_TRADES
+      description: "Тип подписки"
+
+    WsError:
+      type: object
+      required:
+        - code
+        - type
+      properties:
+        code:
+          type: integer
+          description: "Код ошибки"
+        type:
+          type: string
+          description: "Тип ошибки (например INVALID_REQUEST, UNAUTHENTICATED)"
+        message:
+          type: string
+          description: "Подробное сообщение об ошибке (опционально)"
+
+    WsEvent:
+      type: object
+      required:
+        - event
+        - code
+        - reason
+      properties:
+        event:
+          type: string
+          description: "Идентификатор события (например HANDSHAKE_SUCCESS, CONNECTION_CLOSED)"
+        code:
+          type: integer
+          description: "Числовой код события"
+        reason:
+          type: string
+          description: "Описание события"
+
+    SubscribeQuoteResponse:
+      type: object
+      properties:
+        quote:
+          type: array
+          items:
+            $ref: "#/components/schemas/Quote"
+        error:
+          $ref: "#/components/schemas/StreamError"
+
+    StreamError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        description:
+          type: string
+    Timestamp:
+      type: string
+      format: date-time
+      description: "RFC3339 timestamp"
+    Decimal:
+      type: string
+      description: "Decimal encoded as string (protobuf google.type.Decimal). Use string to avoid precision loss."
+
+    Quote:
+      type: object
+      properties:
+        symbol:
+          type: string
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        ask:
+          $ref: "#/components/schemas/Decimal"
+        ask_size:
+          $ref: "#/components/schemas/Decimal"
+        bid:
+          $ref: "#/components/schemas/Decimal"
+        bid_size:
+          $ref: "#/components/schemas/Decimal"
+        last:
+          $ref: "#/components/schemas/Decimal"
+        last_size:
+          $ref: "#/components/schemas/Decimal"
+        volume:
+          $ref: "#/components/schemas/Decimal"
+        turnover:
+          $ref: "#/components/schemas/Decimal"
+        open:
+          $ref: "#/components/schemas/Decimal"
+        high:
+          $ref: "#/components/schemas/Decimal"
+        low:
+          $ref: "#/components/schemas/Decimal"
+        close:
+          $ref: "#/components/schemas/Decimal"
+        change:
+          $ref: "#/components/schemas/Decimal"
+        option:
+          type: object
+          properties:
+            open_interest:
+              $ref: "#/components/schemas/Decimal"
+            implied_volatility:
+              $ref: "#/components/schemas/Decimal"
+            theoretical_price:
+              $ref: "#/components/schemas/Decimal"
+            delta:
+              $ref: "#/components/schemas/Decimal"
+            gamma:
+              $ref: "#/components/schemas/Decimal"
+            theta:
+              $ref: "#/components/schemas/Decimal"
+            vega:
+              $ref: "#/components/schemas/Decimal"
+            rho:
+              $ref: "#/components/schemas/Decimal"
+    SubscribeOrderBookResponse:
+      type: object
+      properties:
+        order_book:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamOrderBook"
+
+    StreamOrderBook:
+      type: object
+      properties:
+        symbol:
+          type: string
+        rows:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                $ref: "#/components/schemas/Decimal"
+              sell_size:
+                $ref: "#/components/schemas/Decimal"
+              buy_size:
+                $ref: "#/components/schemas/Decimal"
+              action:
+                type: string
+                enum:
+                  - ACTION_UNSPECIFIED
+                  - ACTION_REMOVE
+                  - ACTION_ADD
+                  - ACTION_UPDATE
+              mpid:
+                type: string
+              timestamp:
+                $ref: "#/components/schemas/Timestamp"
+
+    SubscribeLatestTradesResponse:
+      type: object
+      properties:
+        symbol:
+          type: string
+        trades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trade"
+
+    Trade:
+      type: object
+      properties:
+        trade_id:
+          type: string
+        mpid:
+          type: string
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        price:
+          $ref: "#/components/schemas/Decimal"
+        size:
+          $ref: "#/components/schemas/Decimal"
+        side:
+          type: string
+          enum:
+            - SIDE_UNSPECIFIED
+            - SIDE_BUY
+            - SIDE_SELL
+
+    SubscribeBarsResponse:
+      type: object
+      properties:
+        symbol:
+          type: string
+        bars:
+          type: array
+          items:
+            $ref: "#/components/schemas/Bar"
+
+    Bar:
+      type: object
+      properties:
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        open:
+          $ref: "#/components/schemas/Decimal"
+        high:
+          $ref: "#/components/schemas/Decimal"
+        low:
+          $ref: "#/components/schemas/Decimal"
+        close:
+          $ref: "#/components/schemas/Decimal"
+        volume:
+          $ref: "#/components/schemas/Decimal"
+
+    SubscribeOrdersResponse:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderState"
+
+    OrderState:
+      type: object
+      properties:
+        order_id:
+          type: string
+        exec_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - ORDER_STATUS_UNSPECIFIED
+            - ORDER_STATUS_NEW
+            - ORDER_STATUS_PARTIALLY_FILLED
+            - ORDER_STATUS_FILLED
+            - ORDER_STATUS_DONE_FOR_DAY
+            - ORDER_STATUS_CANCELED
+            - ORDER_STATUS_REPLACED
+            - ORDER_STATUS_PENDING_CANCEL
+            - ORDER_STATUS_REJECTED
+            - ORDER_STATUS_SUSPENDED
+            - ORDER_STATUS_PENDING_NEW
+            - ORDER_STATUS_EXPIRED
+            - ORDER_STATUS_FAILED
+            - ORDER_STATUS_FORWARDING
+            - ORDER_STATUS_WAIT
+            - ORDER_STATUS_DENIED_BY_BROKER
+            - ORDER_STATUS_REJECTED_BY_EXCHANGE
+            - ORDER_STATUS_WATCHING
+            - ORDER_STATUS_EXECUTED
+            - ORDER_STATUS_DISABLED
+            - ORDER_STATUS_LINK_WAIT
+            - ORDER_STATUS_SL_GUARD_TIME
+            - ORDER_STATUS_SL_EXECUTED
+            - ORDER_STATUS_SL_FORWARDING
+            - ORDER_STATUS_TP_GUARD_TIME
+            - ORDER_STATUS_TP_EXECUTED
+            - ORDER_STATUS_TP_CORRECTION
+            - ORDER_STATUS_TP_FORWARDING
+            - ORDER_STATUS_TP_CORR_GUARD_TIME
+        order:
+          $ref: "#/components/schemas/Order"
+        transact_at:
+          $ref: "#/components/schemas/Timestamp"
+        accept_at:
+          $ref: "#/components/schemas/Timestamp"
+        withdraw_at:
+          $ref: "#/components/schemas/Timestamp"
+
+    Order:
+      type: object
+      properties:
+        account_id:
+          type: string
+        symbol:
+          type: string
+        quantity:
+          $ref: "#/components/schemas/Decimal"
+        side:
+          type: string
+          enum:
+            - SIDE_UNSPECIFIED
+            - SIDE_BUY
+            - SIDE_SELL
+        type:
+          type: string
+          enum:
+            - ORDER_TYPE_UNSPECIFIED
+            - ORDER_TYPE_MARKET
+            - ORDER_TYPE_LIMIT
+            - ORDER_TYPE_STOP
+            - ORDER_TYPE_STOP_LIMIT
+            - ORDER_TYPE_MULTI_LEG
+        time_in_force:
+          type: string
+          enum:
+            - TIME_IN_FORCE_UNSPECIFIED
+            - TIME_IN_FORCE_DAY
+            - TIME_IN_FORCE_GOOD_TILL_CANCEL
+            - TIME_IN_FORCE_GOOD_TILL_CROSSING
+            - TIME_IN_FORCE_EXT
+            - TIME_IN_FORCE_ON_OPEN
+            - TIME_IN_FORCE_ON_CLOSE
+            - TIME_IN_FORCE_IOC
+            - TIME_IN_FORCE_FOK
+        limit_price:
+          $ref: "#/components/schemas/Decimal"
+        stop_price:
+          $ref: "#/components/schemas/Decimal"
+        stop_condition:
+          type: string
+          enum:
+            - STOP_CONDITION_UNSPECIFIED
+            - STOP_CONDITION_LAST_UP
+            - STOP_CONDITION_LAST_DOWN
+        legs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Leg"
+        client_order_id:
+          type: string
+        valid_before:
+          type: string
+          enum:
+            - VALID_BEFORE_UNSPECIFIED
+            - VALID_BEFORE_END_OF_DAY
+            - VALID_BEFORE_GOOD_TILL_CANCEL
+            - VALID_BEFORE_GOOD_TILL_DATE
+        comment:
+          type: string
+
+    Leg:
+      type: object
+      properties:
+        symbol:
+          type: string
+        quantity:
+          $ref: "#/components/schemas/Decimal"
+        side:
+          type: string
+          enum:
+            - SIDE_UNSPECIFIED
+            - SIDE_BUY
+            - SIDE_SELL
+
+    SubscribeTradesResponse:
+      type: object
+      properties:
+        trades:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountTrade"
+
+    AccountTrade:
+      type: object
+      properties:
+        trade_id:
+          type: string
+        symbol:
+          type: string
+        price:
+          $ref: "#/components/schemas/Decimal"
+        size:
+          $ref: "#/components/schemas/Decimal"
+        side:
+          type: string
+          enum:
+            - SIDE_UNSPECIFIED
+            - SIDE_BUY
+            - SIDE_SELL
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        order_id:
+          type: string
+        account_id:
+          type: string
+        comment:
+          type: string
+
+    SubscribeAccountResponse:
+      type: object
+      properties:
+        account_id:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+        equity:
+          $ref: "#/components/schemas/Decimal"
+        unrealized_profit:
+          $ref: "#/components/schemas/Decimal"
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Position"
+        cash:
+          type: array
+          items:
+            $ref: "#/components/schemas/Money"
+
+        portfolio:
+          oneOf:
+            - $ref: "#/components/schemas/MC"
+            - $ref: "#/components/schemas/MCT"
+            - $ref: "#/components/schemas/FORTS"
+
+        open_account_date:
+          $ref: "#/components/schemas/Timestamp"
+        first_trade_date:
+          $ref: "#/components/schemas/Timestamp"
+        first_non_trade_date:
+          $ref: "#/components/schemas/Timestamp"
+
+
+    MC:
+      type: object
+      properties:
+        available_cash:
+          $ref: "#/components/schemas/Decimal"
+        initial_margin:
+          $ref: "#/components/schemas/Decimal"
+        maintenance_margin:
+          $ref: "#/components/schemas/Decimal"
+
+    MCT:
+      type: object
+
+    FORTS:
+      type: object
+      properties:
+        available_cash:
+          $ref: "#/components/schemas/Decimal"
+        money_reserved:
+          $ref: "#/components/schemas/Decimal"
+
+    Position:
+      type: object
+      properties:
+        symbol:
+          type: string
+        quantity:
+          $ref: "#/components/schemas/Decimal"
+        average_price:
+          $ref: "#/components/schemas/Decimal"
+        current_price:
+          $ref: "#/components/schemas/Decimal"
+        maintenance_margin:
+          $ref: "#/components/schemas/Decimal"
+        daily_pnl:
+          $ref: "#/components/schemas/Decimal"
+        unrealized_pnl:
+          $ref: "#/components/schemas/Decimal"
+
+    Money:
+      type: object
+      description: Денежная сумма (google.type.Money)
+      properties:
+        currencyCode:
+          type: string
+          example: USD
+        units:
+          type: string
+        nanos:
+          type: integer
+
+  securitySchemes:
+    AuthorizationHeader:
+      type: httpApiKey
+      in: header
+      name: Authorization
+      description: "JWT напрямую передается в Authorization HTTP header. Пример - Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+    TokenInPayload:
+      type: plain
+      x-in: payload
+      description: "JWT передаётся в теле сообщения на подписку. См. пример `SubscribeBars`"
+
