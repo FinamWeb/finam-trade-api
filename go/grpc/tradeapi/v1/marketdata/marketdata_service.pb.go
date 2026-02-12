@@ -2091,19 +2091,27 @@ const file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDesc = "" +
 	"\fTIME_FRAME_D\x10\x13\x12\x10\n" +
 	"\fTIME_FRAME_W\x10\x14\x12\x11\n" +
 	"\rTIME_FRAME_MN\x10\x15\x12\x11\n" +
-	"\rTIME_FRAME_QR\x10\x162\xe3\n" +
-	"\n" +
-	"\x11MarketDataService\x12\xe5\x02\n" +
-	"\x04Bars\x12(.grpc.tradeapi.v1.marketdata.BarsRequest\x1a).grpc.tradeapi.v1.marketdata.BarsResponse\"\x87\x02\x92A\xde\x01J\xd8\x01\n" +
+	"\rTIME_FRAME_QR\x10\x162\xbd\v\n" +
+	"\x11MarketDataService\x12\xf7\x02\n" +
+	"\x04Bars\x12(.grpc.tradeapi.v1.marketdata.BarsRequest\x1a).grpc.tradeapi.v1.marketdata.BarsResponse\"\x99\x02\x92A\xf0\x01J\xd8\x01\n" +
 	"\x03400\x12\xd0\x01\n" +
-	"\xcd\x01Неверно передан символ или интервал. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISXR\x01\x01\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/instruments/{symbol}/bars\x12\x92\x01\n" +
-	"\tLastQuote\x12).grpc.tradeapi.v1.marketdata.QuoteRequest\x1a*.grpc.tradeapi.v1.marketdata.QuoteResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/instruments/{symbol}/quotes/latest\x12\x96\x01\n" +
-	"\tOrderBook\x12-.grpc.tradeapi.v1.marketdata.OrderBookRequest\x1a..grpc.tradeapi.v1.marketdata.OrderBookResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/instruments/{symbol}/orderbook\x12\xa3\x01\n" +
-	"\fLatestTrades\x120.grpc.tradeapi.v1.marketdata.LatestTradesRequest\x1a1.grpc.tradeapi.v1.marketdata.LatestTradesResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/instruments/{symbol}/trades/latest\x12{\n" +
+	"\xcd\x01Неверно передан символ или интервал. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISXb\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/instruments/{symbol}/bars\x12\xaa\x01\n" +
+	"\tLastQuote\x12).grpc.tradeapi.v1.marketdata.QuoteRequest\x1a*.grpc.tradeapi.v1.marketdata.QuoteResponse\"F\x92A\x15b\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02(\x12&/v1/instruments/{symbol}/quotes/latest\x12\xae\x01\n" +
+	"\tOrderBook\x12-.grpc.tradeapi.v1.marketdata.OrderBookRequest\x1a..grpc.tradeapi.v1.marketdata.OrderBookResponse\"B\x92A\x15b\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02$\x12\"/v1/instruments/{symbol}/orderbook\x12\xbb\x01\n" +
+	"\fLatestTrades\x120.grpc.tradeapi.v1.marketdata.LatestTradesRequest\x1a1.grpc.tradeapi.v1.marketdata.LatestTradesResponse\"F\x92A\x15b\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02(\x12&/v1/instruments/{symbol}/trades/latest\x12{\n" +
 	"\x0eSubscribeQuote\x122.grpc.tradeapi.v1.marketdata.SubscribeQuoteRequest\x1a3.grpc.tradeapi.v1.marketdata.SubscribeQuoteResponse0\x01\x12\x87\x01\n" +
 	"\x12SubscribeOrderBook\x126.grpc.tradeapi.v1.marketdata.SubscribeOrderBookRequest\x1a7.grpc.tradeapi.v1.marketdata.SubscribeOrderBookResponse0\x01\x12\x90\x01\n" +
 	"\x15SubscribeLatestTrades\x129.grpc.tradeapi.v1.marketdata.SubscribeLatestTradesRequest\x1a:.grpc.tradeapi.v1.marketdata.SubscribeLatestTradesResponse0\x01\x12x\n" +
-	"\rSubscribeBars\x121.grpc.tradeapi.v1.marketdata.SubscribeBarsRequest\x1a2.grpc.tradeapi.v1.marketdata.SubscribeBarsResponse0\x01B\xeb\x06\x92A\xa1\x06*\x01\x01R\xc0\x01\n" +
+	"\rSubscribeBars\x121.grpc.tradeapi.v1.marketdata.SubscribeBarsRequest\x1a2.grpc.tradeapi.v1.marketdata.SubscribeBarsResponse0\x01B\xfc\a\x92A\xb2\a\x12?\n" +
+	"\x0fFinam Trade-API\x12,API для торговых операций*\x02\x01\x02R\xc0\x01\n" +
 	"\x03400\x12\xb8\x01\n" +
 	"\xb5\x01Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISXRi\n" +
 	"\x03401\x12b\n" +
@@ -2119,7 +2127,9 @@ const file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDesc = "" +
 	"\x03504\x12O\n" +
 	"MКрайний срок истек до завершения операцииR!\n" +
 	"\adefault\x12\x16\x12\x14\n" +
-	"\x12\x1a\x10googletypeStatusP\x01ZBgithub.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/marketdatab\x06proto3"
+	"\x12\x1a\x10googletypeStatusZM\n" +
+	"K\n" +
+	"\rAuthorization\x12:\b\x02\x12%JWT токен авторизации\x1a\rAuthorization \x02P\x01ZBgithub.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/marketdatab\x06proto3"
 
 var (
 	file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDescOnce sync.Once

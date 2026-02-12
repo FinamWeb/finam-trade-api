@@ -1,7 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "grpc/tradeapi/v1/accounts/accounts_service.proto",
+    "title": "Finam Trade-API",
+    "description": "API для торговых операций",
     "version": "version not set"
   },
   "tags": [
@@ -25,7 +26,8 @@
     }
   ],
   "schemes": [
-    "http"
+    "http",
+    "https"
   ],
   "consumes": [
     "application/json"
@@ -87,6 +89,11 @@
         ],
         "tags": [
           "AccountsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -143,6 +150,11 @@
         ],
         "tags": [
           "OrdersService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       },
       "post": {
@@ -210,6 +222,11 @@
         ],
         "tags": [
           "OrdersService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -273,6 +290,11 @@
         ],
         "tags": [
           "OrdersService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       },
       "delete": {
@@ -338,6 +360,11 @@
         ],
         "tags": [
           "OrdersService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -423,6 +450,11 @@
         ],
         "tags": [
           "AccountsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -508,6 +540,11 @@
         ],
         "tags": [
           "AccountsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -555,6 +592,87 @@
         },
         "tags": [
           "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
+        ]
+      }
+    },
+    "/v1/assets/all": {
+      "get": {
+        "summary": "Получение списка всех инструментов, их описание\nПример HTTP запроса:\nGET /v1/assets/all?cursor=56658\u0026only_disabled=true\nAuthorization: \u003ctoken\u003e",
+        "operationId": "AssetsService_AllAssets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/assetsAllAssetsResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "cursor",
+            "description": "Курсор для пагинации. Указывает sec_id инструмента, с которого должен начинаться список.\nДля первого запроса оставьте поле пустым (значение 0).\nДля последующих запросов используйте значение next_cursor из предыдущего ответа.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "onlyActive",
+            "description": "Фильтрация по статусу инструмента: выбираются только активные(неархивные) инструменты\nПо умолчанию: false.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "onlyDisabled",
+            "description": "Фильтрация по статусу инструмента: выбираются только неактивные(архивные) инструменты\nПо умолчанию: false.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -602,6 +720,11 @@
         },
         "tags": [
           "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -670,6 +793,11 @@
         ],
         "tags": [
           "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -738,6 +866,11 @@
         ],
         "tags": [
           "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -798,6 +931,11 @@
         ],
         "tags": [
           "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -889,6 +1027,11 @@
         ],
         "tags": [
           "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -936,6 +1079,11 @@
         },
         "tags": [
           "AssetsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -1036,6 +1184,11 @@
         ],
         "tags": [
           "MarketDataService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -1092,6 +1245,11 @@
         ],
         "tags": [
           "MarketDataService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -1148,6 +1306,11 @@
         ],
         "tags": [
           "MarketDataService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -1204,6 +1367,11 @@
         ],
         "tags": [
           "MarketDataService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     },
@@ -1367,6 +1535,11 @@
         },
         "tags": [
           "UsageMetricsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
         ]
       }
     }
@@ -1741,6 +1914,25 @@
       },
       "title": "Список транзакций"
     },
+    "assetsAllAssetsResponse": {
+      "type": "object",
+      "properties": {
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/assetsAsset"
+          },
+          "title": "Часть списка инструментов"
+        },
+        "nextCursor": {
+          "type": "string",
+          "format": "int64",
+          "description": "Курсор для получения следующей страницы. Содержит sec_id последнего инструмента в текущем списке.\nПередайте это значение в поле cursor следующего запроса, чтобы получить следующую часть данных.\nЕсли значение 0 или отсутствует — это последняя страница."
+        }
+      },
+      "description": "Ответ, содержащий часть доступных инструментов."
+    },
     "assetsAsset": {
       "type": "object",
       "properties": {
@@ -1771,6 +1963,10 @@
         "name": {
           "type": "string",
           "title": "Наименование инструмента"
+        },
+        "isArchived": {
+          "type": "boolean",
+          "title": "Архивный инструмент или нет"
         }
       },
       "title": "Информация об инструменте"
@@ -3117,6 +3313,14 @@
         }
       },
       "title": "Информация о сделке"
+    }
+  },
+  "securityDefinitions": {
+    "Authorization": {
+      "type": "apiKey",
+      "description": "JWT токен авторизации",
+      "name": "Authorization",
+      "in": "header"
     }
   }
 }

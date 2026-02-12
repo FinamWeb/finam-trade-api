@@ -1527,28 +1527,37 @@ const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
 	"\x18VALID_BEFORE_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17VALID_BEFORE_END_OF_DAY\x10\x01\x12!\n" +
 	"\x1dVALID_BEFORE_GOOD_TILL_CANCEL\x10\x02\x12\x1f\n" +
-	"\x1bVALID_BEFORE_GOOD_TILL_DATE\x10\x032\x85\v\n" +
-	"\rOrdersService\x12\xa1\x02\n" +
+	"\x1bVALID_BEFORE_GOOD_TILL_DATE\x10\x032\xce\v\n" +
+	"\rOrdersService\x12\xb3\x02\n" +
 	"\n" +
-	"PlaceOrder\x12\x1e.grpc.tradeapi.v1.orders.Order\x1a#.grpc.tradeapi.v1.orders.OrderState\"\xcd\x01\x92A\x9e\x01JM\n" +
+	"PlaceOrder\x12\x1e.grpc.tradeapi.v1.orders.Order\x1a#.grpc.tradeapi.v1.orders.OrderState\"\xdf\x01\x92A\xb0\x01JM\n" +
 	"\x03400\x12F\n" +
 	"DНе верно переданы торговые параметрыJJ\n" +
 	"\x03404\x12C\n" +
-	"AСчёт или инструмент не были найденыR\x01\x01\x82\xd3\xe4\x93\x02%:\x01*\" /v1/accounts/{account_id}/orders\x12\xd0\x02\n" +
-	"\vCancelOrder\x12+.grpc.tradeapi.v1.orders.CancelOrderRequest\x1a#.grpc.tradeapi.v1.orders.OrderState\"\xee\x01\x92A\xb7\x01Jn\n" +
+	"AСчёт или инструмент не были найденыb\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02%:\x01*\" /v1/accounts/{account_id}/orders\x12\xe2\x02\n" +
+	"\vCancelOrder\x12+.grpc.tradeapi.v1.orders.CancelOrderRequest\x1a#.grpc.tradeapi.v1.orders.OrderState\"\x80\x02\x92A\xc9\x01Jn\n" +
 	"\x03400\x12g\n" +
 	"eЗаявка не может быть отменена так как она уже исполненаJB\n" +
 	"\x03404\x12;\n" +
-	"9Счёт или заявка не были найденыR\x01\x01\x82\xd3\xe4\x93\x02-*+/v1/accounts/{account_id}/orders/{order_id}\x12\xb8\x01\n" +
-	"\tGetOrders\x12&.grpc.tradeapi.v1.orders.OrdersRequest\x1a'.grpc.tradeapi.v1.orders.OrdersResponse\"Z\x92A/J*\n" +
+	"9Счёт или заявка не были найденыb\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02-*+/v1/accounts/{account_id}/orders/{order_id}\x12\xca\x01\n" +
+	"\tGetOrders\x12&.grpc.tradeapi.v1.orders.OrdersRequest\x1a'.grpc.tradeapi.v1.orders.OrdersResponse\"l\x92AAJ*\n" +
 	"\x03404\x12#\n" +
-	"!Счёт не был найденR\x01\x01\x82\xd3\xe4\x93\x02\"\x12 /v1/accounts/{account_id}/orders\x12\xd8\x01\n" +
-	"\bGetOrder\x12(.grpc.tradeapi.v1.orders.GetOrderRequest\x1a#.grpc.tradeapi.v1.orders.OrderState\"}\x92AGJB\n" +
+	"!Счёт не был найденb\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02\"\x12 /v1/accounts/{account_id}/orders\x12\xeb\x01\n" +
+	"\bGetOrder\x12(.grpc.tradeapi.v1.orders.GetOrderRequest\x1a#.grpc.tradeapi.v1.orders.OrderState\"\x8f\x01\x92AYJB\n" +
 	"\x03404\x12;\n" +
-	"9Счёт или заявка не были найденыR\x01\x01\x82\xd3\xe4\x93\x02-\x12+/v1/accounts/{account_id}/orders/{order_id}\x12w\n" +
+	"9Счёт или заявка не были найденыb\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02-\x12+/v1/accounts/{account_id}/orders/{order_id}\x12w\n" +
 	"\x13SubscribeOrderTrade\x12*.grpc.tradeapi.v1.orders.OrderTradeRequest\x1a+.grpc.tradeapi.v1.orders.OrderTradeResponse\"\x03\x88\x02\x01(\x010\x01\x12v\n" +
 	"\x0fSubscribeOrders\x12/.grpc.tradeapi.v1.orders.SubscribeOrdersRequest\x1a0.grpc.tradeapi.v1.orders.SubscribeOrdersResponse0\x01\x12v\n" +
-	"\x0fSubscribeTrades\x12/.grpc.tradeapi.v1.orders.SubscribeTradesRequest\x1a0.grpc.tradeapi.v1.orders.SubscribeTradesResponse0\x01B\xf3\x04\x92A\xad\x04*\x01\x01Ri\n" +
+	"\x0fSubscribeTrades\x12/.grpc.tradeapi.v1.orders.SubscribeTradesRequest\x1a0.grpc.tradeapi.v1.orders.SubscribeTradesResponse0\x01B\x84\x06\x92A\xbe\x05\x12?\n" +
+	"\x0fFinam Trade-API\x12,API для торговых операций*\x02\x01\x02Ri\n" +
 	"\x03401\x12b\n" +
 	"`Срок действия токена истек или токен недействителенRy\n" +
 	"\x03429\x12r\n" +
@@ -1560,7 +1569,9 @@ const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
 	"\x03504\x12O\n" +
 	"MКрайний срок истек до завершения операцииR!\n" +
 	"\adefault\x12\x16\x12\x14\n" +
-	"\x12\x1a\x10googletypeStatusP\x01Z>github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/ordersb\x06proto3"
+	"\x12\x1a\x10googletypeStatusZM\n" +
+	"K\n" +
+	"\rAuthorization\x12:\b\x02\x12%JWT токен авторизации\x1a\rAuthorization \x02P\x01Z>github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/ordersb\x06proto3"
 
 var (
 	file_grpc_tradeapi_v1_orders_orders_service_proto_rawDescOnce sync.Once

@@ -1107,17 +1107,24 @@ const file_grpc_tradeapi_v1_accounts_accounts_service_proto_rawDesc = "" +
 	"\x14CONTRACT_TERMINATION\x10\f\x12\f\n" +
 	"\bOUTCOMES\x10\r\x12\b\n" +
 	"\x04FINE\x10\x0f\x12\b\n" +
-	"\x04LOAN\x10\x132\xbd\x05\n" +
-	"\x0fAccountsService\x12\x8c\x01\n" +
+	"\x04LOAN\x10\x132\xf9\x05\n" +
+	"\x0fAccountsService\x12\xa4\x01\n" +
 	"\n" +
-	"GetAccount\x12,.grpc.tradeapi.v1.accounts.GetAccountRequest\x1a-.grpc.tradeapi.v1.accounts.GetAccountResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/accounts/{account_id}\x12\xc6\x01\n" +
-	"\x06Trades\x12(.grpc.tradeapi.v1.accounts.TradesRequest\x1a).grpc.tradeapi.v1.accounts.TradesResponse\"g\x92A<J7\n" +
+	"GetAccount\x12,.grpc.tradeapi.v1.accounts.GetAccountRequest\x1a-.grpc.tradeapi.v1.accounts.GetAccountResponse\"9\x92A\x15b\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/accounts/{account_id}\x12\xd8\x01\n" +
+	"\x06Trades\x12(.grpc.tradeapi.v1.accounts.TradesRequest\x1a).grpc.tradeapi.v1.accounts.TradesResponse\"y\x92ANJ7\n" +
 	"\x03400\x120\n" +
-	".Неверно передан интервалR\x01\x01\x82\xd3\xe4\x93\x02\"\x12 /v1/accounts/{account_id}/trades\x12\xde\x01\n" +
-	"\fTransactions\x12..grpc.tradeapi.v1.accounts.TransactionsRequest\x1a/.grpc.tradeapi.v1.accounts.TransactionsResponse\"m\x92A<J7\n" +
+	".Неверно передан интервалb\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02\"\x12 /v1/accounts/{account_id}/trades\x12\xf0\x01\n" +
+	"\fTransactions\x12..grpc.tradeapi.v1.accounts.TransactionsRequest\x1a/.grpc.tradeapi.v1.accounts.TransactionsResponse\"\x7f\x92ANJ7\n" +
 	"\x03400\x120\n" +
-	".Неверно передан интервалR\x01\x01\x82\xd3\xe4\x93\x02(\x12&/v1/accounts/{account_id}/transactions\x12q\n" +
-	"\x10SubscribeAccount\x12,.grpc.tradeapi.v1.accounts.GetAccountRequest\x1a-.grpc.tradeapi.v1.accounts.GetAccountResponse0\x01B\xb1\x05\x92A\xe9\x04*\x01\x01Ri\n" +
+	".Неверно передан интервалb\x13\n" +
+	"\x11\n" +
+	"\rAuthorization\x12\x00\x82\xd3\xe4\x93\x02(\x12&/v1/accounts/{account_id}/transactions\x12q\n" +
+	"\x10SubscribeAccount\x12,.grpc.tradeapi.v1.accounts.GetAccountRequest\x1a-.grpc.tradeapi.v1.accounts.GetAccountResponse0\x01B\xc2\x06\x92A\xfa\x05\x12?\n" +
+	"\x0fFinam Trade-API\x12,API для торговых операций*\x02\x01\x02Ri\n" +
 	"\x03401\x12b\n" +
 	"`Срок действия токена истек или токен недействителенR:\n" +
 	"\x03404\x123\n" +
@@ -1131,7 +1138,9 @@ const file_grpc_tradeapi_v1_accounts_accounts_service_proto_rawDesc = "" +
 	"\x03504\x12O\n" +
 	"MКрайний срок истек до завершения операцииR!\n" +
 	"\adefault\x12\x16\x12\x14\n" +
-	"\x12\x1a\x10googletypeStatusP\x01Z@github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/accountsb\x06proto3"
+	"\x12\x1a\x10googletypeStatusZM\n" +
+	"K\n" +
+	"\rAuthorization\x12:\b\x02\x12%JWT токен авторизации\x1a\rAuthorization \x02P\x01Z@github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/accountsb\x06proto3"
 
 var (
 	file_grpc_tradeapi_v1_accounts_accounts_service_proto_rawDescOnce sync.Once

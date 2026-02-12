@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AssetsService_Exchanges_FullMethodName      = "/grpc.tradeapi.v1.assets.AssetsService/Exchanges"
 	AssetsService_Assets_FullMethodName         = "/grpc.tradeapi.v1.assets.AssetsService/Assets"
+	AssetsService_AllAssets_FullMethodName      = "/grpc.tradeapi.v1.assets.AssetsService/AllAssets"
 	AssetsService_GetAsset_FullMethodName       = "/grpc.tradeapi.v1.assets.AssetsService/GetAsset"
 	AssetsService_GetAssetParams_FullMethodName = "/grpc.tradeapi.v1.assets.AssetsService/GetAssetParams"
 	AssetsService_OptionsChain_FullMethodName   = "/grpc.tradeapi.v1.assets.AssetsService/OptionsChain"
@@ -39,11 +40,17 @@ type AssetsServiceClient interface {
 	// GET /v1/exchanges
 	// Authorization: <token>
 	Exchanges(ctx context.Context, in *ExchangesRequest, opts ...grpc.CallOption) (*ExchangesResponse, error)
+	// Deprecated: Do not use.
 	// Получение списка доступных инструментов, их описание
 	// Пример HTTP запроса:
 	// GET /v1/assets
 	// Authorization: <token>
 	Assets(ctx context.Context, in *AssetsRequest, opts ...grpc.CallOption) (*AssetsResponse, error)
+	// Получение списка всех инструментов, их описание
+	// Пример HTTP запроса:
+	// GET /v1/assets/all?cursor=56658&only_disabled=true
+	// Authorization: <token>
+	AllAssets(ctx context.Context, in *AllAssetsRequest, opts ...grpc.CallOption) (*AllAssetsResponse, error)
 	// Получение информации по конкретному инструменту
 	// Пример HTTP запроса:
 	// GET /v1/assets/SBER@MISX?account_id=1440399
@@ -97,10 +104,21 @@ func (c *assetsServiceClient) Exchanges(ctx context.Context, in *ExchangesReques
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *assetsServiceClient) Assets(ctx context.Context, in *AssetsRequest, opts ...grpc.CallOption) (*AssetsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AssetsResponse)
 	err := c.cc.Invoke(ctx, AssetsService_Assets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *assetsServiceClient) AllAssets(ctx context.Context, in *AllAssetsRequest, opts ...grpc.CallOption) (*AllAssetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AllAssetsResponse)
+	err := c.cc.Invoke(ctx, AssetsService_AllAssets_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -168,11 +186,17 @@ type AssetsServiceServer interface {
 	// GET /v1/exchanges
 	// Authorization: <token>
 	Exchanges(context.Context, *ExchangesRequest) (*ExchangesResponse, error)
+	// Deprecated: Do not use.
 	// Получение списка доступных инструментов, их описание
 	// Пример HTTP запроса:
 	// GET /v1/assets
 	// Authorization: <token>
 	Assets(context.Context, *AssetsRequest) (*AssetsResponse, error)
+	// Получение списка всех инструментов, их описание
+	// Пример HTTP запроса:
+	// GET /v1/assets/all?cursor=56658&only_disabled=true
+	// Authorization: <token>
+	AllAssets(context.Context, *AllAssetsRequest) (*AllAssetsResponse, error)
 	// Получение информации по конкретному инструменту
 	// Пример HTTP запроса:
 	// GET /v1/assets/SBER@MISX?account_id=1440399
@@ -221,6 +245,9 @@ func (UnimplementedAssetsServiceServer) Exchanges(context.Context, *ExchangesReq
 }
 func (UnimplementedAssetsServiceServer) Assets(context.Context, *AssetsRequest) (*AssetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Assets not implemented")
+}
+func (UnimplementedAssetsServiceServer) AllAssets(context.Context, *AllAssetsRequest) (*AllAssetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllAssets not implemented")
 }
 func (UnimplementedAssetsServiceServer) GetAsset(context.Context, *GetAssetRequest) (*GetAssetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAsset not implemented")
@@ -290,6 +317,24 @@ func _AssetsService_Assets_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AssetsServiceServer).Assets(ctx, req.(*AssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AssetsService_AllAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AllAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AssetsServiceServer).AllAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AssetsService_AllAssets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AssetsServiceServer).AllAssets(ctx, req.(*AllAssetsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -398,6 +443,10 @@ var AssetsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Assets",
 			Handler:    _AssetsService_Assets_Handler,
+		},
+		{
+			MethodName: "AllAssets",
+			Handler:    _AssetsService_AllAssets_Handler,
 		},
 		{
 			MethodName: "GetAsset",
