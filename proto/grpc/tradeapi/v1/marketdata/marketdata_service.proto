@@ -12,7 +12,22 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/marketdata";
 option java_multiple_files = true;
 option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: HTTP;
+  schemes: [HTTP, HTTPS];
+  info: {
+    title: "Finam Trade-API"
+    description: "API для торговых операций"
+  }
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT токен авторизации"
+      }
+    }
+  }
   responses: {
     key: "default";
     value: {
@@ -80,7 +95,11 @@ service MarketDataService {
   rpc Bars(BarsRequest) returns (BarsResponse) {
     option (google.api.http) = {get: "/v1/instruments/{symbol}/bars"};
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      schemes:HTTP
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
       responses: {
         key: "400";
         value: {
@@ -96,6 +115,13 @@ service MarketDataService {
   // Authorization: <token>
   rpc LastQuote(QuoteRequest) returns (QuoteResponse) {
     option (google.api.http) = {get: "/v1/instruments/{symbol}/quotes/latest"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
+    };
   }
 
   // Получение текущего стакана по инструменту
@@ -104,6 +130,13 @@ service MarketDataService {
   // Authorization: <token>
   rpc OrderBook(OrderBookRequest) returns (OrderBookResponse) {
     option (google.api.http) = {get: "/v1/instruments/{symbol}/orderbook"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
+    };
   }
 
   // Получение списка последних сделок по инструменту
@@ -112,6 +145,13 @@ service MarketDataService {
   // Authorization: <token>
   rpc LatestTrades(LatestTradesRequest) returns (LatestTradesResponse) {
     option (google.api.http) = {get: "/v1/instruments/{symbol}/trades/latest"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
+    };
   }
 
   // Подписка на котировки по инструменту. Стрим метод

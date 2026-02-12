@@ -14,7 +14,22 @@ import "google/protobuf/wrappers.proto";
 option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/assets";
 option java_multiple_files = true;
 option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: HTTP;
+  schemes: [HTTP, HTTPS];
+  info: {
+    title: "Finam Trade-API"
+    description: "API для торговых операций"
+  }
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT токен авторизации"
+      }
+    }
+  }
   responses: {
     key: "default";
     value: {
@@ -73,6 +88,13 @@ service AssetsService {
     option (google.api.http) = {
       get: "/v1/exchanges"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
+    };
   };
 
   // Получение списка доступных инструментов, их описание
@@ -80,8 +102,33 @@ service AssetsService {
   // GET /v1/assets
   // Authorization: <token>
   rpc Assets(AssetsRequest) returns (AssetsResponse) {
+    option deprecated = true;
     option (google.api.http) = {
       get: "/v1/assets"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
+    };
+  };
+
+  // Получение списка всех инструментов, их описание
+  // Пример HTTP запроса:
+  // GET /v1/assets/all?cursor=56658&only_disabled=true
+  // Authorization: <token>
+  rpc AllAssets(AllAssetsRequest) returns (AllAssetsResponse) {
+    option (google.api.http) = {
+      get: "/v1/assets/all"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
     };
   };
 
@@ -99,7 +146,11 @@ service AssetsService {
       get: "/v1/assets/{symbol}"
     };
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      schemes: HTTP;
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
       responses: {
         key: "400";
         value: {
@@ -122,7 +173,11 @@ service AssetsService {
       get: "/v1/assets/{symbol}/params"
     };
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      schemes: HTTP;
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
       responses: {
         key: "400";
         value: {
@@ -141,7 +196,11 @@ service AssetsService {
       get: "/v1/assets/{underlying_symbol}/options"
     };
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      schemes: HTTP;
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
       responses: {
         key: "400";
         value: {
@@ -160,7 +219,11 @@ service AssetsService {
       get: "/v1/assets/{symbol}/schedule"
     };
     option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      schemes: HTTP;
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
       responses: {
         key: "400";
         value: {
@@ -177,6 +240,13 @@ service AssetsService {
   rpc Clock(ClockRequest) returns (ClockResponse) {
     option (google.api.http) = {
       get: "/v1/assets/clock"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
     };
   };
 }
@@ -201,8 +271,32 @@ message AssetsResponse {
   repeated Asset assets = 1;
 }
 
+// Запрос получения списка доступных инструментов
+message AllAssetsRequest {
+  // Курсор для пагинации. Указывает sec_id инструмента, с которого должен начинаться список.
+  // Для первого запроса оставьте поле пустым (значение 0).
+  // Для последующих запросов используйте значение next_cursor из предыдущего ответа.
+  int64 cursor = 1;
+  // Фильтрация по статусу инструмента: выбираются только активные(неархивные) инструменты
+  // По умолчанию: false.
+  bool only_active = 2;
+  // Фильтрация по статусу инструмента: выбираются только неактивные(архивные) инструменты
+  // По умолчанию: false.
+  bool only_disabled = 3;
+}
+
+// Ответ, содержащий часть доступных инструментов.
+message AllAssetsResponse {
+  // Часть списка инструментов
+  repeated Asset assets = 1;
+  // Курсор для получения следующей страницы. Содержит sec_id последнего инструмента в текущем списке.
+  // Передайте это значение в поле cursor следующего запроса, чтобы получить следующую часть данных.
+  // Если значение 0 или отсутствует — это последняя страница.
+  int64 next_cursor = 2;
+}
+
 // Запрос получения информации по конкретному инструменту
-message GetAssetRequest{
+message GetAssetRequest {
   // Символ инструмента
   string symbol = 1;
   // ID аккаунта для которого будет подбираться информация по инструменту
@@ -353,6 +447,8 @@ message Asset {
   string type = 6;
   // Наименование инструмента
   string name = 7;
+  // Архивный инструмент или нет
+  bool is_archived = 8;
 }
 
 // Информация об опционе

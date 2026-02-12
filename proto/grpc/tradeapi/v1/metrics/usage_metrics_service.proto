@@ -9,7 +9,22 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 option go_package = "trade_api/v1/metrics/usage_metrics_service";
 option java_multiple_files = true;
 option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: HTTP;
+  schemes: [HTTP, HTTPS];
+  info: {
+    title: "Finam Trade-API"
+    description: "API для торговых операций"
+  }
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT токен авторизации"
+      }
+    }
+  }
   responses: {
     key: "default";
     value: {
@@ -63,6 +78,13 @@ service UsageMetricsService {
   rpc GetUsageMetrics(GetUsageMetricsRequest) returns (GetUsageMetricsResponse) {
     option (google.api.http) = {
       get: "/v1/usage"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
     };
   };
 }

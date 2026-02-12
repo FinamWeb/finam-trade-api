@@ -14,7 +14,22 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/accounts";
 option java_multiple_files = true;
 option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: HTTP;
+  schemes: [HTTP, HTTPS];
+  info: {
+    title: "Finam Trade-API"
+    description: "API для торговых операций"
+  }
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT токен авторизации"
+      }
+    }
+  }
   responses: {
     key: "default";
     value: {
@@ -73,6 +88,13 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
+    };
   };
 
   // Получение истории по сделкам аккаунта
@@ -87,8 +109,12 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/trades"
     };
-    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      schemes: HTTP;
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
       responses: {
         key: "400";
         value: {
@@ -110,8 +136,12 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/transactions"
     };
-    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      schemes: HTTP;
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [{
+        security_requirement: {
+          key: "Authorization"
+        }
+      }]
       responses: {
         key: "400";
         value: {
