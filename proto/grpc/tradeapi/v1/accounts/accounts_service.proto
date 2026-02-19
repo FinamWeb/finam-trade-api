@@ -9,12 +9,15 @@ import "google/type/interval.proto";
 import "google/type/money.proto";
 import "grpc/tradeapi/v1/side.proto";
 import "grpc/tradeapi/v1/trade.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
+import "protoc_gen_openapiv2/options/annotations.proto";
 
 option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/accounts";
 option java_multiple_files = true;
-option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: [HTTP, HTTPS];
+option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
   info: {
     title: "Finam Trade-API"
     description: "API для торговых операций"
@@ -30,52 +33,54 @@ option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
       }
     }
   }
-  responses: {
-    key: "default";
-    value: {
-      schema: {
-        json_schema:{
-          ref: "googletypeStatus"
+  responses: [
+    {
+      key: "default"
+      value: {
+        schema: {
+          json_schema: {
+            ref: "googletypeStatus"
+          }
         }
       }
-    }
-  }
-  responses: {
-    key: "500";
-    value: {
-      description: "Внутренняя ошибка сервиса. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "503";
-    value: {
-      description: "Сервис на данный момент не доступен. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "429";
-    value: {
-      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
-    }
-  }
-  responses: {
-    key: "401"
-    value: {
-      description: "Срок действия токена истек или токен недействителен"
-    }
-  }
-  responses: {
-    key: "504"
-    value: {
-      description: "Крайний срок истек до завершения операции"
-    }
-  }
-  responses: {
-    key: "404";
-    value: {
-      description: "Счёт не был найден в токене"
     },
-  }
+    {
+      key: "500"
+      value: {
+        description: "Внутренняя ошибка сервиса. Попробуйте позже"
+      }
+    },
+    {
+      key: "503"
+      value: {
+        description: "Сервис на данный момент не доступен. Попробуйте позже"
+      }
+    },
+    {
+      key: "429"
+      value: {
+        description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+      }
+    },
+    {
+      key: "401"
+      value: {
+        description: "Срок действия токена истек или токен недействителен"
+      }
+    },
+    {
+      key: "504"
+      value: {
+        description: "Крайний срок истек до завершения операции"
+      }
+    },
+    {
+      key: "404"
+      value: {
+        description: "Счёт не был найден в токене"
+      }
+    }
+  ]
 };
 
 // Сервис аккаунтов
@@ -88,12 +93,14 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
+  ]
     };
   };
 
@@ -101,7 +108,7 @@ service AccountsService {
   // Пример HTTP запроса:
   // GET /v1/accounts/A12345/trades?limit=50&interval.start_time=2023-01-01T00:00:00Z&interval.end_time=2023-01-31T23:59:59Z
   // Authorization: <token>
-  //
+  // 
   // Параметры:
   // - account_id - передается в URL пути
   // - limit и interval - передаются как query-параметры
@@ -109,17 +116,19 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/trades"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
+  ]
       responses: {
-        key: "400";
+        key: "400"
         value: {
           description: "Неверно передан интервал"
-        },
+        }
       }
     };
   };
@@ -128,7 +137,7 @@ service AccountsService {
   // Пример HTTP запроса:
   // GET /v1/accounts/A12345/transactions?limit=50&interval.start_time=2023-01-01T00:00:00Z&interval.end_time=2023-01-31T23:59:59Z
   // Authorization: <token>
-  //
+  // 
   // Параметры:
   // - account_id - передается в URL пути
   // - limit и interval - передаются как query-параметры
@@ -136,23 +145,26 @@ service AccountsService {
     option (google.api.http) = {
       get: "/v1/accounts/{account_id}/transactions"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
+  ]
       responses: {
-        key: "400";
+        key: "400"
         value: {
           description: "Неверно передан интервал"
-        },
+        }
       }
     };
   };
 
   // Подписка на информацию по аккаунту. Стрим метод
   rpc SubscribeAccount(GetAccountRequest) returns (stream GetAccountResponse);
+
 }
 
 // Запрос получения информации по конкретному аккаунту
@@ -217,7 +229,7 @@ message MCT {
 message FORTS {
   // Сумма собственных денежных средств на счете, доступная для торговли. Включает маржинальные средства.
   google.type.Decimal available_cash = 1;
-  // Минимальная маржа (необходимая сумма обеспечения под открытые позици)
+  // Минимальная маржа (необходимая сумма обеспечения под открытые позиции)
   google.type.Decimal money_reserved = 2;
 }
 
@@ -282,10 +294,8 @@ message Transaction {
     // НКД. Заполнено если в сделке есть НКД
     google.type.Decimal accrued_interest = 3;
   }
-
   // Категории транзакции.
-  enum TransactionCategory
-  {
+  enum TransactionCategory {
     // Прочее
     OTHERS = 0;
     // Ввод ДС
@@ -311,7 +321,6 @@ message Transaction {
     // Займ
     LOAN = 19;
   }
-
   // Идентификатор транзакции
   string id = 1;
   // Тип транзакции из TransactionCategory
@@ -331,3 +340,4 @@ message Transaction {
   // Изменение в штуках, только для трансфера бумаг (для TransactionCategory = TRANSFER)
   google.type.Decimal change_qty = 10;
 }
+

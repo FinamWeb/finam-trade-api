@@ -7,12 +7,15 @@ import "google/protobuf/timestamp.proto";
 import "google/type/decimal.proto";
 import "grpc/tradeapi/v1/side.proto";
 import "grpc/tradeapi/v1/trade.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
+import "protoc_gen_openapiv2/options/annotations.proto";
 
 option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/orders";
 option java_multiple_files = true;
-option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: [HTTP, HTTPS];
+option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
   info: {
     title: "Finam Trade-API"
     description: "API для торговых операций"
@@ -28,46 +31,48 @@ option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
       }
     }
   }
-  responses: {
-    key: "default";
-    value: {
-      schema: {
-        json_schema:{
-          ref: "googletypeStatus"
+  responses: [
+    {
+      key: "default"
+      value: {
+        schema: {
+          json_schema: {
+            ref: "googletypeStatus"
+          }
         }
       }
+    },
+    {
+      key: "500"
+      value: {
+        description: "Внутренняя ошибка сервиса. Попробуйте позже"
+      }
+    },
+    {
+      key: "503"
+      value: {
+        description: "Сервис на данный момент не доступен. Попробуйте позже"
+      }
+    },
+    {
+      key: "429"
+      value: {
+        description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+      }
+    },
+    {
+      key: "401"
+      value: {
+        description: "Срок действия токена истек или токен недействителен"
+      }
+    },
+    {
+      key: "504"
+      value: {
+        description: "Крайний срок истек до завершения операции"
+      }
     }
-  }
-  responses: {
-    key: "500";
-    value: {
-      description: "Внутренняя ошибка сервиса. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "503";
-    value: {
-      description: "Сервис на данный момент не доступен. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "429";
-    value: {
-      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
-    }
-  }
-  responses: {
-    key: "401"
-    value: {
-      description: "Срок действия токена истек или токен недействителен"
-    }
-  }
-  responses: {
-    key: "504"
-    value: {
-      description: "Крайний срок истек до завершения операции"
-    }
-  }
+  ]
 };
 
 // Сервис ордеров
@@ -77,115 +82,133 @@ service OrdersService {
   // POST /v1/accounts/A12345/orders
   // Content-Type: application/json
   // Authorization: <token>
-  //
+  // 
   // {
   //   "symbol": "SBER@MISX",
   //   "quantity": {
-  //			 "value": "10"
-  //		 },
+  // 		 "value": "10"
+  // 	 },
   //   "side": "SIDE_BUY",
   //   "type": "ORDER_TYPE_LIMIT",
   //   "time_in_force": "TIME_IN_FORCE_DAY",
   //   "limit_price": {
-  //			 "value": "150.50"
-  //		 }
+  // 		 "value": "150.50"
+  // 	 }
   // }
-  //
+  // 
   // Поле account_id берется из URL-пути, остальные поля передаются в теле запроса
   rpc PlaceOrder(Order) returns (OrderState) {
     option (google.api.http) = {
       post: "/v1/accounts/{account_id}/orders"
       body: "*"
     };
-    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
-      responses: {
-        key: "404";
-        value: {
-          description: "Счёт или инструмент не были найдены"
+  ]
+      responses: [
+    {
+          key: "404"
+          value: {
+            description: "Счёт или инструмент не были найдены"
+          }
         },
-      }
-      responses: {
-        key: "400";
-        value: {
-          description: "Не верно переданы торговые параметры"
-        },
-      }
+    {
+          key: "400"
+          value: {
+            description: "Неверно переданы торговые параметры"
+          }
+        }
+  ]
     };
-  }
+  };
 
   // Отмена биржевой заявки
   // Пример HTTP запроса:
   // DELETE /v1/accounts/A12345/orders/ORD789012
   // Authorization: <token>
   rpc CancelOrder(CancelOrderRequest) returns (OrderState) {
-    option (google.api.http) = {delete: "/v1/accounts/{account_id}/orders/{order_id}"};
-    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
-        }
-      }]
-      responses: {
-        key: "404";
-        value: {
-          description: "Счёт или заявка не были найдены"
-        },
-      }
-      responses: {
-        key: "400";
-        value: {
-          description: "Заявка не может быть отменена так как она уже исполнена"
-        },
-      }
+    option (google.api.http) = {
+      delete: "/v1/accounts/{account_id}/orders/{order_id}"
     };
-  }
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+  ]
+      responses: [
+    {
+          key: "404"
+          value: {
+            description: "Счёт или заявка не были найдены"
+          }
+        },
+    {
+          key: "400"
+          value: {
+            description: "Заявка не может быть отменена так как она уже исполнена"
+          }
+        }
+  ]
+    };
+  };
 
   // Получение списка заявок для аккаунта
   // Пример HTTP запроса:
   // GET /v1/accounts/A12345/orders
   // Authorization: <token>
   rpc GetOrders(OrdersRequest) returns (OrdersResponse) {
-    option (google.api.http) = {get: "/v1/accounts/{account_id}/orders"};
-    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (google.api.http) = {
+      get: "/v1/accounts/{account_id}/orders"
+    };
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
+  ]
       responses: {
-        key: "404";
+        key: "404"
         value: {
           description: "Счёт не был найден"
-        },
+        }
       }
     };
-  }
+  };
 
   // Получение информации о конкретном ордере
   // Пример HTTP запроса:
   // GET /v1/accounts/A12345/orders/ORD789012
   // Authorization: <token>
   rpc GetOrder(GetOrderRequest) returns (OrderState) {
-    option (google.api.http) = {get: "/v1/accounts/{account_id}/orders/{order_id}"};
-    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (google.api.http) = {
+      get: "/v1/accounts/{account_id}/orders/{order_id}"
+    };
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
+  ]
       responses: {
-        key: "404";
+        key: "404"
         value: {
           description: "Счёт или заявка не были найдены"
-        },
+        }
       }
     };
-  }
+  };
 
   // Подписка на собственные заявки и сделки. Стрим метод
   rpc SubscribeOrderTrade(stream OrderTradeRequest) returns (stream OrderTradeResponse) {
@@ -197,6 +220,70 @@ service OrdersService {
 
   // Подписка на собственные сделки. Стрим метод
   rpc SubscribeTrades(SubscribeTradesRequest) returns (stream SubscribeTradesResponse);
+
+  // Выставление SL/TP заявки
+  // Пример HTTP запроса:
+  // POST /v1/accounts/A12345/sltp-orders
+  // Content-Type: application/json
+  // Authorization: <token>
+  // 
+  // {
+  //   "symbol": "SBER@MISX",
+  //   "side": "SIDE_BUY",
+  //   "quantity_sl": {
+  //     "value": "10"
+  //   },
+  //   "sl_price": {
+  //     "value": "270.00"
+  //   },
+  //   "limit_price": {
+  //     "value": "269.50"
+  //   },
+  //   "quantity_tp": {
+  //     "value": "10"
+  //   },
+  //   "tp_price": {
+  //     "value": "295.50"
+  //   },
+  //   "tp_guard_spread": {
+  //     "value": "0.5"  },
+  //   "tp_spread_measure": "TP_SPREAD_MEASURE_VALUE",
+  //   "valid_before": "VALID_BEFORE_GOOD_TILL_DATE",
+  //   "valid_expiry_time": "2026-12-31T23:59:59Z",
+  //   "comment": "my SL/TP order"
+  //  }
+  // 
+  //  Поле account_id берется из URL-пути, остальные поля передаются в теле запроса
+  rpc PlaceSLTPOrder(SLTPOrder) returns (OrderState) {
+    option (google.api.http) = {
+      post: "/v1/accounts/{account_id}/sltp-orders"
+      body: "*"
+    };
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+  ]
+      responses: [
+    {
+          key: "404"
+          value: {
+            description: "Счёт или инструмент не были найдены"
+          }
+        },
+    {
+          key: "400"
+          value: {
+            description: "Неверно переданы торговые параметры"
+          }
+        }
+  ]
+    };
+  };
+
 }
 
 // Запрос подписки на собственные заявки и сделки. Стрим
@@ -323,31 +410,24 @@ message Order {
   string symbol = 2;
   // Количество в шт.
   google.type.Decimal quantity = 3;
-  //  Сторона (long или short)
+  // Сторона (long или short)
   Side side = 4;
   // Тип заявки
   OrderType type = 5;
   // Срок действия заявки
   TimeInForce time_in_force = 6;
-
   // Необходимо для лимитной и стоп лимитной заявки
   google.type.Decimal limit_price = 7;
-
   // Необходимо для стоп рыночной и стоп лимитной заявки
   google.type.Decimal stop_price = 8;
-
   // Необходимо для стоп рыночной и стоп лимитной заявки
   StopCondition stop_condition = 9;
-
   // Необходимо для мульти лег заявки
   repeated Leg legs = 10;
-
   // Уникальный идентификатор заявки. Автоматически генерируется, если не отправлен. (максимум 20 символов)
   string client_order_id = 11;
-
   // Срок действия условной заявки. Заполняется для заявок с типом ORDER_TYPE_STOP, ORDER_TYPE_STOP_LIMIT
   ValidBefore valid_before = 12;
-
   // Метка заявки. (максимум 128 символов)
   string comment = 13;
 }
@@ -359,7 +439,7 @@ message Leg {
   // Количество
   google.type.Decimal quantity = 2;
   // Сторона
-  grpc.tradeapi.v1.Side side = 3;
+  Side side = 3;
 }
 
 // Статус заявки
@@ -440,12 +520,14 @@ message OrderState {
   google.protobuf.Timestamp accept_at = 6;
   // Дата и время  отмены заявки
   google.protobuf.Timestamp withdraw_at = 7;
-  // Начальный объем
+  // Начальный объем (заполняется только для биржевой заявки)
   google.type.Decimal initial_quantity = 8;
-  // Исполненный объем
+  // Исполненный объем (заполняется только для биржевой заявки)
   google.type.Decimal executed_quantity = 9;
-  // Оставшийся объем
+  // Оставшийся объем (заполняется только для биржевой заявки)
   google.type.Decimal remaining_quantity = 10;
+  // Информация о SL/TP заявке
+  SLTPOrder sltp_order = 11;
 }
 
 // Запрос получения списка торговых заявок
@@ -476,6 +558,49 @@ enum ValidBefore {
   VALID_BEFORE_END_OF_DAY = 1;
   // До отмены
   VALID_BEFORE_GOOD_TILL_CANCEL = 2;
-  // До указанной даты-времени. Данный тип на текущий момент не поддерживается при выставлении заявки
+  // До указанной даты-времени. Данный тип поддерживается только при выставлении SL/TP заявок
   VALID_BEFORE_GOOD_TILL_DATE = 3;
 }
+
+// Информация о SL/TP заявке
+message SLTPOrder {
+  // Идентификатор аккаунта
+  string account_id = 1;
+  // Символ инструмента
+  string symbol = 2;
+  // Сторона для обеих заявок
+  Side side = 3;
+  // Количество в шт для SL
+  google.type.Decimal quantity_sl = 4;
+  // Параметр условия цены для SL части
+  google.type.Decimal sl_price = 5;
+  // Если указано, после активации SL будет выставлена лимитная заявка с этой ценой
+  google.type.Decimal limit_price = 6;
+  // Количество в шт для TP
+  google.type.Decimal quantity_tp = 10;
+  // Параметр условия цены для TP части
+  google.type.Decimal tp_price = 11;
+  // Если указано, после активации TP будет выставлена лимитная заявка с учетом защитного спрэда
+  google.type.Decimal tp_guard_spread = 12;
+  // Единица измерения величины защитного спреда
+  TPSpreadMeasure tp_spread_measure = 13;
+  // Уникальный идентификатор заявки. Автоматически генерируется, если не отправлен. (максимум 20 символов)
+  string client_order_id = 20;
+  // Срок действия условной заявки. Если не заполнено, то по умолчанию выставляется VALID_BEFORE_GOOD_TILL_CANCEL
+  ValidBefore valid_before = 21;
+  // Временная метка прекращения действия SL/TP заявки
+  google.protobuf.Timestamp valid_expiry_time = 22;
+  // Метка заявки. (максимум 128 символов)
+  string comment = 23;
+}
+
+// Единица измерения величины защитного спреда для цены исполнения TP
+enum TPSpreadMeasure {
+  // Значение не указано
+  TP_SPREAD_MEASURE_UNDEFINED = 0;
+  // в единицах цены
+  TP_SPREAD_MEASURE_VALUE = 1;
+  // в процентах, с максимальной точностью до сотых процента
+  TP_SPREAD_MEASURE_PERCENT = 2;
+}
+
