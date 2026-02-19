@@ -30,3 +30,4 @@ message AccountTrade {
   // Метка заявки. (максимум 128 символов)
   string comment = 9;
 }
+
