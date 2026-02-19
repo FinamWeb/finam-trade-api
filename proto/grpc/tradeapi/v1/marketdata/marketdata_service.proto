@@ -7,12 +7,15 @@ import "google/protobuf/timestamp.proto";
 import "google/type/decimal.proto";
 import "google/type/interval.proto";
 import "grpc/tradeapi/v1/side.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
+import "protoc_gen_openapiv2/options/annotations.proto";
 
 option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/marketdata";
 option java_multiple_files = true;
-option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: [HTTP, HTTPS];
+option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
   info: {
     title: "Finam Trade-API"
     description: "API для торговых операций"
@@ -28,58 +31,60 @@ option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
       }
     }
   }
-  responses: {
-    key: "default";
-    value: {
-      schema: {
-        json_schema:{
-          ref: "googletypeStatus"
+  responses: [
+    {
+      key: "default"
+      value: {
+        schema: {
+          json_schema: {
+            ref: "googletypeStatus"
+          }
         }
       }
-    }
-  }
-  responses: {
-    key: "500";
-    value: {
-      description: "Внутренняя ошибка сервиса. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "503";
-    value: {
-      description: "Сервис на данный момент не доступен. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "429";
-    value: {
-      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
-    }
-  }
-  responses: {
-    key: "401"
-    value: {
-      description: "Срок действия токена истек или токен недействителен"
-    }
-  }
-  responses: {
-    key: "504"
-    value: {
-      description: "Крайний срок истек до завершения операции"
-    }
-  }
-  responses: {
-    key: "404"
-    value: {
-      description: "Инструмент не найден"
-    }
-  }
-  responses: {
-    key: "400";
-    value: {
-      description: "Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
     },
-  }
+    {
+      key: "500"
+      value: {
+        description: "Внутренняя ошибка сервиса. Попробуйте позже"
+      }
+    },
+    {
+      key: "503"
+      value: {
+        description: "Сервис на данный момент не доступен. Попробуйте позже"
+      }
+    },
+    {
+      key: "429"
+      value: {
+        description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+      }
+    },
+    {
+      key: "401"
+      value: {
+        description: "Срок действия токена истек или токен недействителен"
+      }
+    },
+    {
+      key: "504"
+      value: {
+        description: "Крайний срок истек до завершения операции"
+      }
+    },
+    {
+      key: "404"
+      value: {
+        description: "Инструмент не найден"
+      }
+    },
+    {
+      key: "400"
+      value: {
+        description: "Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
+      }
+    }
+  ]
 };
 
 // Сервис рыночных данных
@@ -88,71 +93,87 @@ service MarketDataService {
   // Пример HTTP запроса:
   // GET /v1/instruments/SBER@MISX/bars?timeframe=TIME_FRAME_D&interval.start_time=2023-01-01T00:00:00Z&interval.end_time=2023-01-31T23:59:59Z
   // Authorization: <token>
-  //
+  // 
   // Параметры:
   // - symbol - передается в URL пути
   // - timeframe и interval - передаются как query-параметры
   rpc Bars(BarsRequest) returns (BarsResponse) {
-    option (google.api.http) = {get: "/v1/instruments/{symbol}/bars"};
-    option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (google.api.http) = {
+      get: "/v1/instruments/{symbol}/bars"
+    };
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
+  ]
       responses: {
-        key: "400";
+        key: "400"
         value: {
           description: "Неверно передан символ или интервал. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
-        },
+        }
       }
     };
-  }
+  };
 
   // Получение последней котировки по инструменту
   // Пример HTTP запроса:
   // GET /v1/instruments/SBER@MISX/quotes/latest
   // Authorization: <token>
   rpc LastQuote(QuoteRequest) returns (QuoteResponse) {
-    option (google.api.http) = {get: "/v1/instruments/{symbol}/quotes/latest"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
-        }
-      }]
+    option (google.api.http) = {
+      get: "/v1/instruments/{symbol}/quotes/latest"
     };
-  }
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+  ]
+    };
+  };
 
   // Получение текущего стакана по инструменту
   // Пример HTTP запроса:
   // GET /v1/instruments/SBER@MISX/orderbook
   // Authorization: <token>
   rpc OrderBook(OrderBookRequest) returns (OrderBookResponse) {
-    option (google.api.http) = {get: "/v1/instruments/{symbol}/orderbook"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
-        }
-      }]
+    option (google.api.http) = {
+      get: "/v1/instruments/{symbol}/orderbook"
     };
-  }
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+  ]
+    };
+  };
 
   // Получение списка последних сделок по инструменту
   // Пример HTTP запроса:
   // GET /v1/instruments/SBER@MISX/trades/latest
   // Authorization: <token>
   rpc LatestTrades(LatestTradesRequest) returns (LatestTradesResponse) {
-    option (google.api.http) = {get: "/v1/instruments/{symbol}/trades/latest"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
-        }
-      }]
+    option (google.api.http) = {
+      get: "/v1/instruments/{symbol}/trades/latest"
     };
-  }
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+  ]
+    };
+  };
 
   // Подписка на котировки по инструменту. Стрим метод
   rpc SubscribeQuote(SubscribeQuoteRequest) returns (stream SubscribeQuoteResponse);
@@ -318,40 +339,6 @@ message Bar {
 
 // Информация о котировке
 message Quote {
-  // Символ инструмента
-  string symbol = 1;
-  // Метка времени
-  google.protobuf.Timestamp timestamp = 2;
-
-  // Аск. 0 при отсутствии активного аска
-  google.type.Decimal ask = 3;
-  // Размер аска
-  google.type.Decimal ask_size = 4;
-  // Бид. 0 при отсутствии активного бида
-  google.type.Decimal bid = 5;
-  // Размер бида
-  google.type.Decimal bid_size = 6;
-
-  // Цена последней сделки
-  google.type.Decimal last = 7;
-  // Размер последней сделки
-  google.type.Decimal last_size = 8;
-
-  // Дневной объем сделок
-  google.type.Decimal volume = 9;
-  // Дневной оборот сделок
-  google.type.Decimal turnover = 10;
-  // Цена открытия. Дневная
-  google.type.Decimal open = 11;
-  // Максимальная цена. Дневная
-  google.type.Decimal high = 12;
-  // Минимальная цена. Дневная
-  google.type.Decimal low = 13;
-  // Цена закрытия. Дневная
-  google.type.Decimal close = 14;
-  // Изменение цены (last минус close)
-  google.type.Decimal change = 15;
-
   // Информация об опционе
   message Option {
     // Открытый интерес
@@ -371,6 +358,36 @@ message Quote {
     // Rho
     google.type.Decimal rho = 8;
   }
+  // Символ инструмента
+  string symbol = 1;
+  // Метка времени
+  google.protobuf.Timestamp timestamp = 2;
+  // Аск. 0 при отсутствии активного аска
+  google.type.Decimal ask = 3;
+  // Размер аска
+  google.type.Decimal ask_size = 4;
+  // Бид. 0 при отсутствии активного бида
+  google.type.Decimal bid = 5;
+  // Размер бида
+  google.type.Decimal bid_size = 6;
+  // Цена последней сделки
+  google.type.Decimal last = 7;
+  // Размер последней сделки
+  google.type.Decimal last_size = 8;
+  // Дневной объем сделок
+  google.type.Decimal volume = 9;
+  // Дневной оборот сделок
+  google.type.Decimal turnover = 10;
+  // Цена открытия. Дневная
+  google.type.Decimal open = 11;
+  // Максимальная цена. Дневная
+  google.type.Decimal high = 12;
+  // Минимальная цена. Дневная
+  google.type.Decimal low = 13;
+  // Цена закрытия. Дневная
+  google.type.Decimal close = 14;
+  // Изменение цены (last минус close)
+  google.type.Decimal change = 15;
 
   oneof additions {
     // Информация об опционе
@@ -393,7 +410,6 @@ message OrderBook {
       // Обновить
       ACTION_UPDATE = 3;
     }
-
     // Цена
     google.type.Decimal price = 1;
 
@@ -403,7 +419,6 @@ message OrderBook {
       // Размер на покупку
       google.type.Decimal buy_size = 3;
     }
-
     // Команда
     Action action = 4;
     // Идентификатор участника рынка
@@ -411,7 +426,6 @@ message OrderBook {
     // Метка времени
     google.protobuf.Timestamp timestamp = 6;
   }
-
   // Уровни стакана
   repeated Row rows = 1;
 }
@@ -428,7 +442,7 @@ message Trade {
   google.type.Decimal price = 4;
   // Размер сделки
   google.type.Decimal size = 5;
-  //  Сторона сделки (buy или sell)
+  // Сторона сделки (buy или sell)
   Side side = 6;
 }
 
@@ -439,7 +453,6 @@ message StreamError {
   // Описание ошибки
   string description = 2;
 }
-
 
 // Стакан по инструменту. Стрим
 message StreamOrderBook {
@@ -456,7 +469,6 @@ message StreamOrderBook {
       // Обновить
       ACTION_UPDATE = 3;
     }
-
     // Цена
     google.type.Decimal price = 1;
 
@@ -466,7 +478,6 @@ message StreamOrderBook {
       // Размер на покупку
       google.type.Decimal buy_size = 3;
     }
-
     // Команда
     Action action = 4;
     // Идентификатор участника рынка
@@ -474,7 +485,6 @@ message StreamOrderBook {
     // Метка времени
     google.protobuf.Timestamp timestamp = 6;
   }
-
   // Символ инструмента
   string symbol = 1;
   // Уровни стакана
@@ -494,3 +504,4 @@ message SubscribeLatestTradesResponse {
   // Список сделок
   repeated Trade trades = 2;
 }
+
