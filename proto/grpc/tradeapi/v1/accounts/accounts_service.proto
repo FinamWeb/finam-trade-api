@@ -95,12 +95,12 @@ service AccountsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -108,7 +108,7 @@ service AccountsService {
   // Пример HTTP запроса:
   // GET /v1/accounts/A12345/trades?limit=50&interval.start_time=2023-01-01T00:00:00Z&interval.end_time=2023-01-31T23:59:59Z
   // Authorization: <token>
-  // 
+  //
   // Параметры:
   // - account_id - передается в URL пути
   // - limit и interval - передаются как query-параметры
@@ -118,12 +118,12 @@ service AccountsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "400"
         value: {
@@ -137,7 +137,7 @@ service AccountsService {
   // Пример HTTP запроса:
   // GET /v1/accounts/A12345/transactions?limit=50&interval.start_time=2023-01-01T00:00:00Z&interval.end_time=2023-01-31T23:59:59Z
   // Authorization: <token>
-  // 
+  //
   // Параметры:
   // - account_id - передается в URL пути
   // - limit и interval - передаются как query-параметры
@@ -147,12 +147,12 @@ service AccountsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "400"
         value: {

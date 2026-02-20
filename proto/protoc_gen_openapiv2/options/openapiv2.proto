@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc.gateway.protoc_gen_openapiv2.options;
+package protoc_gen_openapiv2.options;
 
 import "google/protobuf/struct.proto";
 
@@ -22,7 +22,7 @@ enum Scheme {
 //
 // Example:
 //
-//  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+//  option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
 //    info: {
 //      title: "Echo API";
 //      version: "1.0";
@@ -115,7 +115,7 @@ message Swagger {
 //        get: "/v1/example/echo/{id}"
 //      };
 //
-//      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+//      option (protoc_gen_openapiv2.options.openapiv2_operation) = {
 //        summary: "Get a message.";
 //        operation_id: "getMessage";
 //        tags: "echo";
@@ -297,7 +297,7 @@ message Response {
 //
 // Example:
 //
-//  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+//  option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
 //    info: {
 //      title: "Echo API";
 //      version: "1.0";
@@ -342,7 +342,7 @@ message Info {
 //
 // Example:
 //
-//  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+//  option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
 //    info: {
 //      ...
 //      contact: {
@@ -372,7 +372,7 @@ message Contact {
 //
 // Example:
 //
-//  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+//  option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
 //    info: {
 //      ...
 //      license: {
@@ -398,7 +398,7 @@ message License {
 //
 // Example:
 //
-//  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+//  option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
 //    ...
 //    external_docs: {
 //      description: "More about gRPC-Gateway";
@@ -449,7 +449,7 @@ message Schema {
 //
 // Example:
 //
-//  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_enum) = {
+//  option (protoc_gen_openapiv2.options.openapiv2_enum) = {
 //    ...
 //    title: "MyEnum";
 //    description:"This is my nice enum";
@@ -495,7 +495,7 @@ message EnumSchema {
 // Example:
 //
 //  message SimpleMessage {
-//    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+//    option (protoc_gen_openapiv2.options.openapiv2_schema) = {
 //      json_schema: {
 //        title: "SimpleMessage"
 //        description: "A simple message."
@@ -505,7 +505,7 @@ message EnumSchema {
 //
 //    // Id represents the message identifier.
 //    string id = 1; [
-//        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+//        (protoc_gen_openapiv2.options.openapiv2_field) = {
 //          description: "The unique identifier of the simple message."
 //        }];
 //  }

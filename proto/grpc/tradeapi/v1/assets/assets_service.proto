@@ -95,12 +95,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -115,12 +115,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -134,12 +134,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -147,7 +147,7 @@ service AssetsService {
   // Пример HTTP запроса:
   // GET /v1/assets/SBER@MISX?account_id=1440399
   // Authorization: <token>
-  // 
+  //
   // Параметры:
   // - symbol - передается в URL пути
   // - account_id - передаётся как query-параметр
@@ -157,12 +157,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "400"
         value: {
@@ -176,7 +176,7 @@ service AssetsService {
   // Пример HTTP запроса:
   // GET /v1/assets/SBER@MISX/params?account_id=1440399
   // Authorization: <token>
-  // 
+  //
   // Параметры:
   // - symbol - передается в URL пути
   // - account_id - передаётся как query-параметр
@@ -186,12 +186,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "400"
         value: {
@@ -211,12 +211,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "400"
         value: {
@@ -236,12 +236,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "400"
         value: {
@@ -261,12 +261,12 @@ service AssetsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 

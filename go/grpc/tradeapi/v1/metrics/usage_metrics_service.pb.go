@@ -184,7 +184,7 @@ var File_grpc_tradeapi_v1_metrics_usage_metrics_service_proto protoreflect.FileD
 
 const file_grpc_tradeapi_v1_metrics_usage_metrics_service_proto_rawDesc = "" +
 	"\n" +
-	"4grpc/tradeapi/v1/metrics/usage_metrics_service.proto\x12\x18grpc.tradeapi.v1.metrics\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\x18\n" +
+	"4grpc/tradeapi/v1/metrics/usage_metrics_service.proto\x12\x18grpc.tradeapi.v1.metrics\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc_gen_openapiv2/options/annotations.proto\"\x18\n" +
 	"\x16GetUsageMetricsRequest\"\x81\x02\n" +
 	"\x17GetUsageMetricsResponse\x12T\n" +
 	"\x06quotas\x18\x01 \x03(\v2<.grpc.tradeapi.v1.metrics.GetUsageMetricsResponse.QuotaUsageR\x06quotas\x1a\x8f\x01\n" +

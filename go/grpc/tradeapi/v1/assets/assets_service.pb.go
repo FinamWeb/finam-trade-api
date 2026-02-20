@@ -1721,7 +1721,7 @@ var File_grpc_tradeapi_v1_assets_assets_service_proto protoreflect.FileDescripto
 
 const file_grpc_tradeapi_v1_assets_assets_service_proto_rawDesc = "" +
 	"\n" +
-	",grpc/tradeapi/v1/assets/assets_service.proto\x12\x17grpc.tradeapi.v1.assets\x1a\x1cgoogle/api/annotations.proto\x1a\x16google/type/date.proto\x1a\x19google/type/decimal.proto\x1a\x1agoogle/type/interval.proto\x1a\x17google/type/money.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\x12\n" +
+	",grpc/tradeapi/v1/assets/assets_service.proto\x12\x17grpc.tradeapi.v1.assets\x1a\x1cgoogle/api/annotations.proto\x1a\x16google/type/date.proto\x1a\x19google/type/decimal.proto\x1a\x1agoogle/type/interval.proto\x1a\x17google/type/money.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc_gen_openapiv2/options/annotations.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\x12\n" +
 	"\x10ExchangesRequest\"T\n" +
 	"\x11ExchangesResponse\x12?\n" +
 	"\texchanges\x18\x01 \x03(\v2!.grpc.tradeapi.v1.assets.ExchangeR\texchanges\"\x0f\n" +

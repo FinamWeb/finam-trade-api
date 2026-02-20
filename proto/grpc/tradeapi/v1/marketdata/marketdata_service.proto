@@ -93,7 +93,7 @@ service MarketDataService {
   // Пример HTTP запроса:
   // GET /v1/instruments/SBER@MISX/bars?timeframe=TIME_FRAME_D&interval.start_time=2023-01-01T00:00:00Z&interval.end_time=2023-01-31T23:59:59Z
   // Authorization: <token>
-  // 
+  //
   // Параметры:
   // - symbol - передается в URL пути
   // - timeframe и interval - передаются как query-параметры
@@ -103,12 +103,12 @@ service MarketDataService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "400"
         value: {
@@ -128,12 +128,12 @@ service MarketDataService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -147,12 +147,12 @@ service MarketDataService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -166,12 +166,12 @@ service MarketDataService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 

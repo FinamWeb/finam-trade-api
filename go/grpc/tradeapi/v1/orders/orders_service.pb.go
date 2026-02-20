@@ -1395,7 +1395,7 @@ var File_grpc_tradeapi_v1_orders_orders_service_proto protoreflect.FileDescripto
 
 const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
 	"\n" +
-	",grpc/tradeapi/v1/orders/orders_service.proto\x12\x17grpc.tradeapi.v1.orders\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\x1a\x1cgrpc/tradeapi/v1/trade.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\xd6\x02\n" +
+	",grpc/tradeapi/v1/orders/orders_service.proto\x12\x17grpc.tradeapi.v1.orders\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\x1a\x1cgrpc/tradeapi/v1/trade.proto\x1a.protoc_gen_openapiv2/options/annotations.proto\"\xd6\x02\n" +
 	"\x11OrderTradeRequest\x12I\n" +
 	"\x06action\x18\x01 \x01(\x0e21.grpc.tradeapi.v1.orders.OrderTradeRequest.ActionR\x06action\x12P\n" +
 	"\tdata_type\x18\x02 \x01(\x0e23.grpc.tradeapi.v1.orders.OrderTradeRequest.DataTypeR\bdataType\x12\x1d\n" +

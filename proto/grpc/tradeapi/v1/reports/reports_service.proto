@@ -85,12 +85,12 @@ service ReportsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -104,12 +104,12 @@ service ReportsService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
     };
   };
 

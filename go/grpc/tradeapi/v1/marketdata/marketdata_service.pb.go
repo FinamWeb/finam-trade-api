@@ -1956,7 +1956,7 @@ var File_grpc_tradeapi_v1_marketdata_marketdata_service_proto protoreflect.FileD
 
 const file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDesc = "" +
 	"\n" +
-	"4grpc/tradeapi/v1/marketdata/marketdata_service.proto\x12\x1bgrpc.tradeapi.v1.marketdata\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1agoogle/type/interval.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\x9e\x01\n" +
+	"4grpc/tradeapi/v1/marketdata/marketdata_service.proto\x12\x1bgrpc.tradeapi.v1.marketdata\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1agoogle/type/interval.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\x1a.protoc_gen_openapiv2/options/annotations.proto\"\x9e\x01\n" +
 	"\vBarsRequest\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12D\n" +
 	"\ttimeframe\x18\x02 \x01(\x0e2&.grpc.tradeapi.v1.marketdata.TimeFrameR\ttimeframe\x121\n" +

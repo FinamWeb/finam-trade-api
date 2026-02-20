@@ -1025,7 +1025,7 @@ var File_grpc_tradeapi_v1_accounts_accounts_service_proto protoreflect.FileDescr
 
 const file_grpc_tradeapi_v1_accounts_accounts_service_proto_rawDesc = "" +
 	"\n" +
-	"0grpc/tradeapi/v1/accounts/accounts_service.proto\x12\x19grpc.tradeapi.v1.accounts\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1agoogle/type/interval.proto\x1a\x17google/type/money.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\x1a\x1cgrpc/tradeapi/v1/trade.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"2\n" +
+	"0grpc/tradeapi/v1/accounts/accounts_service.proto\x12\x19grpc.tradeapi.v1.accounts\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1agoogle/type/interval.proto\x1a\x17google/type/money.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\x1a\x1cgrpc/tradeapi/v1/trade.proto\x1a.protoc_gen_openapiv2/options/annotations.proto\"2\n" +
 	"\x11GetAccountRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\"\xfb\x05\n" +

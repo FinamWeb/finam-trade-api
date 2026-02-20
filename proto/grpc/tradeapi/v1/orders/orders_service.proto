@@ -82,7 +82,7 @@ service OrdersService {
   // POST /v1/accounts/A12345/orders
   // Content-Type: application/json
   // Authorization: <token>
-  // 
+  //
   // {
   //   "symbol": "SBER@MISX",
   //   "quantity": {
@@ -95,7 +95,7 @@ service OrdersService {
   // 		 "value": "150.50"
   // 	 }
   // }
-  // 
+  //
   // Поле account_id берется из URL-пути, остальные поля передаются в теле запроса
   rpc PlaceOrder(Order) returns (OrderState) {
     option (google.api.http) = {
@@ -104,26 +104,26 @@ service OrdersService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: [
-    {
+        {
           key: "404"
           value: {
             description: "Счёт или инструмент не были найдены"
           }
         },
-    {
+        {
           key: "400"
           value: {
             description: "Неверно переданы торговые параметры"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -137,26 +137,26 @@ service OrdersService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: [
-    {
+        {
           key: "404"
           value: {
             description: "Счёт или заявка не были найдены"
           }
         },
-    {
+        {
           key: "400"
           value: {
             description: "Заявка не может быть отменена так как она уже исполнена"
           }
         }
-  ]
+      ]
     };
   };
 
@@ -170,12 +170,12 @@ service OrdersService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "404"
         value: {
@@ -195,12 +195,12 @@ service OrdersService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: {
         key: "404"
         value: {
@@ -226,7 +226,7 @@ service OrdersService {
   // POST /v1/accounts/A12345/sltp-orders
   // Content-Type: application/json
   // Authorization: <token>
-  // 
+  //
   // {
   //   "symbol": "SBER@MISX",
   //   "side": "SIDE_BUY",
@@ -252,7 +252,7 @@ service OrdersService {
   //   "valid_expiry_time": "2026-12-31T23:59:59Z",
   //   "comment": "my SL/TP order"
   //  }
-  // 
+  //
   //  Поле account_id берется из URL-пути, остальные поля передаются в теле запроса
   rpc PlaceSLTPOrder(SLTPOrder) returns (OrderState) {
     option (google.api.http) = {
@@ -261,26 +261,26 @@ service OrdersService {
     };
     option (protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: [
-    {
+        {
           security_requirement: {
             key: "Authorization"
           }
         }
-  ]
+      ]
       responses: [
-    {
+        {
           key: "404"
           value: {
             description: "Счёт или инструмент не были найдены"
           }
         },
-    {
+        {
           key: "400"
           value: {
             description: "Неверно переданы торговые параметры"
           }
         }
-  ]
+      ]
     };
   };
 

@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package grpc.gateway.protoc_gen_openapiv2.options;
+package protoc_gen_openapiv2.options;
 
 import "google/protobuf/descriptor.proto";
-import "protoc-gen-openapiv2/options/openapiv2.proto";
+import "protoc_gen_openapiv2/options/openapiv2.proto";
 
 option go_package = "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options";
 

@@ -542,7 +542,7 @@ var File_grpc_tradeapi_v1_auth_auth_service_proto protoreflect.FileDescriptor
 
 const file_grpc_tradeapi_v1_auth_auth_service_proto_rawDesc = "" +
 	"\n" +
-	"(grpc/tradeapi/v1/auth/auth_service.proto\x12\x15grpc.tradeapi.v1.auth\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"%\n" +
+	"(grpc/tradeapi/v1/auth/auth_service.proto\x12\x15grpc.tradeapi.v1.auth\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a.protoc_gen_openapiv2/options/annotations.proto\"%\n" +
 	"\vAuthRequest\x12\x16\n" +
 	"\x06secret\x18\x01 \x01(\tR\x06secret\"$\n" +
 	"\fAuthResponse\x12\x14\n" +
