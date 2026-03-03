@@ -4,12 +4,15 @@ package grpc.tradeapi.v1.metrics;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
+import "protoc_gen_openapiv2/options/annotations.proto";
 
-option go_package = "trade_api/v1/metrics/usage_metrics_service";
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/metrics";
 option java_multiple_files = true;
-option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  schemes: [HTTP, HTTPS];
+option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
   info: {
     title: "Finam Trade-API"
     description: "API для торговых операций"
@@ -25,46 +28,48 @@ option(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
       }
     }
   }
-  responses: {
-    key: "default";
-    value: {
-      schema: {
-        json_schema:{
-          ref: "googletypeStatus"
+  responses: [
+    {
+      key: "default"
+      value: {
+        schema: {
+          json_schema: {
+            ref: "googletypeStatus"
+          }
         }
       }
+    },
+    {
+      key: "500"
+      value: {
+        description: "Внутренняя ошибка сервиса. Попробуйте позже"
+      }
+    },
+    {
+      key: "503"
+      value: {
+        description: "Сервис на данный момент не доступен. Попробуйте позже"
+      }
+    },
+    {
+      key: "429"
+      value: {
+        description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+      }
+    },
+    {
+      key: "401"
+      value: {
+        description: "Срок действия токена истек или токен недействителен"
+      }
+    },
+    {
+      key: "504"
+      value: {
+        description: "Крайний срок истек до завершения операции"
+      }
     }
-  }
-  responses: {
-    key: "500";
-    value: {
-      description: "Внутренняя ошибка сервиса. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "503";
-    value: {
-      description: "Сервис на данный момент не доступен. Попробуйте позже"
-    };
-  }
-  responses: {
-    key: "429";
-    value: {
-      description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
-    }
-  }
-  responses: {
-    key: "401"
-    value: {
-      description: "Срок действия токена истек или токен недействителен"
-    }
-  }
-  responses: {
-    key: "504"
-    value: {
-      description: "Крайний срок истек до завершения операции"
-    }
-  }
+  ]
 };
 
 // Сервис для получения метрик использования TradeAPI.
@@ -79,24 +84,27 @@ service UsageMetricsService {
     option (google.api.http) = {
       get: "/v1/usage"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: [{
-        security_requirement: {
-          key: "Authorization"
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
         }
-      }]
+  ]
     };
   };
+
 }
 
 // Запрос получения текущих метрик использования
-message GetUsageMetricsRequest {}
+message GetUsageMetricsRequest {
+}
 
 // Информация о текущих метриках использования
 message GetUsageMetricsResponse {
   // Квота
-  message QuotaUsage
-  {
+  message QuotaUsage {
     // Название метода
     string name = 1;
     // Общий лимит по данной квоте.
@@ -106,7 +114,7 @@ message GetUsageMetricsResponse {
     // Время, когда счетчик квоты будет сброшен (начало нового окна).
     google.protobuf.Timestamp reset_time = 4;
   }
-
   // Список текущих квот и их использование.
   repeated QuotaUsage quotas = 1;
 }
+

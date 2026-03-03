@@ -1,0 +1,208 @@
+syntax = "proto3";
+
+package grpc.tradeapi.v1.reports;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "protoc_gen_openapiv2/options/annotations.proto";
+
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/reports";
+option java_multiple_files = true;
+option (protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
+  info: {
+    title: "Finam Trade-API"
+    description: "API для торговых операций"
+  }
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT токен авторизации"
+      }
+    }
+  }
+  responses: [
+    {
+      key: "default"
+      value: {
+        schema: {
+          json_schema: {
+            ref: "googletypeStatus"
+          }
+        }
+      }
+    },
+    {
+      key: "500"
+      value: {
+        description: "Внутренняя ошибка сервиса. Попробуйте позже"
+      }
+    },
+    {
+      key: "503"
+      value: {
+        description: "Сервис на данный момент не доступен. Попробуйте позже"
+      }
+    },
+    {
+      key: "429"
+      value: {
+        description: "Превышен лимит запросов."
+      }
+    },
+    {
+      key: "401"
+      value: {
+        description: "Срок действия токена истек или токен недействителен"
+      }
+    },
+    {
+      key: "504"
+      value: {
+        description: "Крайний срок истек до завершения операции"
+      }
+    }
+  ]
+};
+
+service ReportsService {
+  // Запустить генерацию отчета по счету за период
+  // Пример HTTP запроса:
+  // POST /v1/report
+  // Authorization: <token>
+  rpc CreateAccountReport(CreateAccountReportRequest) returns (CreateAccountReportResponse) {
+    option (google.api.http) = {
+      post: "/v1/report"
+      body: "*"
+    };
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+  ]
+    };
+  };
+
+  // Получение информации о результате генерации отчета по счету
+  // Пример HTTP запроса:
+  // GET /v1/report/01KBMPQ3CEZ4BBCVGBW5JS8S8Y/info
+  // Authorization: <token>
+  rpc GetAccountReportInfo(GetAccountReportInfoRequest) returns (GetAccountReportInfoResponse) {
+    option (google.api.http) = {
+      get: "/v1/report/{report_id}/info"
+    };
+    option (protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+    {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+  ]
+    };
+  };
+
+  // Подписка на информацию о результатах генерации отчета по счету. Стрим метод
+  rpc SubscribeAccountReportInfo(SubscribeAccountReportInfoRequest) returns (stream SubscribeAccountReportInfoResponse);
+
+}
+
+// Запрос на генерацию отчёта по счёту за период
+message CreateAccountReportRequest {
+  // Временной интервал. Максимальный интервал дат - 92 дня
+  DateRange date_range = 1;
+  // Форма отчета
+  ReportForm report_form = 2;
+  // Идентификатор счета
+  int64 account_id = 3;
+}
+
+// Информация о генерируемом отчёте
+message CreateAccountReportResponse {
+  // Идентификатор отчёта
+  string report_id = 1;
+}
+
+// Запрос на получение статуса генерации отчёта
+message GetAccountReportInfoRequest {
+  // Идентификатор отчёта
+  string report_id = 1;
+}
+
+// Информация о статусе генерации отчёта
+message GetAccountReportInfoResponse {
+  // Информация о статусе генерации отчёта
+  AccountReportInfo info = 1;
+}
+
+// Запрос подписки на получение статуса генерации отчёта
+message SubscribeAccountReportInfoRequest {
+  // Идентификатор отчёта
+  string report_id = 1;
+}
+
+// Информация о статусе генерации отчёта. Стрим
+message SubscribeAccountReportInfoResponse {
+  // Информация о статусе генерации отчёта
+  AccountReportInfo info = 1;
+}
+
+// Информация о статусе генерации отчёта
+message AccountReportInfo {
+  // Идентификатор отчёта
+  string report_id = 1;
+  // Статус генерации отчёта
+  ReportCreationStatus status = 2;
+  // Временной интервал отчёта. Берётся из запроса на генерацию отчёта
+  DateRange date_range = 3;
+  // Форма отчета. Берётся из запроса на генерацию отчёта
+  ReportForm report_form = 4;
+  // Идентификатор счета. Берётся из запроса на генерацию отчёта
+  int64 account_id = 5;
+  // Ссылка на скачивание отчёта. Появляется только в случае успешной генерации отчёта (ReportCreationStatus = SUCCESS)
+  google.protobuf.StringValue url = 6;
+}
+
+// Временной интервал
+message DateRange {
+  // Дата начала временного интервала
+  google.protobuf.Timestamp date_begin = 1;
+  // Дата конца временного интервала
+  google.protobuf.Timestamp date_end = 2;
+}
+
+// Форма отчета
+enum ReportForm {
+  // Не указана
+  REPORT_FORM_UNKNOWN = 0;
+  // Краткая
+  REPORT_FORM_SHORT = 1;
+  // Полная
+  REPORT_FORM_LONG = 2;
+}
+
+// Статус генерации отчёта
+enum ReportCreationStatus {
+  // Не найден
+  NOT_FOUND = 0;
+  // Ожидает генерации
+  PENDING = 1;
+  // Генерация запущена
+  IN_PROGRESS = 2;
+  // Генерация завершена успешно
+  SUCCESS = 3;
+  // Генерация завершена с ошибкой
+  ERROR = 4;
+}
+
