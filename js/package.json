@@ -1,0 +1,22 @@
+{
+  "name": "@finam/grpc-tradeapi",
+  "version": "2.14.0",
+  "type": "module",
+  "scripts": {
+    "build": "buf generate",
+    "publish": "node ./publishPackage.js"
+  },
+  "exports": {
+    "./*": {
+      "types": "./*.d.ts",
+      "default": "./*.js"
+    }
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.67.0",
+    "@bufbuild/protoc-gen-es": "^2.11.0"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.11.0"
+  }
+}
