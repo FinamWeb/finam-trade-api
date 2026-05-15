@@ -43,7 +43,13 @@ type AccountTrade struct {
 	// Идентификатор аккаунта
 	AccountId string `protobuf:"bytes,8,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	// Метка заявки. (максимум 128 символов)
-	Comment       string `protobuf:"bytes,9,opt,name=comment,proto3" json:"comment,omitempty"`
+	Comment string `protobuf:"bytes,9,opt,name=comment,proto3" json:"comment,omitempty"`
+	// НКД (заполняется на следующий день после даты совершения сделки)
+	AccruedInterest *decimal.Decimal `protobuf:"bytes,10,opt,name=accrued_interest,json=accruedInterest,proto3" json:"accrued_interest,omitempty"`
+	// Валюта цены (например, RUB, USD, EUR)
+	// Примечание: поле заполняется только при использовании метода Trades
+	// Для SubscribeTrades данное поле может быть пустым в связи с различиями в источниках данных. При обработке сделок из подписки рекомендуется учитывать возможность пустого значения.
+	Currency      string `protobuf:"bytes,11,opt,name=currency,proto3" json:"currency,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -141,11 +147,25 @@ func (x *AccountTrade) GetComment() string {
 	return ""
 }
 
+func (x *AccountTrade) GetAccruedInterest() *decimal.Decimal {
+	if x != nil {
+		return x.AccruedInterest
+	}
+	return nil
+}
+
+func (x *AccountTrade) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
 var File_grpc_tradeapi_v1_trade_proto protoreflect.FileDescriptor
 
 const file_grpc_tradeapi_v1_trade_proto_rawDesc = "" +
 	"\n" +
-	"\x1cgrpc/tradeapi/v1/trade.proto\x12\x10grpc.tradeapi.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\"\xd1\x02\n" +
+	"\x1cgrpc/tradeapi/v1/trade.proto\x12\x10grpc.tradeapi.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\"\xae\x03\n" +
 	"\fAccountTrade\x12\x19\n" +
 	"\btrade_id\x18\x01 \x01(\tR\atradeId\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12*\n" +
@@ -156,7 +176,10 @@ const file_grpc_tradeapi_v1_trade_proto_rawDesc = "" +
 	"\border_id\x18\a \x01(\tR\aorderId\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\b \x01(\tR\taccountId\x12\x18\n" +
-	"\acomment\x18\t \x01(\tR\acommentB;P\x01Z7github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1b\x06proto3"
+	"\acomment\x18\t \x01(\tR\acomment\x12?\n" +
+	"\x10accrued_interest\x18\n" +
+	" \x01(\v2\x14.google.type.DecimalR\x0faccruedInterest\x12\x1a\n" +
+	"\bcurrency\x18\v \x01(\tR\bcurrencyB;P\x01Z7github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1b\x06proto3"
 
 var (
 	file_grpc_tradeapi_v1_trade_proto_rawDescOnce sync.Once
@@ -182,11 +205,12 @@ var file_grpc_tradeapi_v1_trade_proto_depIdxs = []int32{
 	1, // 1: grpc.tradeapi.v1.AccountTrade.size:type_name -> google.type.Decimal
 	2, // 2: grpc.tradeapi.v1.AccountTrade.side:type_name -> grpc.tradeapi.v1.Side
 	3, // 3: grpc.tradeapi.v1.AccountTrade.timestamp:type_name -> google.protobuf.Timestamp
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	1, // 4: grpc.tradeapi.v1.AccountTrade.accrued_interest:type_name -> google.type.Decimal
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_grpc_tradeapi_v1_trade_proto_init() }
