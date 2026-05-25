@@ -1,0 +1,55 @@
+name: Python SDK Tests
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'python/**'
+      - 'proto/**'
+      - '.github/workflows/python_test.yml'
+  pull_request:
+    paths:
+      - 'python/**'
+      - 'proto/**'
+      - '.github/workflows/python_test.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    defaults:
+      run:
+        working-directory: python
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" pytest-cov
+
+      - name: Generate proto stubs
+        run: ./scripts/generate_proto.sh
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests/ --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=95
+
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: python/coverage.xml
