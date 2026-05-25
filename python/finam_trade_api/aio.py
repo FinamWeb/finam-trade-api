@@ -21,7 +21,9 @@ import grpc.aio
 from ._metadata import async_call_credentials
 from .auth import AsyncTokenManager
 from .client import DEFAULT_ENDPOINT
-from .retry import DEFAULT_POLICY, RetryPolicy, build_async_interceptor
+from .retry import DEFAULT_POLICY, RetryPolicy, build_async_interceptors
+
+logger = logging.getLogger(__name__)
 
 
 async def _details_with_token_async(token_manager: AsyncTokenManager, details):  # type: ignore[no-untyped-def]
@@ -35,7 +37,8 @@ async def _details_with_token_async(token_manager: AsyncTokenManager, details): 
 # That means an interceptor inheriting from multiple ClientInterceptor subtypes
 # is silently ignored for all but the first matching type. To get Authorization
 # headers on both unary and server-streaming calls, we register two separate
-# objects — one per interface.
+# objects — one per interface. The retry interceptors (in retry.py) are split
+# the same way for the same reason.
 
 
 class _InsecureAsyncAuthUnaryInterceptor(grpc.aio.UnaryUnaryClientInterceptor):
@@ -58,8 +61,6 @@ class _InsecureAsyncAuthStreamInterceptor(grpc.aio.UnaryStreamClientInterceptor)
     async def intercept_unary_stream(self, continuation, client_call_details, request):  # type: ignore[no-untyped-def]
         details = await _details_with_token_async(self._token_manager, client_call_details)
         return await continuation(details, request)
-
-logger = logging.getLogger(__name__)
 
 
 def _async_service_stubs():  # noqa: ANN202
@@ -89,6 +90,9 @@ class AsyncFinamClient:
 
     Construct, then ``await client.start()`` — or use as an async context
     manager — before issuing RPCs, so the initial JWT is in hand.
+
+    For local testing against an in-process fake server, construct via
+    :meth:`for_testing` rather than passing ``_insecure`` directly.
     """
 
     def __init__(
@@ -98,76 +102,135 @@ class AsyncFinamClient:
         endpoint: str = DEFAULT_ENDPOINT,
         retry_policy: RetryPolicy = DEFAULT_POLICY,
         channel_options: Optional[list[tuple[str, object]]] = None,
-        insecure: bool = False,
+        _insecure: bool = False,
     ) -> None:
         self._endpoint = endpoint
         self._secret = secret
         self._retry_policy = retry_policy
         self._channel_options = channel_options
-        self._insecure = insecure
+        self._insecure = _insecure
 
         self._auth_channel: Optional[grpc.aio.Channel] = None
         self._channel: Optional[grpc.aio.Channel] = None
         self._token_manager: Optional[AsyncTokenManager] = None
         self._started = False
 
+    @classmethod
+    def for_testing(
+        cls,
+        secret: str,
+        *,
+        endpoint: str,
+        retry_policy: RetryPolicy = DEFAULT_POLICY,
+        channel_options: Optional[list[tuple[str, object]]] = None,
+    ) -> "AsyncFinamClient":
+        """Construct an insecure (no-TLS) client for testing against an in-process
+        fake server. Never use against ``api.finam.ru`` or any production endpoint."""
+        return cls(
+            secret,
+            endpoint=endpoint,
+            retry_policy=retry_policy,
+            channel_options=channel_options,
+            _insecure=True,
+        )
+
     async def start(self) -> None:
+        """Open channels, fetch the initial JWT, and wire up service stubs.
+
+        If any step fails the partial state is rolled back so ``start()`` is
+        safe to call again after fixing the underlying issue.
+        """
         if self._started:
             return
-        if self._insecure:
-            self._auth_channel = grpc.aio.insecure_channel(
-                self._endpoint, options=self._channel_options
-            )
-            self._token_manager = AsyncTokenManager(self._auth_channel, self._secret)
-            await self._token_manager.start()
-            self._channel = grpc.aio.insecure_channel(
-                self._endpoint,
-                options=self._channel_options,
-                interceptors=[
-                    _InsecureAsyncAuthUnaryInterceptor(self._token_manager),
-                    _InsecureAsyncAuthStreamInterceptor(self._token_manager),
-                    build_async_interceptor(self._retry_policy),
-                ],
-            )
-        else:  # pragma: no cover - exercised against the real TLS endpoint
-            transport = grpc.ssl_channel_credentials()
-            self._auth_channel = grpc.aio.secure_channel(
-                self._endpoint, transport, options=self._channel_options
-            )
-            self._token_manager = AsyncTokenManager(self._auth_channel, self._secret)
-            await self._token_manager.start()
+        try:
+            if self._insecure:
+                await self._start_insecure()
+            else:
+                await self._start_secure()
 
-            call_creds = async_call_credentials(self._token_manager)
-            composite = grpc.composite_channel_credentials(transport, call_creds)
-            self._channel = grpc.aio.secure_channel(
-                self._endpoint,
-                composite,
-                options=self._channel_options,
-                interceptors=[build_async_interceptor(self._retry_policy)],
-            )
+            stubs = _async_service_stubs()
+            self.auth = stubs["auth"](self._channel)
+            self.accounts = stubs["accounts"](self._channel)
+            self.assets = stubs["assets"](self._channel)
+            self.market_data = stubs["market_data"](self._channel)
+            self.orders = stubs["orders"](self._channel)
+            self.reports = stubs["reports"](self._channel)
+            self.metrics = stubs["metrics"](self._channel)
+            self._started = True
+        except BaseException:
+            # Roll back any channels / background tasks we opened so the
+            # caller doesn't leak resources on a failed start.
+            await self._safe_teardown()
+            raise
 
-        stubs = _async_service_stubs()
-        self.auth = stubs["auth"](self._channel)
-        self.accounts = stubs["accounts"](self._channel)
-        self.assets = stubs["assets"](self._channel)
-        self.market_data = stubs["market_data"](self._channel)
-        self.orders = stubs["orders"](self._channel)
-        self.reports = stubs["reports"](self._channel)
-        self.metrics = stubs["metrics"](self._channel)
-        self._started = True
+    async def _start_insecure(self) -> None:
+        self._auth_channel = grpc.aio.insecure_channel(
+            self._endpoint, options=self._channel_options
+        )
+        self._token_manager = AsyncTokenManager(self._auth_channel, self._secret)
+        await self._token_manager.start()
+        retry_unary, retry_stream = build_async_interceptors(self._retry_policy)
+        self._channel = grpc.aio.insecure_channel(
+            self._endpoint,
+            options=self._channel_options,
+            interceptors=[
+                _InsecureAsyncAuthUnaryInterceptor(self._token_manager),
+                _InsecureAsyncAuthStreamInterceptor(self._token_manager),
+                retry_unary,
+                retry_stream,
+            ],
+        )
 
-    @property
-    async def token(self) -> str:
-        assert self._token_manager is not None, "call start() first"
-        return await self._token_manager.get_token()
+    async def _start_secure(self) -> None:  # pragma: no cover - real TLS endpoint
+        transport = grpc.ssl_channel_credentials()
+        self._auth_channel = grpc.aio.secure_channel(
+            self._endpoint, transport, options=self._channel_options
+        )
+        self._token_manager = AsyncTokenManager(self._auth_channel, self._secret)
+        await self._token_manager.start()
+
+        call_creds = async_call_credentials(self._token_manager)
+        composite = grpc.composite_channel_credentials(transport, call_creds)
+        retry_unary, retry_stream = build_async_interceptors(self._retry_policy)
+        self._channel = grpc.aio.secure_channel(
+            self._endpoint,
+            composite,
+            options=self._channel_options,
+            interceptors=[retry_unary, retry_stream],
+        )
+
+    async def _safe_teardown(self) -> None:
+        """Best-effort cleanup used by both ``start()`` failure paths and
+        ``close()``. Swallows errors — we are already in a teardown path."""
+        if self._token_manager is not None:
+            try:
+                await self._token_manager.stop()
+            except Exception:  # pragma: no cover - defensive log on teardown
+                logger.exception("Error stopping token manager during teardown")
+        if self._channel is not None:
+            try:
+                await self._channel.close()
+            except Exception:  # pragma: no cover - defensive log on teardown
+                logger.exception("Error closing application channel during teardown")
+        if self._auth_channel is not None:
+            try:
+                await self._auth_channel.close()
+            except Exception:  # pragma: no cover - defensive log on teardown
+                logger.exception("Error closing auth channel during teardown")
+
+    def get_token(self) -> Optional[str]:
+        """Return the current JWT, or ``None`` if ``start()`` has not completed.
+
+        Sync read (no ``await``) — exposes the cached token snapshot. The token
+        is refreshed in the background; callers typically don't need to read it
+        at all because the SDK injects it on every RPC automatically.
+        """
+        if self._token_manager is None:
+            return None
+        return self._token_manager._token  # noqa: SLF001 — intentional snapshot read
 
     async def close(self) -> None:
-        if self._token_manager is not None:
-            await self._token_manager.stop()
-        if self._channel is not None:
-            await self._channel.close()
-        if self._auth_channel is not None:
-            await self._auth_channel.close()
+        await self._safe_teardown()
 
     async def __aenter__(self) -> "AsyncFinamClient":
         await self.start()

@@ -34,6 +34,7 @@ dependencies = [
 dev = [
     "pytest>=7",
     "pytest-asyncio>=0.23",
+    "pytest-cov>=4",
     "mypy>=1.8",
     "ruff>=0.3",
 ]
@@ -49,6 +50,9 @@ include = ["finam_trade_api*", "finam_trade_api.proto*"]
 
 [tool.setuptools.package-data]
 "finam_trade_api" = ["py.typed"]
+# Ship generated type stubs (.pyi) alongside the runtime modules so downstream
+# type-checkers see the proto messages with their full field types.
+"finam_trade_api.proto" = ["**/*.pyi"]
 
 [tool.ruff]
 line-length = 100

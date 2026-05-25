@@ -160,13 +160,14 @@ Legend: ▶ unary · ⇉ server-stream · ⇄ bidi-stream
 
 | Operation | Sync | Async |
 | --- | --- | --- |
-| Construct | `FinamClient(secret, *, endpoint=DEFAULT_ENDPOINT, retry_policy=DEFAULT_POLICY, channel_options=None, insecure=False)` | `AsyncFinamClient(secret, ...)` — same args |
+| Construct | `FinamClient(secret, *, endpoint=DEFAULT_ENDPOINT, retry_policy=DEFAULT_POLICY, channel_options=None)` | `AsyncFinamClient(secret, ...)` — same args |
 | Start | *immediate, blocks for initial JWT* | `await client.start()` — or use `async with` |
-| Current JWT | `client.token` | `await client.token` |
+| Current JWT | `client.get_token()` → `str \| None` | `client.get_token()` → `str \| None` (sync read of cached snapshot) |
 | Close | `client.close()` | `await client.close()` |
 | Context manager | `with FinamClient(...) as client:` | `async with AsyncFinamClient(...) as client:` |
+| Testing (no TLS) | `FinamClient.for_testing(secret, endpoint="localhost:50051")` | `AsyncFinamClient.for_testing(secret, endpoint="localhost:50051")` |
 
-> `insecure=True` is for local testing against an in-process fake server only — it disables TLS and routes the Authorization header through a plaintext interceptor. **Never use against `api.finam.ru`.**
+> `for_testing(...)` opens an insecure (plaintext) channel against an in-process fake server. **Never use against `api.finam.ru`** — it sends your JWT in clear.
 
 ## Error handling
 

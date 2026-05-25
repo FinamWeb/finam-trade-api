@@ -1,16 +1,15 @@
 """Unit tests for finam_trade_api.retry.
 
 These exercise the backoff math and the interceptor's retry decisions without
-spinning up a real gRPC channel — we feed a fake `continuation` callable into
-``intercept_unary_unary`` directly.
+spinning up a real gRPC channel — we feed a fake ``continuation`` callable
+into ``intercept_unary_unary`` directly.
 """
 
 from __future__ import annotations
 
-import asyncio
 import time
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import grpc
 import pytest
@@ -18,7 +17,7 @@ import pytest
 from finam_trade_api.retry import (
     DEFAULT_POLICY,
     RetryPolicy,
-    build_async_interceptor,
+    build_async_interceptors,
     build_sync_interceptor,
 )
 
@@ -75,8 +74,13 @@ def _fast_policy(max_attempts: int = 3) -> RetryPolicy:
     )
 
 
-def _make_call(success: bool, code: grpc.StatusCode | None = None) -> MagicMock:
+def _make_call(
+    success: bool,
+    code: grpc.StatusCode | None = None,
+    trailing_metadata: tuple = (),
+) -> MagicMock:
     call = MagicMock()
+    call.trailing_metadata.return_value = trailing_metadata
     if success:
         call.result.return_value = "ok"
     else:
@@ -116,15 +120,69 @@ def test_sync_retry_does_not_retry_non_retryable_code() -> None:
     assert cont.call_count == 1
 
 
-def test_sync_retry_handles_resource_exhausted() -> None:
-    interceptor = build_sync_interceptor(_fast_policy(max_attempts=2))
+def test_sync_retry_does_NOT_retry_resource_exhausted_without_pushback() -> None:
+    """RESOURCE_EXHAUSTED (429) means 'you are being throttled' — blind retries
+    just amplify the throttle, so the default behaviour is to give up
+    immediately. See finam_trade_api/retry.py module docstring."""
+    interceptor = build_sync_interceptor(_fast_policy(max_attempts=4))
+    cont = MagicMock(side_effect=[_make_call(False, grpc.StatusCode.RESOURCE_EXHAUSTED)])
+    with pytest.raises(grpc.RpcError):
+        interceptor.intercept_unary_unary(cont, MagicMock(), "req")
+    assert cont.call_count == 1
+
+
+def test_sync_retry_DOES_retry_resource_exhausted_when_pushback_present() -> None:
+    """If the server attaches grpc-retry-pushback-ms it is explicitly inviting
+    a retry after the given delay."""
+    interceptor = build_sync_interceptor(_fast_policy(max_attempts=3))
     calls = [
-        _make_call(False, grpc.StatusCode.RESOURCE_EXHAUSTED),
+        _make_call(
+            False,
+            grpc.StatusCode.RESOURCE_EXHAUSTED,
+            trailing_metadata=(("grpc-retry-pushback-ms", "5"),),
+        ),
         _make_call(True),
     ]
     cont = MagicMock(side_effect=calls)
     result = interceptor.intercept_unary_unary(cont, MagicMock(), "req")
     assert result is calls[1]
+    assert cont.call_count == 2
+
+
+def test_sync_retry_respects_negative_pushback_as_do_not_retry() -> None:
+    """A negative pushback value documented to mean 'do not retry'."""
+    interceptor = build_sync_interceptor(_fast_policy(max_attempts=4))
+    cont = MagicMock(
+        side_effect=[
+            _make_call(
+                False,
+                grpc.StatusCode.RESOURCE_EXHAUSTED,
+                trailing_metadata=(("grpc-retry-pushback-ms", "-1"),),
+            )
+        ]
+    )
+    with pytest.raises(grpc.RpcError):
+        interceptor.intercept_unary_unary(cont, MagicMock(), "req")
+    assert cont.call_count == 1
+
+
+def test_sync_retry_ignores_malformed_pushback() -> None:
+    """A malformed grpc-retry-pushback-ms value should be ignored (logged)
+    and the default policy applied — which for RESOURCE_EXHAUSTED means
+    'give up'."""
+    interceptor = build_sync_interceptor(_fast_policy(max_attempts=4))
+    cont = MagicMock(
+        side_effect=[
+            _make_call(
+                False,
+                grpc.StatusCode.RESOURCE_EXHAUSTED,
+                trailing_metadata=(("grpc-retry-pushback-ms", "not-a-number"),),
+            )
+        ]
+    )
+    with pytest.raises(grpc.RpcError):
+        interceptor.intercept_unary_unary(cont, MagicMock(), "req")
+    assert cont.call_count == 1
 
 
 def test_sync_retry_sleeps_between_attempts() -> None:
@@ -155,73 +213,129 @@ def test_sync_interceptor_passes_streams_through_unchanged() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _make_async_call(code: grpc.StatusCode) -> Any:
+def _make_async_call(
+    code: grpc.StatusCode, trailing_metadata: tuple = ()
+) -> Any:
+    """Build a fake grpc.aio call. ``code()`` and ``trailing_metadata()`` are
+    coroutines on real grpc.aio calls — we model them with AsyncMock so the
+    interceptor's ``await`` works unchanged. ``cancel()`` is plain sync."""
     call = MagicMock()
-
-    async def _code() -> grpc.StatusCode:
-        return code
-
-    call.code = _code
+    call.code = AsyncMock(return_value=code)
+    call.trailing_metadata = AsyncMock(return_value=trailing_metadata)
     return call
+
+
+def test_async_build_returns_pair_of_interceptors() -> None:
+    """The async builder must return two distinct objects (one per interface),
+    otherwise grpc.aio's first-match dispatch silently drops the stream side."""
+    unary, stream = build_async_interceptors(_fast_policy())
+    assert isinstance(unary, grpc.aio.UnaryUnaryClientInterceptor)
+    assert isinstance(stream, grpc.aio.UnaryStreamClientInterceptor)
+    # And NOT cross-registered, which is exactly the bug we're guarding against.
+    assert not isinstance(unary, grpc.aio.UnaryStreamClientInterceptor)
+    assert not isinstance(stream, grpc.aio.UnaryUnaryClientInterceptor)
 
 
 @pytest.mark.asyncio
 async def test_async_retry_succeeds_after_transient_unavailable() -> None:
-    interceptor = build_async_interceptor(_fast_policy(max_attempts=3))
+    unary, _ = build_async_interceptors(_fast_policy(max_attempts=3))
     bad = _make_async_call(grpc.StatusCode.UNAVAILABLE)
     good = _make_async_call(grpc.StatusCode.OK)
+    cont = AsyncMock(side_effect=[bad, good])
 
-    async def cont(details: Any, request: Any) -> Any:
-        return bad if cont.calls == 0 else good  # type: ignore[attr-defined]
-
-    cont.calls = 0  # type: ignore[attr-defined]
-
-    async def cont_tracker(details: Any, request: Any) -> Any:
-        result = await cont(details, request)
-        cont_tracker.count += 1  # type: ignore[attr-defined]
-        cont.calls += 1  # type: ignore[attr-defined]
-        return result
-
-    cont_tracker.count = 0  # type: ignore[attr-defined]
-    result = await interceptor.intercept_unary_unary(cont_tracker, MagicMock(), "req")
+    result = await unary.intercept_unary_unary(cont, MagicMock(), "req")
     assert result is good
-    assert cont_tracker.count == 2  # type: ignore[attr-defined]
+    assert cont.call_count == 2
+    # Critical: the failed first call must be cancelled so it doesn't leak.
+    bad.cancel.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_async_retry_gives_up_after_max_attempts() -> None:
-    interceptor = build_async_interceptor(_fast_policy(max_attempts=2))
-
-    async def cont(details: Any, request: Any) -> Any:
-        cont.count += 1  # type: ignore[attr-defined]
-        return _make_async_call(grpc.StatusCode.UNAVAILABLE)
-
-    cont.count = 0  # type: ignore[attr-defined]
-    result = await interceptor.intercept_unary_unary(cont, MagicMock(), "req")
+    unary, _ = build_async_interceptors(_fast_policy(max_attempts=2))
+    calls = [
+        _make_async_call(grpc.StatusCode.UNAVAILABLE),
+        _make_async_call(grpc.StatusCode.UNAVAILABLE),
+    ]
+    cont = AsyncMock(side_effect=calls)
+    result = await unary.intercept_unary_unary(cont, MagicMock(), "req")
     assert await result.code() is grpc.StatusCode.UNAVAILABLE
-    assert cont.count == 2  # type: ignore[attr-defined]
+    assert cont.call_count == 2
 
 
 @pytest.mark.asyncio
 async def test_async_retry_skips_non_retryable_code() -> None:
-    interceptor = build_async_interceptor(_fast_policy(max_attempts=4))
-
-    async def cont(details: Any, request: Any) -> Any:
-        cont.count += 1  # type: ignore[attr-defined]
-        return _make_async_call(grpc.StatusCode.INVALID_ARGUMENT)
-
-    cont.count = 0  # type: ignore[attr-defined]
-    result = await interceptor.intercept_unary_unary(cont, MagicMock(), "req")
+    unary, _ = build_async_interceptors(_fast_policy(max_attempts=4))
+    call = _make_async_call(grpc.StatusCode.INVALID_ARGUMENT)
+    cont = AsyncMock(return_value=call)
+    result = await unary.intercept_unary_unary(cont, MagicMock(), "req")
     assert await result.code() is grpc.StatusCode.INVALID_ARGUMENT
-    assert cont.count == 1  # type: ignore[attr-defined]
+    assert cont.call_count == 1
 
 
 @pytest.mark.asyncio
-async def test_async_interceptor_passes_streams_through_unchanged() -> None:
-    interceptor = build_async_interceptor(_fast_policy())
+async def test_async_retry_does_NOT_retry_resource_exhausted_without_pushback() -> None:
+    unary, _ = build_async_interceptors(_fast_policy(max_attempts=4))
+    call = _make_async_call(grpc.StatusCode.RESOURCE_EXHAUSTED)
+    cont = AsyncMock(return_value=call)
+    result = await unary.intercept_unary_unary(cont, MagicMock(), "req")
+    assert await result.code() is grpc.StatusCode.RESOURCE_EXHAUSTED
+    assert cont.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_async_retry_honors_pushback_metadata() -> None:
+    unary, _ = build_async_interceptors(_fast_policy(max_attempts=3))
+    bad = _make_async_call(
+        grpc.StatusCode.RESOURCE_EXHAUSTED,
+        trailing_metadata=(("grpc-retry-pushback-ms", "5"),),
+    )
+    good = _make_async_call(grpc.StatusCode.OK)
+    cont = AsyncMock(side_effect=[bad, good])
+    result = await unary.intercept_unary_unary(cont, MagicMock(), "req")
+    assert result is good
+    assert cont.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_async_stream_interceptor_passes_through_unchanged() -> None:
+    _, stream = build_async_interceptors(_fast_policy())
     sentinel = object()
+    cont = AsyncMock(return_value=sentinel)
+    assert (
+        await stream.intercept_unary_stream(cont, MagicMock(), "req") is sentinel
+    )
 
-    async def cont(details: Any, request: Any) -> Any:
-        return sentinel
 
-    assert await interceptor.intercept_unary_stream(cont, MagicMock(), "req") is sentinel
+@pytest.mark.asyncio
+async def test_async_retry_tolerates_cancel_raising_on_old_call() -> None:
+    """If ``call.cancel()`` raises (e.g. on a call that already completed), the
+    retry must continue anyway — cancellation is best-effort cleanup."""
+    unary, _ = build_async_interceptors(_fast_policy(max_attempts=3))
+    bad = _make_async_call(grpc.StatusCode.UNAVAILABLE)
+    # Force cancel() to raise. The retry should still move on to the next call.
+    bad.cancel = MagicMock(side_effect=RuntimeError("cancel exploded"))
+    good = _make_async_call(grpc.StatusCode.OK)
+    cont = AsyncMock(side_effect=[bad, good])
+
+    result = await unary.intercept_unary_unary(cont, MagicMock(), "req")
+    assert result is good
+
+
+# ---------------------------------------------------------------------------
+# _pushback_seconds helper — covers parsing edge cases not reached via the
+# integration paths.
+# ---------------------------------------------------------------------------
+
+
+def test_pushback_parsing_handles_no_trailing_metadata() -> None:
+    from finam_trade_api.retry import _pushback_seconds
+
+    assert _pushback_seconds(None) is None
+    assert _pushback_seconds(()) is None
+
+
+def test_pushback_parsing_ignores_unrelated_metadata_keys() -> None:
+    from finam_trade_api.retry import _pushback_seconds
+
+    assert _pushback_seconds((("content-type", "application/grpc"),)) is None

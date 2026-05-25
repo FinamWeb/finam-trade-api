@@ -6,8 +6,10 @@ JWT whenever the previous one is about to expire — this module consumes that
 stream in the background and exposes the current token through a thread-safe /
 asyncio-safe accessor used by the per-call metadata callback.
 
-If the renewal stream drops, the manager falls back to calling `AuthService.Auth`
-directly and reconnects to the stream.
+If the renewal stream drops, the manager reconnects with exponential backoff.
+Both gRPC errors and unexpected exceptions trigger the same reconnect path —
+silently dying on an unexpected exception would freeze the token until expiry
+and then surface as cryptic UNAUTHENTICATED failures on every subsequent RPC.
 """
 
 from __future__ import annotations
@@ -58,7 +60,15 @@ class TokenManager:
         self._reconnect_max_backoff = reconnect_max_backoff
 
     def start(self) -> None:
-        """Block until the first token is available, then keep refreshing in the background."""
+        """Block until the first token is available, then keep refreshing in the background.
+
+        Calling ``start()`` a second time is a no-op — without this guard a
+        repeated call would spawn an additional daemon thread racing on the
+        same token state.
+        """
+        if self._thread is not None:
+            return
+
         pb2, pb2_grpc = _auth_stubs()
         stub = pb2_grpc.AuthServiceStub(self._channel)
 
@@ -106,9 +116,17 @@ class TokenManager:
                     self._set_token(msg.token)
                     backoff = self._reconnect_initial_backoff
             except grpc.RpcError as exc:
-                if self._stop.is_set():
+                if self._stop.is_set():  # pragma: no cover - race shortcut
                     return
                 logger.warning("JWT renewal stream dropped: %s; reconnecting in %.1fs", exc, backoff)
+                time.sleep(backoff)
+                backoff = min(backoff * 2, self._reconnect_max_backoff)
+            except Exception:  # noqa: BLE001 — see module docstring
+                if self._stop.is_set():  # pragma: no cover - race shortcut
+                    return
+                logger.exception(
+                    "Unexpected error in JWT renewal loop; reconnecting in %.1fs", backoff
+                )
                 time.sleep(backoff)
                 backoff = min(backoff * 2, self._reconnect_max_backoff)
 
@@ -134,6 +152,14 @@ class AsyncTokenManager:
         self._reconnect_max_backoff = reconnect_max_backoff
 
     async def start(self) -> None:
+        """Fetch initial JWT and launch the background renewal task.
+
+        Idempotent: calling ``start()`` a second time returns immediately
+        without re-issuing ``Auth`` or spawning a second renewal task.
+        """
+        if self._task is not None:
+            return
+
         pb2, pb2_grpc = _auth_stubs()
         stub = pb2_grpc.AuthServiceStub(self._channel)
         try:
@@ -149,8 +175,14 @@ class AsyncTokenManager:
             self._task.cancel()
             try:
                 await self._task
-            except (asyncio.CancelledError, Exception):  # noqa: BLE001
+            except asyncio.CancelledError:
+                # Expected — the renewal task was cancelled above.
                 pass
+            except Exception:
+                # Don't mask unexpected failures from the renewal loop, but
+                # don't propagate either: stop() is part of teardown and
+                # callers expect it to succeed.
+                logger.exception("JWT renewal task raised on shutdown")
 
     async def get_token(self) -> str:
         await self._ready.wait()
@@ -174,11 +206,21 @@ class AsyncTokenManager:
                         return
                     self._set_token(msg.token)
                     backoff = self._reconnect_initial_backoff
+            except asyncio.CancelledError:  # pragma: no cover - raised on stop()
+                raise  # propagate to stop() — do not swallow
             except grpc.aio.AioRpcError as exc:
-                if self._stop.is_set():
+                if self._stop.is_set():  # pragma: no cover - race shortcut
                     return
                 logger.warning(
                     "JWT renewal stream dropped: %s; reconnecting in %.1fs", exc, backoff
+                )
+                await asyncio.sleep(backoff)
+                backoff = min(backoff * 2, self._reconnect_max_backoff)
+            except Exception:  # noqa: BLE001 — see module docstring
+                if self._stop.is_set():  # pragma: no cover - race shortcut
+                    return
+                logger.exception(
+                    "Unexpected error in JWT renewal loop; reconnecting in %.1fs", backoff
                 )
                 await asyncio.sleep(backoff)
                 backoff = min(backoff * 2, self._reconnect_max_backoff)

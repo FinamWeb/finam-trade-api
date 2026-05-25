@@ -41,7 +41,11 @@ def test_async_plugin_injects_authorization_when_token_present() -> None:
     assert captured == [((("authorization", "jwt-xyz"),), None)]
 
 
-def test_async_plugin_emits_empty_metadata_when_no_token() -> None:
+def test_async_plugin_surfaces_runtime_error_when_no_token() -> None:
+    """When the plugin is invoked before AsyncFinamClient.start() has
+    completed, it should hand a clear error back through the callback
+    rather than silently sending empty metadata (which the server would
+    bounce as 401, with no hint at the actual cause)."""
     token_manager = MagicMock()
     token_manager._token = None
     plugin = _AsyncAuthPlugin(token_manager)
@@ -49,7 +53,11 @@ def test_async_plugin_emits_empty_metadata_when_no_token() -> None:
     captured: list[tuple[tuple[tuple[str, str], ...], Exception | None]] = []
     plugin(MagicMock(spec=grpc.AuthMetadataContext), lambda md, err: captured.append((tuple(md), err)))
 
-    assert captured == [((), None)]
+    assert len(captured) == 1
+    metadata, err = captured[0]
+    assert metadata == ()
+    assert isinstance(err, RuntimeError)
+    assert "start()" in str(err)
 
 
 def test_factory_helpers_return_grpc_call_credentials() -> None:

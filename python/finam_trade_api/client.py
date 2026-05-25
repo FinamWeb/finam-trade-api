@@ -23,6 +23,10 @@ from ._metadata import sync_call_credentials
 from .auth import TokenManager
 from .retry import DEFAULT_POLICY, RetryPolicy, build_sync_interceptor
 
+logger = logging.getLogger(__name__)
+
+DEFAULT_ENDPOINT = "api.finam.ru:443"
+
 
 class _InsecureAuthInterceptor(
     grpc.UnaryUnaryClientInterceptor,
@@ -32,9 +36,9 @@ class _InsecureAuthInterceptor(
 ):
     """Attaches the current JWT as Authorization metadata on every call.
 
-    Used only when the client is constructed with ``insecure=True`` — gRPC
-    forbids attaching ``CallCredentials`` to insecure channels, so we cannot
-    use the normal ``metadata_call_credentials`` path in that mode.
+    Used only when the client is constructed via :meth:`FinamClient.for_testing`
+    — gRPC forbids attaching ``CallCredentials`` to insecure channels, so we
+    cannot use the normal ``metadata_call_credentials`` path in that mode.
     """
 
     def __init__(self, token_manager: TokenManager) -> None:
@@ -58,10 +62,6 @@ class _InsecureAuthInterceptor(
 
     def intercept_stream_stream(self, continuation, client_call_details, request_iterator):  # type: ignore[no-untyped-def]
         return continuation(self._details_with_token(client_call_details), request_iterator)
-
-logger = logging.getLogger(__name__)
-
-DEFAULT_ENDPOINT = "api.finam.ru:443"
 
 
 def _service_stubs():  # noqa: ANN202
@@ -94,9 +94,9 @@ class FinamClient:
         endpoint: gRPC endpoint, e.g. ``api.finam.ru:443``.
         retry_policy: Optional retry policy override.
         channel_options: Extra gRPC channel options forwarded to ``grpc.secure_channel``.
-        insecure: Use a plaintext channel and inject Authorization via interceptor.
-            Intended for local testing against an in-process fake server. Never
-            enable this for production traffic.
+
+    For local testing against an in-process fake server, construct via
+    :meth:`for_testing` rather than instantiating directly.
     """
 
     def __init__(
@@ -106,56 +106,109 @@ class FinamClient:
         endpoint: str = DEFAULT_ENDPOINT,
         retry_policy: RetryPolicy = DEFAULT_POLICY,
         channel_options: Optional[list[tuple[str, object]]] = None,
-        insecure: bool = False,
+        _insecure: bool = False,
     ) -> None:
         self._endpoint = endpoint
         self._secret = secret
         self._retry_policy = retry_policy
+        self._auth_channel: Optional[grpc.Channel] = None
+        self._channel: Optional[grpc.Channel] = None
+        self._token_manager: Optional[TokenManager] = None
 
-        if insecure:
-            self._auth_channel = grpc.insecure_channel(endpoint, options=channel_options)
-            self._token_manager = TokenManager(self._auth_channel, secret)
-            self._token_manager.start()
-            app_channel = grpc.insecure_channel(endpoint, options=channel_options)
-            self._channel = grpc.intercept_channel(
-                app_channel,
-                _InsecureAuthInterceptor(self._token_manager),
-                build_sync_interceptor(retry_policy),
-            )
-        else:  # pragma: no cover - exercised against the real TLS endpoint
-            # Auth channel uses transport credentials only; the renewal stream
-            # cannot depend on a JWT it has not fetched yet.
-            transport = grpc.ssl_channel_credentials()
-            self._auth_channel = grpc.secure_channel(endpoint, transport, options=channel_options)
-            self._token_manager = TokenManager(self._auth_channel, secret)
-            self._token_manager.start()
+        try:
+            if _insecure:
+                self._auth_channel = grpc.insecure_channel(endpoint, options=channel_options)
+                self._token_manager = TokenManager(self._auth_channel, secret)
+                self._token_manager.start()
+                app_channel = grpc.insecure_channel(endpoint, options=channel_options)
+                self._channel = grpc.intercept_channel(
+                    app_channel,
+                    _InsecureAuthInterceptor(self._token_manager),
+                    build_sync_interceptor(retry_policy),
+                )
+            else:  # pragma: no cover - exercised against the real TLS endpoint
+                # Auth channel uses transport credentials only; the renewal stream
+                # cannot depend on a JWT it has not fetched yet.
+                transport = grpc.ssl_channel_credentials()
+                self._auth_channel = grpc.secure_channel(
+                    endpoint, transport, options=channel_options
+                )
+                self._token_manager = TokenManager(self._auth_channel, secret)
+                self._token_manager.start()
 
-            # Application channel layers the call credentials (Authorization header)
-            # on top of TLS and installs the retry interceptor.
-            call_creds = sync_call_credentials(self._token_manager)
-            composite = grpc.composite_channel_credentials(transport, call_creds)
-            app_channel = grpc.secure_channel(endpoint, composite, options=channel_options)
-            self._channel = grpc.intercept_channel(app_channel, build_sync_interceptor(retry_policy))
+                # Application channel layers the call credentials (Authorization
+                # header) on top of TLS and installs the retry interceptor.
+                call_creds = sync_call_credentials(self._token_manager)
+                composite = grpc.composite_channel_credentials(transport, call_creds)
+                app_channel = grpc.secure_channel(endpoint, composite, options=channel_options)
+                self._channel = grpc.intercept_channel(
+                    app_channel, build_sync_interceptor(retry_policy)
+                )
 
-        stubs = _service_stubs()
-        self.auth = stubs["auth"](self._channel)
-        self.accounts = stubs["accounts"](self._channel)
-        self.assets = stubs["assets"](self._channel)
-        self.market_data = stubs["market_data"](self._channel)
-        self.orders = stubs["orders"](self._channel)
-        self.reports = stubs["reports"](self._channel)
-        self.metrics = stubs["metrics"](self._channel)
+            stubs = _service_stubs()
+            self.auth = stubs["auth"](self._channel)
+            self.accounts = stubs["accounts"](self._channel)
+            self.assets = stubs["assets"](self._channel)
+            self.market_data = stubs["market_data"](self._channel)
+            self.orders = stubs["orders"](self._channel)
+            self.reports = stubs["reports"](self._channel)
+            self.metrics = stubs["metrics"](self._channel)
+        except BaseException:
+            # Roll back any channels / background threads we opened so the
+            # caller doesn't leak resources on a failed construction.
+            self._safe_teardown()
+            raise
 
-    @property
-    def token(self) -> str:
-        """Current JWT — useful for debugging or for callers that need to
-        forward it to a non-SDK component (e.g. a websocket bridge)."""
-        return self._token_manager.get_token()
+    @classmethod
+    def for_testing(
+        cls,
+        secret: str,
+        *,
+        endpoint: str,
+        retry_policy: RetryPolicy = DEFAULT_POLICY,
+        channel_options: Optional[list[tuple[str, object]]] = None,
+    ) -> "FinamClient":
+        """Construct an insecure (no-TLS) client for testing against an in-process
+        fake server. Never use against ``api.finam.ru`` or any production endpoint."""
+        return cls(
+            secret,
+            endpoint=endpoint,
+            retry_policy=retry_policy,
+            channel_options=channel_options,
+            _insecure=True,
+        )
+
+    def get_token(self) -> Optional[str]:
+        """Return the current JWT, or ``None`` if construction has not completed.
+
+        The token is refreshed in the background; callers typically don't need
+        to read it because the SDK injects it on every RPC automatically. Use
+        this when you need to forward the JWT to a non-SDK component (e.g. a
+        WebSocket bridge).
+        """
+        if self._token_manager is None:
+            return None
+        return self._token_manager._token  # noqa: SLF001 — intentional snapshot read
+
+    def _safe_teardown(self) -> None:
+        if self._token_manager is not None:
+            try:
+                self._token_manager.stop()
+            except Exception:  # pragma: no cover - defensive log on teardown
+                logger.exception("Error stopping token manager during teardown")
+        if self._channel is not None:
+            try:
+                self._channel.close()
+            except Exception:  # pragma: no cover - defensive log on teardown
+                logger.exception("Error closing application channel during teardown")
+        if self._auth_channel is not None:
+            try:
+                self._auth_channel.close()
+            except Exception:  # pragma: no cover - defensive log on teardown
+                logger.exception("Error closing auth channel during teardown")
 
     def close(self) -> None:
-        self._token_manager.stop()
-        self._channel.close()
-        self._auth_channel.close()
+        self._safe_teardown()
 
     def __enter__(self) -> "FinamClient":
         return self

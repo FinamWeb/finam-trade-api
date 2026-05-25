@@ -265,11 +265,40 @@ def fake_server(
         server.stop(grace=0).wait()
 
 
-def wait_for(predicate, timeout: float = 2.0, interval: float = 0.01) -> None:  # noqa: ANN001
-    """Spin-wait helper for tests that need to observe a background thread's effect."""
+def wait_for(predicate, timeout: float = 5.0, interval: float = 0.01) -> None:  # noqa: ANN001
+    """Spin-wait helper for tests that need to observe a background thread's effect.
+
+    Default timeout is 5s — cold GitHub-hosted runners under load routinely take
+    >1s to start a daemon thread and complete the first RPC.
+    """
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if predicate():
             return
         time.sleep(interval)
+    raise AssertionError("timed out waiting for predicate")
+
+
+async def await_for(  # noqa: ANN001
+    predicate,
+    timeout: float = 5.0,
+    interval: float = 0.01,
+) -> None:
+    """Asyncio counterpart of ``wait_for``.
+
+    ``predicate`` may be sync or async. Replaces the open-coded
+    ``for _ in range(N): await asyncio.sleep(...)`` loops that were
+    duplicated across the async test files.
+    """
+    import asyncio
+    import inspect
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        result = predicate()
+        if inspect.isawaitable(result):
+            result = await result
+        if result:
+            return
+        await asyncio.sleep(interval)
     raise AssertionError("timed out waiting for predicate")

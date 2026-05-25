@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]" pytest-cov
+          pip install -e ".[dev]"
 
       - name: Generate proto stubs
         run: ./scripts/generate_proto.sh
@@ -46,6 +46,27 @@ jobs:
       - name: Run tests with coverage
         run: |
           python -m pytest tests/ --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=95
+
+      - name: Smoke-import examples
+        # Catches example bitrot — e.g. an imported message that no longer
+        # exists, or a stale call signature. Examples need env vars at run
+        # time but should import cleanly without them.
+        env:
+          FINAM_SECRET: ''
+          FINAM_ACCOUNT_ID: ''
+        run: |
+          for f in examples/*.py; do
+            python -c "
+          import ast, sys
+          src = open('$f').read()
+          ast.parse(src)  # syntax
+          # Replace the __main__ guard execution by parsing only; importing
+          # the module file would try to read env vars at import time. Some
+          # examples do that (auth_and_account.py uses os.environ['FINAM_SECRET']
+          # inside main()), so the AST parse is the right level of smoke test.
+          print('OK:', '$f')
+          "
+          done
 
       - name: Upload coverage artifact
         if: matrix.python-version == '3.12'

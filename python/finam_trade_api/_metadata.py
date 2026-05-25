@@ -42,7 +42,18 @@ class _AsyncAuthPlugin(grpc.AuthMetadataPlugin):
     ) -> None:
         token = self._token_manager._token  # noqa: SLF001 — intentional fast-path read
         if token is None:
-            callback((), None)
+            # AsyncFinamClient.start() awaits the initial Auth before building
+            # the application channel, so the token is always set before any
+            # RPC reaches this plugin. A None here means the SDK was used
+            # without start() — surface as a clear error instead of an empty
+            # Authorization header that the server would reject as 401.
+            callback(
+                (),
+                RuntimeError(
+                    "AsyncFinamClient JWT is not available — "
+                    "did you call await client.start()?"
+                ),
+            )
             return
         callback((("authorization", token),), None)
 

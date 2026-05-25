@@ -46,4 +46,19 @@ find "$OUT_DIR" -type d -exec touch {}/__init__.py \;
 # which is provided by the protobuf runtime and must stay absolute).
 python "$SCRIPT_DIR/_fix_proto_imports.py" "$OUT_DIR"
 
+# Sanity check: any remaining ``from grpc.<root>`` import that *isn't* prefixed
+# with finam_trade_api.proto means the rewriter missed a top-level proto root
+# we forgot to register in _fix_proto_imports.py — that will explode at import
+# time with a ModuleNotFoundError. Fail the build now with a clear message
+# instead.
+LEAKED=$(grep -rEn '^(from|import) grpc\.[a-zA-Z_]' "$OUT_DIR" \
+    --include='*.py' --include='*.pyi' \
+    | grep -v 'finam_trade_api\.proto\.grpc\.' || true)
+if [ -n "$LEAKED" ]; then
+    echo "ERROR: generated stubs still reference unrewritten 'grpc.<root>' imports:" >&2
+    echo "$LEAKED" >&2
+    echo "Add the missing root to ROOTS_TO_REWRITE in scripts/_fix_proto_imports.py." >&2
+    exit 1
+fi
+
 echo "Generated Python stubs in $OUT_DIR"
