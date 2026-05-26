@@ -14,21 +14,19 @@ surface is available without an extra translation layer.
 ## Installation
 
 ```sh
-pip install finam-trade-api
+pip install finam-sdk
 ```
 
-> Until the package is published, install from source — see *Local build* below.
+> The PyPI distribution is `finam-sdk`; the Python import name is
+> `finam_trade_api`. (The `finam-trade-api` name on PyPI is held by an
+> unrelated third-party REST client.)
 
 ## Quickstart (sync)
 
 ```python
 from finam_trade_api import FinamClient
-from finam_trade_api.proto.grpc.tradeapi.v1.accounts.accounts_service_pb2 import (
-    GetAccountRequest,
-)
-from finam_trade_api.proto.grpc.tradeapi.v1.marketdata.marketdata_service_pb2 import (
-    SubscribeQuoteRequest,
-)
+from finam_trade_api.accounts import GetAccountRequest
+from finam_trade_api.market_data import SubscribeQuoteRequest
 
 with FinamClient(secret="YOUR_API_TOKEN") as client:
     account = client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
@@ -47,9 +45,7 @@ with FinamClient(secret="YOUR_API_TOKEN") as client:
 import asyncio
 
 from finam_trade_api import AsyncFinamClient
-from finam_trade_api.proto.grpc.tradeapi.v1.marketdata.marketdata_service_pb2 import (
-    SubscribeQuoteRequest,
-)
+from finam_trade_api.market_data import SubscribeQuoteRequest
 
 
 async def main() -> None:
@@ -80,8 +76,22 @@ The client exposes the full Trade API surface via sub-clients:
 ## API reference
 
 Every RPC defined in the `.proto` files is exposed directly on the sub-client.
-Request and response message types live under
-`finam_trade_api.proto.grpc.tradeapi.v1.<service>.<service>_service_pb2`.
+Request and response message types are re-exported from short, per-service
+modules:
+
+| Module | Use with |
+| --- | --- |
+| `finam_trade_api.accounts` | `client.accounts.*` |
+| `finam_trade_api.assets` | `client.assets.*` |
+| `finam_trade_api.market_data` | `client.market_data.*` |
+| `finam_trade_api.orders` | `client.orders.*` (includes `Side`) |
+| `finam_trade_api.reports` | `client.reports.*` |
+| `finam_trade_api.metrics` | `client.metrics.*` |
+| `finam_trade_api.auth_messages` | `client.auth.*` (rarely needed — JWT handled automatically) |
+
+The original deeply-nested paths
+(`finam_trade_api.proto.grpc.tradeapi.v1.<service>.<service>_service_pb2`)
+still work and remain the source of truth.
 
 Legend: ▶ unary · ⇉ server-stream · ⇄ bidi-stream
 
@@ -227,8 +237,9 @@ pip install -e ".[dev]"
 python/
 ├── pyproject.toml
 ├── README.md
+├── LICENSE
 ├── scripts/
-│   └── generate_proto.sh      # protoc invocation
+│   └── generate_proto.sh      # protoc invocation (contributors only)
 ├── examples/                   # runnable scripts
 └── finam_trade_api/
     ├── __init__.py
@@ -238,5 +249,12 @@ python/
     ├── retry.py                # retry policy + interceptors
     ├── exceptions.py           # typed errors
     ├── _metadata.py            # Authorization header plumbing
-    └── proto/                  # generated stubs (not in git)
+    ├── accounts.py             # message re-exports (per-service)
+    ├── assets.py
+    ├── auth_messages.py
+    ├── market_data.py
+    ├── orders.py
+    ├── reports.py
+    ├── metrics.py
+    └── proto/                  # generated stubs (committed; ships in wheel)
 ```

@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     defaults:
       run:
@@ -40,8 +40,35 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Generate proto stubs
+      - name: Regenerate proto stubs
         run: ./scripts/generate_proto.sh
+
+      # The proto stubs are committed to the repo so end users don't need
+      # protoc. CI regenerates them on every run and fails if the result
+      # differs from what's committed — catches contributors who edited
+      # a .proto without re-running the generator.
+      - name: Verify committed stubs match regenerated output
+        run: |
+          if ! git diff --quiet finam_trade_api/proto/; then
+            echo "::error::Committed proto stubs are stale. Run 'cd python && ./scripts/generate_proto.sh' and commit the result."
+            git diff --stat finam_trade_api/proto/
+            exit 1
+          fi
+
+      - name: Lint with ruff
+        # Warn-only for the first releases — tighten to `ruff check` once
+        # the pre-existing warnings have been triaged.
+        continue-on-error: true
+        run: ruff check finam_trade_api/ examples/ tests/
+
+      - name: Type-check with pyright
+        # Same rationale as ruff. Run only on the latest matrix version to
+        # avoid noise from version-specific typeshed differences.
+        if: matrix.python-version == '3.13'
+        continue-on-error: true
+        run: |
+          pip install pyright
+          pyright finam_trade_api/ examples/
 
       - name: Run tests with coverage
         run: |
@@ -74,3 +101,53 @@ jobs:
         with:
           name: coverage-xml
           path: python/coverage.xml
+
+  build:
+    # Verifies the package builds, the wheel/sdist are well-formed, and the
+    # metadata is publishable. Runs once (not across the matrix) — packaging
+    # output doesn't depend on the Python version used to build it.
+    runs-on: ubuntu-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: python
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      # Need the generated stubs in place because they're shipped in the
+      # wheel. We don't verify-no-diff here — the `test` job already did.
+      - name: Install package (for proto generation)
+        run: pip install -e ".[dev]"
+
+      - name: Regenerate proto stubs
+        run: ./scripts/generate_proto.sh
+
+      - name: Build sdist + wheel
+        run: python -m build
+
+      - name: Validate distribution metadata
+        # `twine check` catches issues PyPI would reject — bad README rendering,
+        # missing classifiers, malformed license fields, etc.
+        run: twine check --strict dist/*
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: python/dist/*
+          # Retained so the publish workflow (Phase 3) can download and
+          # upload exactly what CI tested, instead of rebuilding.
+          retention-days: 30
