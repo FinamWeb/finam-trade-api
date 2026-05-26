@@ -15,13 +15,37 @@ from __future__ import annotations
 
 import logging
 from types import TracebackType
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import grpc
 
 from ._metadata import sync_call_credentials
 from .auth import TokenManager
 from .retry import DEFAULT_POLICY, RetryPolicy, build_sync_interceptor
+
+if TYPE_CHECKING:
+    # Imported only for type checking so the package still imports cleanly
+    # before scripts/generate_proto.sh has been run. At runtime the service
+    # stubs are instantiated via _service_stubs() below.
+    from .proto.grpc.tradeapi.v1.accounts.accounts_service_pb2_grpc import (
+        AccountsServiceStub,
+    )
+    from .proto.grpc.tradeapi.v1.assets.assets_service_pb2_grpc import (
+        AssetsServiceStub,
+    )
+    from .proto.grpc.tradeapi.v1.auth.auth_service_pb2_grpc import AuthServiceStub
+    from .proto.grpc.tradeapi.v1.marketdata.marketdata_service_pb2_grpc import (
+        MarketDataServiceStub,
+    )
+    from .proto.grpc.tradeapi.v1.metrics.usage_metrics_service_pb2_grpc import (
+        UsageMetricsServiceStub,
+    )
+    from .proto.grpc.tradeapi.v1.orders.orders_service_pb2_grpc import (
+        OrdersServiceStub,
+    )
+    from .proto.grpc.tradeapi.v1.reports.reports_service_pb2_grpc import (
+        ReportsServiceStub,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -145,14 +169,19 @@ class FinamClient:
                     app_channel, build_sync_interceptor(retry_policy)
                 )
 
+            # Type annotations let Pyright/Pylance see the per-service stub
+            # methods (GetAccount, Trades, …) which are otherwise assigned
+            # dynamically in the generated __init__ and invisible to static
+            # analysis. The stub classes' overloaded __new__ also lets a
+            # checker discriminate sync vs. async based on the channel type.
             stubs = _service_stubs()
-            self.auth = stubs["auth"](self._channel)
-            self.accounts = stubs["accounts"](self._channel)
-            self.assets = stubs["assets"](self._channel)
-            self.market_data = stubs["market_data"](self._channel)
-            self.orders = stubs["orders"](self._channel)
-            self.reports = stubs["reports"](self._channel)
-            self.metrics = stubs["metrics"](self._channel)
+            self.auth: AuthServiceStub = stubs["auth"](self._channel)
+            self.accounts: AccountsServiceStub = stubs["accounts"](self._channel)
+            self.assets: AssetsServiceStub = stubs["assets"](self._channel)
+            self.market_data: MarketDataServiceStub = stubs["market_data"](self._channel)
+            self.orders: OrdersServiceStub = stubs["orders"](self._channel)
+            self.reports: ReportsServiceStub = stubs["reports"](self._channel)
+            self.metrics: UsageMetricsServiceStub = stubs["metrics"](self._channel)
         except BaseException:
             # Roll back any channels / background threads we opened so the
             # caller doesn't leak resources on a failed construction.

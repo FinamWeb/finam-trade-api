@@ -9,9 +9,7 @@ from __future__ import annotations
 import os
 
 from finam_trade_api import FinamClient
-from finam_trade_api.proto.grpc.tradeapi.v1.accounts.accounts_service_pb2 import (
-    GetAccountRequest,
-)
+from finam_trade_api.accounts import GetAccountRequest
 
 
 def main() -> None:

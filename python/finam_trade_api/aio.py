@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 from types import TracebackType
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import grpc
 import grpc.aio
@@ -22,6 +22,33 @@ from ._metadata import async_call_credentials
 from .auth import AsyncTokenManager
 from .client import DEFAULT_ENDPOINT
 from .retry import DEFAULT_POLICY, RetryPolicy, build_async_interceptors
+
+if TYPE_CHECKING:
+    # The *AsyncStub classes are @type_check_only in the generated .pyi files
+    # — they exist only for static analysis. At runtime the same stub class
+    # handles both sync and async channels; the AsyncStub annotation tells
+    # the type checker that RPCs return awaitables / async iterators.
+    from .proto.grpc.tradeapi.v1.accounts.accounts_service_pb2_grpc import (
+        AccountsServiceAsyncStub,
+    )
+    from .proto.grpc.tradeapi.v1.assets.assets_service_pb2_grpc import (
+        AssetsServiceAsyncStub,
+    )
+    from .proto.grpc.tradeapi.v1.auth.auth_service_pb2_grpc import (
+        AuthServiceAsyncStub,
+    )
+    from .proto.grpc.tradeapi.v1.marketdata.marketdata_service_pb2_grpc import (
+        MarketDataServiceAsyncStub,
+    )
+    from .proto.grpc.tradeapi.v1.metrics.usage_metrics_service_pb2_grpc import (
+        UsageMetricsServiceAsyncStub,
+    )
+    from .proto.grpc.tradeapi.v1.orders.orders_service_pb2_grpc import (
+        OrdersServiceAsyncStub,
+    )
+    from .proto.grpc.tradeapi.v1.reports.reports_service_pb2_grpc import (
+        ReportsServiceAsyncStub,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -148,14 +175,19 @@ class AsyncFinamClient:
             else:
                 await self._start_secure()
 
+            # See client.py for why the per-attribute annotations are needed.
+            # The generated stub classes have an overloaded __new__ that
+            # returns the AsyncStub variant when given a grpc.aio.Channel, so
+            # these annotations match runtime behavior — RPC methods are typed
+            # as returning awaitables / async iterators.
             stubs = _async_service_stubs()
-            self.auth = stubs["auth"](self._channel)
-            self.accounts = stubs["accounts"](self._channel)
-            self.assets = stubs["assets"](self._channel)
-            self.market_data = stubs["market_data"](self._channel)
-            self.orders = stubs["orders"](self._channel)
-            self.reports = stubs["reports"](self._channel)
-            self.metrics = stubs["metrics"](self._channel)
+            self.auth: AuthServiceAsyncStub = stubs["auth"](self._channel)
+            self.accounts: AccountsServiceAsyncStub = stubs["accounts"](self._channel)
+            self.assets: AssetsServiceAsyncStub = stubs["assets"](self._channel)
+            self.market_data: MarketDataServiceAsyncStub = stubs["market_data"](self._channel)
+            self.orders: OrdersServiceAsyncStub = stubs["orders"](self._channel)
+            self.reports: ReportsServiceAsyncStub = stubs["reports"](self._channel)
+            self.metrics: UsageMetricsServiceAsyncStub = stubs["metrics"](self._channel)
             self._started = True
         except BaseException:
             # Roll back any channels / background tasks we opened so the

@@ -15,13 +15,13 @@ import os
 from google.type.decimal_pb2 import Decimal  # type: ignore[import-not-found]
 
 from finam_trade_api import FinamClient
-from finam_trade_api.proto.grpc.tradeapi.v1.orders.orders_service_pb2 import (
+from finam_trade_api.orders import (
     CancelOrderRequest,
     Order,
     OrderType,
+    Side,
     TimeInForce,
 )
-from finam_trade_api.proto.grpc.tradeapi.v1.side_pb2 import Side  # type: ignore[import-not-found]
 
 
 def main() -> None:

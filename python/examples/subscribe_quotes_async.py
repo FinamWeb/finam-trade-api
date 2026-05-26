@@ -11,9 +11,7 @@ import os
 import sys
 
 from finam_trade_api import AsyncFinamClient
-from finam_trade_api.proto.grpc.tradeapi.v1.marketdata.marketdata_service_pb2 import (
-    SubscribeQuoteRequest,
-)
+from finam_trade_api.market_data import SubscribeQuoteRequest
 
 
 async def main(symbols: list[str]) -> None:
