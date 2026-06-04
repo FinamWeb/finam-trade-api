@@ -1,0 +1,318 @@
+syntax = "proto3";
+
+package grpc.tradeapi.v1.corporateactions;
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+import "grpc/gateway/protoc_gen_openapiv2/options/annotations.proto";
+import "google/type/decimal.proto";
+import "google/type/date.proto";
+
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/corporateactions";
+option java_multiple_files = true;
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
+  info: {
+    title: "Finam Trade-API"
+    description: "API для торговых операций"
+  }
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT токен авторизации"
+      }
+    }
+  }
+  responses: [
+    {
+      key: "default"
+      value: {
+        schema: {
+          json_schema: {
+            ref: "googletypeStatus"
+          }
+        }
+      }
+    },
+    {
+      key: "500"
+      value: {
+        description: "Внутренняя ошибка сервиса. Попробуйте позже"
+      }
+    },
+    {
+      key: "503"
+      value: {
+        description: "Сервис на данный момент не доступен. Попробуйте позже"
+      }
+    },
+    {
+      key: "429"
+      value: {
+        description: "Слишком много запросов. Доступный лимит - 200 запросов в минуту"
+      }
+    },
+    {
+      key: "401"
+      value: {
+        description: "Срок действия токена истек или токен недействителен"
+      }
+    },
+    {
+      key: "504"
+      value: {
+        description: "Крайний срок истек до завершения операции"
+      }
+    }
+  ]
+};
+
+// Сервис предоставления информации по корпоративным действиям (дивиденды, сплиты)
+service CorporateActionsService {
+  // Получить предстоящие события сплитов по инструменту
+  rpc GetFutureSplits(GetFutureSplitsRequest) returns (GetFutureSplitsResponse) {
+    option (google.api.http) = {
+      get: "/v1/splits/future"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+        {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+      ]
+    };
+  };
+
+  // Получить историю сплитов по инструменту
+  rpc GetPastSplits(GetPastSplitsRequest) returns (GetPastSplitsResponse) {
+    option (google.api.http) = {
+      get: "/v1/splits/past"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+        {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+      ]
+    };
+  };
+
+
+
+
+  rpc GetFutureDividends(GetFutureDividendsRequest) returns (GetFutureDividendsResponse) {
+    option (google.api.http) = {
+      get: "/v1/future-dividends"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+        {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+      ]
+      responses: {
+        key: "400"
+        value: {
+          description: "Неверно передан символ. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
+        }
+      }
+    };
+  };
+
+  // Получить исторические данные по выплаченным дивидендам инструмента
+  rpc GetPastDividends(GetPastDividendsRequest) returns (GetPastDividendsResponse) {
+    option (google.api.http) = {
+      get: "/v1/past-dividends"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+        {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+      ]
+      responses: {
+        key: "400"
+        value: {
+          description: "Неверно передан символ или интервал. Символ должен быть в виде ticker@mic. Где ticker - это, например, SBER. А mic, например, MISX"
+        }
+      }
+    };
+  };
+
+}
+
+// Запрос предстоящих событий сплитов по инструменту
+message GetFutureSplitsRequest {
+  // Символ инструмента
+  string symbol = 1;
+  // Направление сортировки по дате: asc — от старых к новым, desc — от новых к старым
+  SortDirection sort_direction = 2;
+  // Лимит. Ограничивает количество возвращаемых сплитов в списке
+  int32 limit = 3;
+  // Смещение. Указывает количество сплитов, которые нужно пропустить перед тем, как начать возвращать результат
+  int32 offset = 4;
+}
+
+// Предстоящие события сплитов по инструменту
+message GetFutureSplitsResponse {
+  // Символ инструмента
+  string symbol = 1;
+  // Параметры пагинации
+  Pagination pagination = 2;
+  // Информация о сплитах
+  repeated SplitInfo splits = 3;
+}
+
+// Запрос истории сплитов по инструменту
+message GetPastSplitsRequest {
+  // Символ инструмента
+  string symbol = 1;
+  // Начало временного интервала
+  google.type.Date date_from = 2;
+  // Конец временного интервала
+  google.type.Date date_to = 3;
+  // Направление сортировки по дате: asc — от старых к новым, desc — от новых к старым
+  SortDirection sort_direction = 4;
+  // Лимит. Ограничивает количество возвращаемых сплитов в списке
+  int32 limit = 5;
+  // Смещение. Указывает количество сплитов, которые нужно пропустить перед тем, как начать возвращать результат
+  int32 offset = 6;
+}
+
+// История сплитов по инструменту
+message GetPastSplitsResponse {
+  // Символ инструмента
+  string symbol = 1;
+  // Параметры пагинации
+  Pagination pagination = 2;
+  // Информация о сплитах
+  repeated SplitInfo splits = 3;
+}
+
+// Информация о корпоративном действии
+message SplitInfo {
+  // Дата вступления в силу корпоративного действия (дата исполнения)
+  google.type.Date exec_date = 1;
+  // Количество ценных бумаг до проведения конвертации (числитель коэффициента)
+  google.type.Decimal old_ratio = 2;
+  // Количество ценных бумаг после проведения конвертации (знаменатель коэффициента)
+  google.type.Decimal new_ratio = 3;
+  // Новый размер лота инструмента после исполнения корпоративного действия
+  google.protobuf.Int32Value new_lot = 4;
+  // Тип события (сплит / консолидация и т.д.)
+  ConvertationType convertation_type = 5;
+}
+
+// Возможные типы событий
+enum ConvertationType {
+  // Неизвестный тип события/конвертации. Используется по умолчанию
+  CONVTYPE_UNKNOWN = 0;
+  // Обратный выкуп акций. Приобретение компанией-эмитентом собственных акций
+  BUYBACK = 1;
+  // Исполнение Call-оферты. Досрочное погашение (отзыв) ценной бумаги по инициативе эмитента
+  CALL_OPTION_EXERCISED = 2;
+  // Частичное погашение номинала (амортизация) или плановый тираж без проведения лотереи
+  DRAWINGS = 3;
+  // Погашение по жребию(тираж). Досрочное погашение части выпуска облигаций, где погашаемые бумаги выбираются путем лотереи
+  DRAWINGS_BY_LOTTERY = 4;
+  // Досрочная конвертация. Обмен одних ценных бумаг на другие до наступления планового срока (например, конвертируемых облигаций в акции)
+  EARLY_CONVERSION = 5;
+  // Погашение по сроку. Плановое полное погашение ценной бумаги по истечении срока её обращения
+  MATURITY = 6;
+  // Плановая (обычная) конвертация. Стандартное корпоративное действие: сплит, консолидация или плановый обмен бумаг
+  ORDINARY = 7;
+  // Исполнение Put-оферты. Досрочный выкуп ценной бумаги эмитентом по требованию инвестора (владельца)
+  PUT_OPTION_EXERCISED = 8;
+  // Тендерное предложение. Публичное предложение акционерам о выкупе их бумаг (часто при слияниях/поглощениях)
+  TENDER_OFFER = 9;
+}
+
+// Запрос на получение списка предстоящих дивидендных выплат по инструменту
+message GetFutureDividendsRequest {
+  // Символ инструмента
+  string symbol = 1;
+  // Направление сортировки по дате: asc — от старых к новым, desc — от новых к старым.
+  SortDirection sort_direction = 2;
+  // Лимит. Ограничивает количество возвращаемых элементов
+  int32 limit = 3;
+  // Смещение. Указывает количество элементов, которые нужно пропустить перед тем, как начать возвращать результат
+  int32 offset = 4;
+}
+
+// Список предстоящих выплат дивидендов по инструменту с пагинацией
+message GetFutureDividendsResponse {
+  // Параметры пагинации
+  Pagination pagination = 1;
+  // Список дивидендов
+  repeated Dividend dividends = 2;
+}
+
+// Запрос на получение исторических данных о выплаченных дивидендах по инструменту
+message GetPastDividendsRequest {
+  // Символ инструмента
+  string symbol = 1;
+  // Направление сортировки по дате: asc — от старых к новым, desc — от новых к старым.
+  SortDirection sort_direction = 2;
+  // Начало временного интервала
+  google.type.Date date_from = 3;
+  // Конец временного интервала
+  google.type.Date date_to = 4;
+  // Лимит. Ограничивает количество возвращаемых элементов
+  int32 limit = 5;
+  // Смещение. Указывает количество элементов, которые нужно пропустить перед тем, как начать возвращать результат
+  int32 offset = 6;
+}
+
+// Исторические данные о выплаченных дивидендах по инструменту с пагинацией
+message GetPastDividendsResponse {
+  // Параметры пагинации
+  Pagination pagination = 1;
+  // Список дивидендов
+  repeated Dividend dividends = 2;
+}
+
+// Информация о дивидендной выплате
+message Dividend {
+  // Дата закрытия реестра
+  google.type.Date date = 1;
+  // Размер дивиденда на одну акцию
+  google.type.Decimal amount = 2;
+  // Валюта выплаты дивиденда
+  string currency = 3;
+}
+
+// Параметры пагинации
+message Pagination {
+  // Общее количество элементов
+  int32 total = 1;
+  // Лимит. Ограничивает количество возвращаемых элементов
+  int32 limit = 2;
+  // Смещение. Указывает количество элементов, которые нужно пропустить перед тем, как начать возвращать результат
+  int32 offset = 3;
+  // Флаг следующей страницы. Указывает, существует ли следующая страница данных
+  bool has_next = 4;
+}
+
+// Направление сортировки
+enum SortDirection {
+  // По возрастанию
+  ASC = 0;
+  // По убыванию
+  DESC = 1;
+}
+

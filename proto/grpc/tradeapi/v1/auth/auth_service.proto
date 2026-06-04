@@ -113,6 +113,8 @@ service AuthService {
 message AuthRequest {
   // API токен (secret key)
   string secret = 1;
+  // Идентификатор приложения-источника запроса
+  string source_app_id = 2;
 }
 
 // Информация об авторизации
@@ -179,6 +181,8 @@ message MDPermission {
 message SubscribeJwtRenewalRequest {
   // API токен (secret key)
   string secret = 1;
+  // Идентификатор приложения-источника запроса
+  string source_app_id = 2;
 }
 
 // Обновленный токен. Стрим
