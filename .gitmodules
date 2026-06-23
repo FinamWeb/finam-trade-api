@@ -1,0 +1,3 @@
+[submodule "finam-skill"]
+	path = finam-skill
+	url = git@github.com:FinamWeb/finam-skill.git
