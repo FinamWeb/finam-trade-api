@@ -9,6 +9,16 @@ The PyPI distribution is `finam-sdk`; the Python import name is
 
 ## [Unreleased]
 
+## [2.17.0] — 2026-06-25
+
+### Added
+
+- New `CorporateActionsService` proto with two RPCs: `GetFutureBondsEvents` and `GetPastBondsEvents` —
+  bond event calendars (coupons, amortisations, offers) with date-range filtering, sorting, and
+  pagination.
+- `OrderState.triggered_order_id` — ID of the exchange order generated when a stop condition or
+  stop-price is triggered.
+
 ## [2.16.0] — 2026-06-05
 
 Version unified with the other Finam Trade API SDKs (JS, Kotlin) so a single
@@ -54,6 +64,7 @@ Initial public release.
   `finam-trade-api` name is held by an unrelated third-party REST client.
   Import name stays `finam_trade_api`.
 
-[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.16.0...HEAD
+[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.17.0...HEAD
+[2.17.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.17.0
 [2.16.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.16.0
 [0.1.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/v0.1.0
