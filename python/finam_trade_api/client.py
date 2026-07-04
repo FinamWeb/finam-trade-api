@@ -6,7 +6,7 @@ invoke generated methods directly with proto messages — the wrapper only
 takes care of channel setup, authentication, retries, and error mapping.
 
     with FinamClient(secret="...") as client:
-        accounts = client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
+        accounts = client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
         for tick in client.market_data.SubscribeQuote(SubscribeQuoteRequest(symbol="SBER@MISX")):
             ...
 """

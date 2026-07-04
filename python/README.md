@@ -29,7 +29,7 @@ from finam_trade_api.accounts import GetAccountRequest
 from finam_trade_api.market_data import SubscribeQuoteRequest
 
 with FinamClient(secret="YOUR_API_TOKEN") as client:
-    account = client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
+    account = client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
     print(account)
 
     # Streaming RPCs return iterators.
@@ -189,7 +189,7 @@ from finam_trade_api import FinamClient, RateLimitError, from_rpc_error
 
 with FinamClient(secret="...") as client:
     try:
-        client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
+        client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
     except grpc.RpcError as raw:
         err = from_rpc_error(raw)
         if isinstance(err, RateLimitError):
