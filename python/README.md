@@ -6,7 +6,7 @@ the generated gRPC stubs with:
 - a single `FinamClient` / `AsyncFinamClient` entry point,
 - automatic JWT issuance and background refresh (via `AuthService.SubscribeJwtRenewal`),
 - typed exceptions mapped from gRPC status codes,
-- exponential-backoff retries on transient failures (`UNAVAILABLE`, `RESOURCE_EXHAUSTED`).
+- exponential-backoff retries on transient failures (`UNAVAILABLE`; `RESOURCE_EXHAUSTED` only on server pushback).
 
 Service methods are invoked directly on the generated stubs, so the full proto
 surface is available without an extra translation layer.
@@ -246,9 +246,11 @@ All inherit from `FinamError`.
 
 ## Retries
 
-Unary RPCs are retried automatically on `UNAVAILABLE` and `RESOURCE_EXHAUSTED`
-with exponential backoff + jitter. Streaming RPCs are *not* retried — the
-caller is expected to handle reconnection at a meaningful boundary
+Unary RPCs are retried automatically on `UNAVAILABLE` with exponential backoff
++ jitter. `RESOURCE_EXHAUSTED` (429) is retried only when the server sends a
+`grpc-retry-pushback-ms` hint (using that delay); without it a 429 is surfaced
+immediately, to avoid amplifying throttling. Streaming RPCs are *not* retried —
+the caller is expected to handle reconnection at a meaningful boundary
 (e.g. resuming from the last received bar).
 
 Override the policy:
