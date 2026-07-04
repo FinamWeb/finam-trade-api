@@ -59,6 +59,48 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+## Authentication
+
+You never call the auth RPC yourself — the client does it for you. You only
+supply your API secret:
+
+```python
+with FinamClient(secret="YOUR_API_TOKEN") as client:
+    ...
+```
+
+On construction the client:
+
+1. Exchanges your secret for a short-lived JWT via `AuthService.Auth`. The sync
+   `FinamClient` blocks until this succeeds; `AsyncFinamClient` performs it
+   inside `await client.start()`.
+2. Keeps the JWT fresh in the background by consuming the
+   `AuthService.SubscribeJwtRenewal` stream (a daemon thread for the sync
+   client, an asyncio task for the async one), reconnecting with backoff.
+3. Attaches the current JWT to the `Authorization` metadata of every RPC, so
+   token refreshes between calls are transparent.
+
+A bad or empty secret raises `AuthError` at construction, before the client is
+returned.
+
+You normally never handle the JWT yourself. If you need the raw token — for
+example to authorize a separate WebSocket connection — read the cached snapshot
+with `client.get_token()`.
+
+## Finding your `account_id`
+
+Most calls take an `account_id` (format `TRQD05:123456`). To list the accounts
+your secret can see, inspect the token:
+
+```python
+from finam_trade_api import FinamClient
+from finam_trade_api.auth_messages import TokenDetailsRequest
+
+with FinamClient(secret="YOUR_API_TOKEN") as client:
+    details = client.auth.TokenDetails(TokenDetailsRequest(token=client.get_token()))
+    print(details.account_ids)  # ['TRQD05:123456']
+```
+
 ## Available services
 
 The client exposes the full Trade API surface via sub-clients:
