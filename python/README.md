@@ -1,6 +1,6 @@
 # Finam Trade API — Python SDK
 
-Thin Python SDK for the [Finam Trade API](https://tradeapi.finam.ru/). Wraps
+Thin Python SDK for the [Finam Trade API](https://api.finam.ru/). Wraps
 the generated gRPC stubs with:
 
 - a single `FinamClient` / `AsyncFinamClient` entry point,
@@ -24,11 +24,13 @@ pip install finam-sdk
 ## Quickstart (sync)
 
 ```python
+import os
+
 from finam_trade_api import FinamClient
 from finam_trade_api.accounts import GetAccountRequest
 from finam_trade_api.market_data import SubscribeQuoteRequest
 
-with FinamClient(secret="YOUR_API_TOKEN") as client:
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
     account = client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
     print(account)
 
@@ -39,17 +41,24 @@ with FinamClient(secret="YOUR_API_TOKEN") as client:
         print(tick)
 ```
 
+The snippets in this README read your API secret from the `FINAM_SECRET`
+environment variable (see `.env.example`) instead of hardcoding it.
+
+Don't know your `account_id`? See
+[Finding your `account_id`](#finding-your-account_id) below.
+
 ## Quickstart (asyncio)
 
 ```python
 import asyncio
+import os
 
 from finam_trade_api import AsyncFinamClient
 from finam_trade_api.market_data import SubscribeQuoteRequest
 
 
 async def main() -> None:
-    async with AsyncFinamClient(secret="YOUR_API_TOKEN") as client:
+    async with AsyncFinamClient(secret=os.environ["FINAM_SECRET"]) as client:
         async for tick in client.market_data.SubscribeQuote(
             SubscribeQuoteRequest(symbols=["SBER@MISX"])
         ):
@@ -65,7 +74,7 @@ You never call the auth RPC yourself — the client does it for you. You only
 supply your API secret:
 
 ```python
-with FinamClient(secret="YOUR_API_TOKEN") as client:
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
     ...
 ```
 
@@ -89,14 +98,16 @@ with `client.get_token()`.
 
 ## Finding your `account_id`
 
-Most calls take an `account_id` (format `TRQD05:123456`). To list the accounts
-your secret can see, inspect the token:
+Most calls take an `account_id` (format `TRQD05:123456`). The accounts your
+secret can see are listed in `TokenDetails.account_ids` — inspect the token:
 
 ```python
+import os
+
 from finam_trade_api import FinamClient
 from finam_trade_api.auth_messages import TokenDetailsRequest
 
-with FinamClient(secret="YOUR_API_TOKEN") as client:
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
     details = client.auth.TokenDetails(TokenDetailsRequest(token=client.get_token()))
     print(details.account_ids)  # ['TRQD05:123456']
 ```
@@ -226,10 +237,12 @@ Legend: ▶ unary · ⇉ server-stream · ⇄ bidi-stream
 Wrap raw `grpc.RpcError` into a typed `FinamError`:
 
 ```python
+import os
+
 import grpc
 from finam_trade_api import FinamClient, RateLimitError, from_rpc_error
 
-with FinamClient(secret="...") as client:
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
     try:
         client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
     except grpc.RpcError as raw:
@@ -256,10 +269,12 @@ the caller is expected to handle reconnection at a meaningful boundary
 Override the policy:
 
 ```python
+import os
+
 from finam_trade_api import FinamClient, RetryPolicy
 
 policy = RetryPolicy(max_attempts=6, initial_backoff=0.5, max_backoff=10.0)
-client = FinamClient(secret="...", retry_policy=policy)
+client = FinamClient(secret=os.environ["FINAM_SECRET"], retry_policy=policy)
 ```
 
 ## Local build
