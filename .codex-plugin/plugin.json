@@ -1,0 +1,45 @@
+{
+  "name": "finam",
+  "version": "1.0.1",
+  "description": "Finam Trade API plugin for Codex. Skills: finam:trade-api for real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; instrument search and volatility scanning; placing and cancelling orders through Finam broker; developing algorithmic trading scripts.",
+  "author": {
+    "name": "Finam",
+    "url": "https://github.com/FinamWeb"
+  },
+  "homepage": "https://github.com/FinamWeb/finam-trade-api",
+  "repository": "https://github.com/FinamWeb/finam-trade-api",
+  "license": "MIT",
+  "keywords": [
+    "finam",
+    "trade-api",
+    "rest",
+    "grpc",
+    "websocket",
+    "market-data",
+    "ohlcv",
+    "orderbook",
+    "orders",
+    "portfolio",
+    "algo-trading",
+    "finance"
+  ],
+  "skills": "./.ai/skills/",
+  "interface": {
+    "displayName": "Finam Trade API",
+    "shortDescription": "Market data, orders, and algo trading through Finam broker.",
+    "longDescription": "Codex skills for working with Finam Trade API: accessing real-time quotes, order book, OHLCV candles, and trade history; searching and scanning instruments; managing portfolio and orders; placing and cancelling orders through Finam broker; developing and running algorithmic trading scripts via REST, gRPC, and WebSocket.",
+    "developerName": "Alexander",
+    "category": "Finance",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/FinamWeb/finam-trade-api",
+    "defaultPrompt": [
+      "Проведи глубокий анализ моего портфеля. Покажи структуру, динамику и предложи балансировку.",
+      "Найди все акции на Мосбирже из финансового сектора, которые выросли более чем на 5% за неделю при объеме торгов выше 500 млн рублей.",
+      "Построй свечной график SBER@MISX за последний месяц с индикаторами RSI и MACD",
+      "Проверь стратегию арбитража между фьючерсами Сбер и Сбер-преф за последние 3 месяца"
+    ]
+  }
+}
