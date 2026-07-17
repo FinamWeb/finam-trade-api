@@ -1,0 +1,402 @@
+[
+  {
+    "symbol": "AFKS@MISX",
+    "name": "Система ао"
+  },
+  {
+    "symbol": "AFLT@MISX",
+    "name": "Аэрофлот"
+  },
+  {
+    "symbol": "AKRN@MISX",
+    "name": "Акрон"
+  },
+  {
+    "symbol": "ALRS@MISX",
+    "name": "АЛРОСА ао"
+  },
+  {
+    "symbol": "APTK@MISX",
+    "name": "Аптеки36и6"
+  },
+  {
+    "symbol": "AQUA@MISX",
+    "name": "ИНАРКТИКА"
+  },
+  {
+    "symbol": "ASTR@MISX",
+    "name": "iАстра ао"
+  },
+  {
+    "symbol": "BANEP@MISX",
+    "name": "Башнефт ап"
+  },
+  {
+    "symbol": "BAZA@MISX",
+    "name": "iБАЗИС"
+  },
+  {
+    "symbol": "BELU@MISX",
+    "name": "НоваБев ао"
+  },
+  {
+    "symbol": "BSPB@MISX",
+    "name": "БСП ао"
+  },
+  {
+    "symbol": "CBOM@MISX",
+    "name": "МКБ ао"
+  },
+  {
+    "symbol": "CHMF@MISX",
+    "name": "СевСт-ао"
+  },
+  {
+    "symbol": "CNRU@MISX",
+    "name": "iЦиан"
+  },
+  {
+    "symbol": "DATA@MISX",
+    "name": "iАренадата"
+  },
+  {
+    "symbol": "DOMRF@MISX",
+    "name": "ДОМ.РФ"
+  },
+  {
+    "symbol": "ELFV@MISX",
+    "name": "ЭЛ5Энер ао"
+  },
+  {
+    "symbol": "ENPG@MISX",
+    "name": "ЭН+ГРУП ао"
+  },
+  {
+    "symbol": "ETLN@MISX",
+    "name": "ЭталонГруп"
+  },
+  {
+    "symbol": "EUTR@MISX",
+    "name": "ЕвроТранс"
+  },
+  {
+    "symbol": "FEES@MISX",
+    "name": "Россети"
+  },
+  {
+    "symbol": "FESH@MISX",
+    "name": "ДВМП ао"
+  },
+  {
+    "symbol": "FIXR@MISX",
+    "name": "Фикс Прайс"
+  },
+  {
+    "symbol": "FLOT@MISX",
+    "name": "Совкомфлот"
+  },
+  {
+    "symbol": "GAZP@MISX",
+    "name": "ГАЗПРОМ ао"
+  },
+  {
+    "symbol": "GEMC@MISX",
+    "name": "МКПАО ЮМГ"
+  },
+  {
+    "symbol": "GMKN@MISX",
+    "name": "ГМКНорНик"
+  },
+  {
+    "symbol": "HEAD@MISX",
+    "name": "Хэдхантер"
+  },
+  {
+    "symbol": "HNFG@MISX",
+    "name": "ХЭНДЕРСОН"
+  },
+  {
+    "symbol": "HYDR@MISX",
+    "name": "РусГидро"
+  },
+  {
+    "symbol": "IRAO@MISX",
+    "name": "ИнтерРАОао"
+  },
+  {
+    "symbol": "LEAS@MISX",
+    "name": "Европлан"
+  },
+  {
+    "symbol": "LENT@MISX",
+    "name": "Лента ао"
+  },
+  {
+    "symbol": "LKOH@MISX",
+    "name": "ЛУКОЙЛ"
+  },
+  {
+    "symbol": "LSNGP@MISX",
+    "name": "РСетиЛЭ-п"
+  },
+  {
+    "symbol": "LSRG@MISX",
+    "name": "ЛСР ао"
+  },
+  {
+    "symbol": "MAGN@MISX",
+    "name": "ММК"
+  },
+  {
+    "symbol": "MBNK@MISX",
+    "name": "МТС Банк"
+  },
+  {
+    "symbol": "MDMG@MISX",
+    "name": "MDMG-ао"
+  },
+  {
+    "symbol": "MGNT@MISX",
+    "name": "Магнит ао"
+  },
+  {
+    "symbol": "MOEX@MISX",
+    "name": "МосБиржа"
+  },
+  {
+    "symbol": "MRKC@MISX",
+    "name": "РоссЦентр"
+  },
+  {
+    "symbol": "MRKP@MISX",
+    "name": "РСетиЦП ао"
+  },
+  {
+    "symbol": "MRKU@MISX",
+    "name": "Россети Ур"
+  },
+  {
+    "symbol": "MRKV@MISX",
+    "name": "РсетВол ао"
+  },
+  {
+    "symbol": "MSNG@MISX",
+    "name": "+МосЭнерго"
+  },
+  {
+    "symbol": "MSRS@MISX",
+    "name": "РСетиМР ао"
+  },
+  {
+    "symbol": "MTLR@MISX",
+    "name": "Мечел ао"
+  },
+  {
+    "symbol": "MTLRP@MISX",
+    "name": "Мечел ап"
+  },
+  {
+    "symbol": "MTSS@MISX",
+    "name": "МТС-ао"
+  },
+  {
+    "symbol": "NKHP@MISX",
+    "name": "НКХП ао"
+  },
+  {
+    "symbol": "NKNC@MISX",
+    "name": "НКНХ ао"
+  },
+  {
+    "symbol": "NKNCP@MISX",
+    "name": "НКНХ ап"
+  },
+  {
+    "symbol": "NLMK@MISX",
+    "name": "НЛМК ао"
+  },
+  {
+    "symbol": "NMTP@MISX",
+    "name": "НМТП ао"
+  },
+  {
+    "symbol": "NVTK@MISX",
+    "name": "Новатэк ао"
+  },
+  {
+    "symbol": "OGKB@MISX",
+    "name": "ОГК-2 ао"
+  },
+  {
+    "symbol": "OZON@MISX",
+    "name": "Озон"
+  },
+  {
+    "symbol": "OZPH@MISX",
+    "name": "iОзонФарм"
+  },
+  {
+    "symbol": "PHOR@MISX",
+    "name": "ФосАгро ао"
+  },
+  {
+    "symbol": "PIKK@MISX",
+    "name": "ПИК ао"
+  },
+  {
+    "symbol": "PLZL@MISX",
+    "name": "Полюс"
+  },
+  {
+    "symbol": "POSI@MISX",
+    "name": "iПозитив"
+  },
+  {
+    "symbol": "PRMD@MISX",
+    "name": "iПРОМОМЕД"
+  },
+  {
+    "symbol": "RAGR@MISX",
+    "name": "Русагро"
+  },
+  {
+    "symbol": "RASP@MISX",
+    "name": "Распадская"
+  },
+  {
+    "symbol": "RENI@MISX",
+    "name": "Ренессанс"
+  },
+  {
+    "symbol": "RNFT@MISX",
+    "name": "РуссНфт ао"
+  },
+  {
+    "symbol": "ROSN@MISX",
+    "name": "Роснефть"
+  },
+  {
+    "symbol": "RTKM@MISX",
+    "name": "Ростел -ао"
+  },
+  {
+    "symbol": "RTKMP@MISX",
+    "name": "Ростел -ап"
+  },
+  {
+    "symbol": "RUAL@MISX",
+    "name": "РУСАЛ ао"
+  },
+  {
+    "symbol": "SBER@MISX",
+    "name": "Сбербанк"
+  },
+  {
+    "symbol": "SBERP@MISX",
+    "name": "Сбербанк-п"
+  },
+  {
+    "symbol": "SELG@MISX",
+    "name": "Селигдар"
+  },
+  {
+    "symbol": "SFIN@MISX",
+    "name": "ЭсЭфАй ао"
+  },
+  {
+    "symbol": "SGZH@MISX",
+    "name": "Сегежа"
+  },
+  {
+    "symbol": "SMLT@MISX",
+    "name": "Самолет ао"
+  },
+  {
+    "symbol": "SNGS@MISX",
+    "name": "Сургнфгз"
+  },
+  {
+    "symbol": "SNGSP@MISX",
+    "name": "Сургнфгз-п"
+  },
+  {
+    "symbol": "SOFL@MISX",
+    "name": "iСофтлайн"
+  },
+  {
+    "symbol": "SPBE@MISX",
+    "name": "СПБ Биржа"
+  },
+  {
+    "symbol": "SVAV@MISX",
+    "name": "СОЛЛЕРС"
+  },
+  {
+    "symbol": "SVCB@MISX",
+    "name": "Совкомбанк"
+  },
+  {
+    "symbol": "T@MISX",
+    "name": "Т-Техно ао"
+  },
+  {
+    "symbol": "TATN@MISX",
+    "name": "Татнфт 3ао"
+  },
+  {
+    "symbol": "TATNP@MISX",
+    "name": "Татнфт 3ап"
+  },
+  {
+    "symbol": "TGKA@MISX",
+    "name": "ТГК-1"
+  },
+  {
+    "symbol": "TRMK@MISX",
+    "name": "ТМК ао"
+  },
+  {
+    "symbol": "TRNFP@MISX",
+    "name": "Транснф ап"
+  },
+  {
+    "symbol": "UGLD@MISX",
+    "name": "ЮГК"
+  },
+  {
+    "symbol": "UPRO@MISX",
+    "name": "Юнипро ао"
+  },
+  {
+    "symbol": "UWGN@MISX",
+    "name": "ОВК ао"
+  },
+  {
+    "symbol": "VKCO@MISX",
+    "name": "МКПАО \"ВК\""
+  },
+  {
+    "symbol": "VSEH@MISX",
+    "name": "ВИ.ру"
+  },
+  {
+    "symbol": "VSMO@MISX",
+    "name": "ВСМПО-АВСМ"
+  },
+  {
+    "symbol": "VTBR@MISX",
+    "name": "ВТБ ао"
+  },
+  {
+    "symbol": "WUSH@MISX",
+    "name": "iВУШХолднг"
+  },
+  {
+    "symbol": "X5@MISX",
+    "name": "КЦ ИКС 5"
+  },
+  {
+    "symbol": "YDEX@MISX",
+    "name": "ЯНДЕКС"
+  }
+]

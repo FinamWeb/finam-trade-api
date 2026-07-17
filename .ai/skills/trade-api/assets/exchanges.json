@@ -1,0 +1,148 @@
+{
+    "exchanges": [
+        {
+            "mic": "MISX",
+            "name": "MOSCOW EXCHANGE - ALL MARKETS"
+        },
+        {
+            "mic": "XNGS",
+            "name": "NASDAQ/NGS (GLOBAL SELECT MARKET)"
+        },
+        {
+            "mic": "XNYS",
+            "name": "NEW YORK STOCK EXCHANGE, INC."
+        },
+        {
+            "mic": "XNMS",
+            "name": "NASDAQ/NMS (GLOBAL MARKET)"
+        },
+        {
+            "mic": "XNCM",
+            "name": "NASDAQ CAPITAL MARKET"
+        },
+        {
+            "mic": "BATS",
+            "name": "CBOE BZX U.S. EQUITIES EXCHANGE"
+        },
+        {
+            "mic": "ARCX",
+            "name": "NYSE ARCA"
+        },
+        {
+            "mic": "XASE",
+            "name": "NYSE MKT LLC"
+        },
+        {
+            "mic": "XHKG",
+            "name": "HONG KONG EXCHANGES AND CLEARING LTD"
+        },
+        {
+            "mic": "XTKS",
+            "name": "TOKYO STOCK EXCHANGE"
+        },
+        {
+            "mic": "XPAR",
+            "name": "EURONEXT - EURONEXT PARIS"
+        },
+        {
+            "mic": "XLON",
+            "name": "LONDON STOCK EXCHANGE"
+        },
+        {
+            "mic": "XBRU",
+            "name": "EURONEXT - EURONEXT BRUSSELS"
+        },
+        {
+            "mic": "_SCI",
+            "name": "Synthetic Composite Index"
+        },
+        {
+            "mic": "XLOM",
+            "name": "LONDON STOCK EXCHANGE - MTF"
+        },
+        {
+            "mic": "RUSX",
+            "name": "NON-PROFIT PARTNERSHIP FOR THE DEVELOPMENT OF FINANCIAL MARKET RTS"
+        },
+        {
+            "mic": "PINX",
+            "name": "OTC PINK MARKETPLACE"
+        },
+        {
+            "mic": "XNYM",
+            "name": "NEW YORK MERCANTILE EXCHANGE"
+        },
+        {
+            "mic": "XAMS",
+            "name": "EURONEXT - EURONEXT AMSTERDAM"
+        },
+        {
+            "mic": "XETR",
+            "name": "XETRA"
+        },
+        {
+            "mic": "XMAD",
+            "name": "BOLSA DE MADRID"
+        },
+        {
+            "mic": "XGAT",
+            "name": "TRADEGATE EXCHANGE - FREIVERKEHR"
+        },
+        {
+            "mic": "XCEC",
+            "name": "COMMODITIES EXCHANGE CENTER"
+        },
+        {
+            "mic": "XCME",
+            "name": "CHICAGO MERCANTILE EXCHANGE"
+        },
+        {
+            "mic": "RTSX",
+            "name": "MOSCOW EXCHANGE - DERIVATIVES MARKET"
+        },
+        {
+            "mic": "_SPBZ",
+            "name": "SPB OTC issues"
+        },
+        {
+            "mic": "_TRES",
+            "name": "Treasuries OTC issues"
+        },
+        {
+            "mic": "_EURB",
+            "name": "Eurobonds OTC issues"
+        },
+        {
+            "mic": "_CMF",
+            "name": "Сredit Mutual Funds"
+        },
+        {
+            "mic": "XSHG",
+            "name": "SHANGHAI STOCK EXCHANGE"
+        },
+        {
+            "mic": "XSHE",
+            "name": "SHENZHEN STOCK EXCHANGE"
+        },
+        {
+            "mic": "_MMBZ",
+            "name": "MOEX OTC issues"
+        },
+        {
+            "mic": "_NPRO",
+            "name": "NTPRO"
+        },
+        {
+            "mic": "_SMMA",
+            "name": "Currency SMMA"
+        },
+        {
+            "mic": "_CRYP",
+            "name": "OTC Options Crypto"
+        },
+        {
+            "mic": "XNAS",
+            "name": "NASDAQ - ALL MARKETS"
+        }
+    ]
+}
