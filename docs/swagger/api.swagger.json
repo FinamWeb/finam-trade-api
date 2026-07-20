@@ -3135,6 +3135,10 @@
         "index_inclusion_date": {
           "$ref": "#/definitions/typeDate",
           "title": "Дата добавления бумаги в индекс"
+        },
+        "weight": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Вес инструмента в индексе"
         }
       },
       "title": "Информация о компоненте (ценной бумаге), входящем в индекс"
