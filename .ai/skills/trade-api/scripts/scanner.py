@@ -2,19 +2,18 @@
 """Market scanner for Finam top-100 stocks: volatility, growth, and volume."""
 
 import argparse
-import json
 import math
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 from finam_trade_api import FinamClient
+from finam_trade_api.assets import GetConstituentsRequest
 from finam_trade_api.market_data import BarsRequest, TimeFrame
 
 
-ASSETS_DIR = Path(__file__).parent.parent / "assets"
+INDEX_MAP = {"ru": "IMOEX@RTSX", "us": "NDX@_SCI"}
 
 _debug = False
 
@@ -32,10 +31,17 @@ def make_client() -> FinamClient:
     return FinamClient(secret=api_key)
 
 
-def load_equities(market):
-    path = ASSETS_DIR / f"top_{market}_equities.json"
-    with open(path) as f:
-        return json.load(f)
+def fetch_equities(client, market):
+    results = []
+    cursor = 0
+    while True:
+        req = GetConstituentsRequest(symbol=INDEX_MAP[market], cursor=cursor)
+        resp = client.assets.GetConstituents(req)
+        results.extend(resp.constituents)
+        cursor = resp.next_cursor
+        if not cursor:
+            break
+    return [{"symbol": c.symbol, "name": c.name} for c in results]
 
 
 def parse_args():
@@ -116,12 +122,11 @@ def main():
     args = parse_args()
     market, n = args.market, args.n
 
-    equities = load_equities(market)
-    total = len(equities)
-    dprint(f"Fetching bars for {total} {market.upper()} tickers (last {args.days} days)...")
-
     results = {}
     with make_client() as client:
+        equities = fetch_equities(client, market)
+        total = len(equities)
+        dprint(f"Fetching bars for {total} {market.upper()} tickers (last {args.days} days)...")
         with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {
                 executor.submit(fetch_bars, client, eq["symbol"], args.days): eq

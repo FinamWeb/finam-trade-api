@@ -84,7 +84,11 @@ curl -sL "https://api.finam.ru/v1/..." --header "Authorization: $TOKEN" | jq
 View all supported exchanges with their MIC codes:
 
 ```shell
-jq -r '.exchanges[] | "\(.mic) - \(.name)"' assets/exchanges.json
+TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
+  --header "Content-Type: application/json" \
+  --data '{"secret": "'"$FINAM_API_KEY"'"}' | jq -r '.token')
+curl -sL "https://api.finam.ru/v1/exchanges" --header "Authorization: $TOKEN" | \
+  jq -r '.exchanges[] | "\(.mic) - \(.name)"'
 ```
 
 ### Get Asset Specification
@@ -124,18 +128,20 @@ Available types: `EQUITIES`, `FUTURES`, `BONDS`, `FUNDS`, `SPREADS`, `OTHER`, `C
 
 `--mic MIC` filters by exchange (e.g. `RTSX`, `MISX`). `--archived` fetches expired/delisted instruments via `GET /v1/assets/all?only_disabled=true`. `--max=N` sets the pagination cap (default: 200 000).
 
-### Get Top N Stocks by Volume
+### Get Top Stocks
 
-Pre-ranked lists of the 100 most liquid equities for each market, ordered by trading volume descending:
-
-```shell
-N=10
-jq -r ".[:$N] | .[] | \"\(.ticker) - \(.name)\"" assets/top_ru_equities.json
-```
+Fetch current index components — IMOEX for RU market, NDX for US market:
 
 ```shell
-N=10
-jq -r ".[:$N] | .[] | \"\(.ticker) - \(.name)\"" assets/top_us_equities.json
+# Table output (default)
+python3 scripts/top_stocks.py ru
+python3 scripts/top_stocks.py us
+
+# First N entries
+python3 scripts/top_stocks.py ru --n 10
+
+# JSON output (for piping to other tools)
+python3 scripts/top_stocks.py ru --json
 ```
 
 ## Account Management
