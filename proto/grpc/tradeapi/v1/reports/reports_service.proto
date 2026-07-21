@@ -171,7 +171,7 @@ message AccountReportInfo {
   ReportForm report_form = 4;
   // Идентификатор счета. Берётся из запроса на генерацию отчёта
   int64 account_id = 5;
-  // Ссылка на скачивание отчёта. Появляется только в случае успешной генерации отчёта (ReportCreationStatus = SUCCESS). Для скачивания отчёта по данной ссылке необходимо передать заголовок Authorization: Bearer <your_access_key>
+  // Ссылка на скачивание отчёта. Появляется только в случае успешной генерации отчёта (ReportCreationStatus = SUCCESS)
   google.protobuf.StringValue url = 6;
 }
 
