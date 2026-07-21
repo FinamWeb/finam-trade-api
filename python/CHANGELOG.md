@@ -9,6 +9,12 @@ The PyPI distribution is `finam-sdk`; the Python import name is
 
 ## [Unreleased]
 
+## [2.18.0] — 2026-07-20
+
+### Added
+
+- `Constituents.weight` — weight of the instrument within the index.
+
 ## [2.17.0] — 2026-06-25
 
 ### Added
@@ -64,7 +70,8 @@ Initial public release.
   `finam-trade-api` name is held by an unrelated third-party REST client.
   Import name stays `finam_trade_api`.
 
-[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.17.0...HEAD
+[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.18.0...HEAD
+[2.18.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.18.0
 [2.17.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.17.0
 [2.16.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.16.0
 [0.1.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/v0.1.0

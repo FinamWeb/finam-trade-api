@@ -635,5 +635,7 @@ message Constituents {
   string cik = 5;
   // Дата добавления бумаги в индекс
   google.type.Date index_inclusion_date = 6;
+  // Вес инструмента в индексе
+  google.type.Decimal weight = 7;
 }
 
