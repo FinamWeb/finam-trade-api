@@ -98,7 +98,7 @@ Fetch detailed specification for a specific instrument (lot size, price step, de
 ```shell
 SYMBOL="SBER@MISX"
 curl -sL "https://api.finam.ru/v1/assets/$SYMBOL?account_id=$FINAM_ACCOUNT_ID" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 `account_id` is optional but recommended — returns account-specific fields (margin, available quantity, etc.).
@@ -152,7 +152,7 @@ Retrieve portfolio information including positions, balances, and P&L:
 
 ```shell
 curl -sL "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 ## Market Data
@@ -164,7 +164,7 @@ Retrieve current bid/ask prices and last trade:
 ```shell
 SYMBOL="SBER@MISX"
 curl -sL "https://api.finam.ru/v1/instruments/$SYMBOL/quotes/latest" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 ### Get Order Book (Depth)
@@ -174,7 +174,7 @@ View current market depth with bid/ask levels:
 ```shell
 SYMBOL="SBER@MISX"
 curl -sL "https://api.finam.ru/v1/instruments/$SYMBOL/orderbook" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 ### Get Recent Trades
@@ -184,7 +184,7 @@ List the most recent executed trades:
 ```shell
 SYMBOL="SBER@MISX"
 curl -sL "https://api.finam.ru/v1/instruments/$SYMBOL/trades/latest" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 ### Get Historical Candles (OHLCV)
@@ -197,7 +197,7 @@ TIMEFRAME="TIME_FRAME_D"
 START_TIME="2024-01-01T00:00:00Z"
 END_TIME="2024-04-01T00:00:00Z"
 curl -sL "https://api.finam.ru/v1/instruments/$SYMBOL/bars?timeframe=$TIMEFRAME&interval.start_time=$START_TIME&interval.end_time=$END_TIME" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 **Available Timeframes:**
@@ -274,7 +274,7 @@ for item in reversed(root.findall('.//item')):
 
 ```shell
 curl -sL "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID/orders" \
-  --header "Authorization: $FINAM_JWT_TOKEN" \
+  --header "Authorization: $TOKEN" \
   --header "Content-Type: application/json" \
   --data "$(jq -n \
     --arg symbol   "SBER@MISX" \
@@ -301,7 +301,7 @@ Check the status of a specific order:
 ```shell
 ORDER_ID="12345678"
 curl -sL "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID/orders/$ORDER_ID" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 ### Cancel Order
@@ -311,7 +311,7 @@ Cancel a pending order:
 ```shell
 ORDER_ID="12345678"
 curl -sL --request DELETE "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID/orders/$ORDER_ID" \
-  --header "Authorization: $FINAM_JWT_TOKEN" | jq
+  --header "Authorization: $TOKEN" | jq
 ```
 
 ## Building Strategies

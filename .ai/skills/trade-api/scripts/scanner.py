@@ -49,9 +49,9 @@ def parse_args():
         description="Scan top-100 stocks for volatility, growth, and volume.",
         epilog=(
             "examples:\n"
-            "  volatility.py ru 10\n"
-            "  volatility.py us 5 --sort growth --days 5\n"
-            "  volatility.py ru --sort volume --min-growth 5 --min-volume 500000000\n"
+            "  scanner.py ru 10\n"
+            "  scanner.py us 5 --sort growth --days 5\n"
+            "  scanner.py ru --sort volume --min-growth 5 --min-volume 500000000\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -147,7 +147,9 @@ def main():
                     dprint(f"  [{done}/{total}] {eq['symbol']} — skipped (only {len(bars)} bars)")
                     continue
                 results[eq["symbol"]] = {"name": eq["name"], "vol": vol, "growth": growth, "avg_volume": avg_vol}
-                dprint(f"  [{done}/{total}] {eq['symbol']} — vol={vol*100:.1f}% growth={growth:+.1f}% avg_vol={avg_vol:.0f}")
+                g = f"{growth:+.1f}%" if growth is not None else "n/a"
+                v = f"{avg_vol:.0f}" if avg_vol is not None else "n/a"
+                dprint(f"  [{done}/{total}] {eq['symbol']} — vol={vol*100:.1f}% growth={g} avg_vol={v}")
 
     if not results:
         print("No results to display.")
