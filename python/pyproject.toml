@@ -50,7 +50,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/FinamWeb/finam-trade-api"
-Documentation = "https://tradeapi.finam.ru/"
+Documentation = "https://api.finam.ru/"
 Repository = "https://github.com/FinamWeb/finam-trade-api"
 
 [tool.setuptools.packages.find]

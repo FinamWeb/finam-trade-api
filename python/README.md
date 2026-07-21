@@ -1,12 +1,12 @@
 # Finam Trade API — Python SDK
 
-Thin Python SDK for the [Finam Trade API](https://tradeapi.finam.ru/). Wraps
+Thin Python SDK for the [Finam Trade API](https://api.finam.ru/). Wraps
 the generated gRPC stubs with:
 
 - a single `FinamClient` / `AsyncFinamClient` entry point,
 - automatic JWT issuance and background refresh (via `AuthService.SubscribeJwtRenewal`),
 - typed exceptions mapped from gRPC status codes,
-- exponential-backoff retries on transient failures (`UNAVAILABLE`, `RESOURCE_EXHAUSTED`).
+- exponential-backoff retries on transient failures (`UNAVAILABLE`; `RESOURCE_EXHAUSTED` only on server pushback).
 
 Service methods are invoked directly on the generated stubs, so the full proto
 surface is available without an extra translation layer.
@@ -24,12 +24,14 @@ pip install finam-sdk
 ## Quickstart (sync)
 
 ```python
+import os
+
 from finam_trade_api import FinamClient
 from finam_trade_api.accounts import GetAccountRequest
 from finam_trade_api.market_data import SubscribeQuoteRequest
 
-with FinamClient(secret="YOUR_API_TOKEN") as client:
-    account = client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
+    account = client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
     print(account)
 
     # Streaming RPCs return iterators.
@@ -39,17 +41,24 @@ with FinamClient(secret="YOUR_API_TOKEN") as client:
         print(tick)
 ```
 
+The snippets in this README read your API secret from the `FINAM_SECRET`
+environment variable (see `.env.example`) instead of hardcoding it.
+
+Don't know your `account_id`? See
+[Finding your `account_id`](#finding-your-account_id) below.
+
 ## Quickstart (asyncio)
 
 ```python
 import asyncio
+import os
 
 from finam_trade_api import AsyncFinamClient
 from finam_trade_api.market_data import SubscribeQuoteRequest
 
 
 async def main() -> None:
-    async with AsyncFinamClient(secret="YOUR_API_TOKEN") as client:
+    async with AsyncFinamClient(secret=os.environ["FINAM_SECRET"]) as client:
         async for tick in client.market_data.SubscribeQuote(
             SubscribeQuoteRequest(symbols=["SBER@MISX"])
         ):
@@ -57,6 +66,50 @@ async def main() -> None:
 
 
 asyncio.run(main())
+```
+
+## Authentication
+
+You never call the auth RPC yourself — the client does it for you. You only
+supply your API secret:
+
+```python
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
+    ...
+```
+
+On construction the client:
+
+1. Exchanges your secret for a short-lived JWT via `AuthService.Auth`. The sync
+   `FinamClient` blocks until this succeeds; `AsyncFinamClient` performs it
+   inside `await client.start()`.
+2. Keeps the JWT fresh in the background by consuming the
+   `AuthService.SubscribeJwtRenewal` stream (a daemon thread for the sync
+   client, an asyncio task for the async one), reconnecting with backoff.
+3. Attaches the current JWT to the `Authorization` metadata of every RPC, so
+   token refreshes between calls are transparent.
+
+A bad or empty secret raises `AuthError` at construction, before the client is
+returned.
+
+You normally never handle the JWT yourself. If you need the raw token — for
+example to authorize a separate WebSocket connection — read the cached snapshot
+with `client.get_token()`.
+
+## Finding your `account_id`
+
+Most calls take an `account_id` (format `TRQD05:123456`). The accounts your
+secret can see are listed in `TokenDetails.account_ids` — inspect the token:
+
+```python
+import os
+
+from finam_trade_api import FinamClient
+from finam_trade_api.auth_messages import TokenDetailsRequest
+
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
+    details = client.auth.TokenDetails(TokenDetailsRequest(token=client.get_token()))
+    print(details.account_ids)  # ['TRQD05:123456']
 ```
 
 ## Available services
@@ -184,12 +237,14 @@ Legend: ▶ unary · ⇉ server-stream · ⇄ bidi-stream
 Wrap raw `grpc.RpcError` into a typed `FinamError`:
 
 ```python
+import os
+
 import grpc
 from finam_trade_api import FinamClient, RateLimitError, from_rpc_error
 
-with FinamClient(secret="...") as client:
+with FinamClient(secret=os.environ["FINAM_SECRET"]) as client:
     try:
-        client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
+        client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
     except grpc.RpcError as raw:
         err = from_rpc_error(raw)
         if isinstance(err, RateLimitError):
@@ -204,18 +259,22 @@ All inherit from `FinamError`.
 
 ## Retries
 
-Unary RPCs are retried automatically on `UNAVAILABLE` and `RESOURCE_EXHAUSTED`
-with exponential backoff + jitter. Streaming RPCs are *not* retried — the
-caller is expected to handle reconnection at a meaningful boundary
+Unary RPCs are retried automatically on `UNAVAILABLE` with exponential backoff
++ jitter. `RESOURCE_EXHAUSTED` (429) is retried only when the server sends a
+`grpc-retry-pushback-ms` hint (using that delay); without it a 429 is surfaced
+immediately, to avoid amplifying throttling. Streaming RPCs are *not* retried —
+the caller is expected to handle reconnection at a meaningful boundary
 (e.g. resuming from the last received bar).
 
 Override the policy:
 
 ```python
+import os
+
 from finam_trade_api import FinamClient, RetryPolicy
 
 policy = RetryPolicy(max_attempts=6, initial_backoff=0.5, max_backoff=10.0)
-client = FinamClient(secret="...", retry_policy=policy)
+client = FinamClient(secret=os.environ["FINAM_SECRET"], retry_policy=policy)
 ```
 
 ## Local build

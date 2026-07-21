@@ -4,7 +4,7 @@ Mirrors the sync client one-to-one, using grpc.aio under the hood. Streaming
 RPCs return async iterators that can be consumed with ``async for``.
 
     async with AsyncFinamClient(secret="...") as client:
-        accounts = await client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
+        accounts = await client.accounts.GetAccount(GetAccountRequest(account_id="TRQD05:123456"))
         async for tick in client.market_data.SubscribeQuote(SubscribeQuoteRequest(symbol="SBER@MISX")):
             ...
 """
