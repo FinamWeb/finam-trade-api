@@ -1,13 +1,13 @@
 {
   "name": "finam",
   "displayName": "Finam Trade API",
-  "version": "1.0.1",
-  "description": "Finam Trade API plugin for Cursor. Skills: finam:trade-api for real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; instrument search and volatility scanning; placing and cancelling orders through Finam broker; developing algorithmic trading scripts.",
+  "version": "1.0.2",
+  "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
   "author": {
-    "name": "Alexander"
+    "name": "Alexander Panov"
   },
-  "homepage": "https://github.com/FinamWeb/finam-trade-api",
-  "repository": "https://github.com/FinamWeb/finam-trade-api",
+  "homepage": "https://github.com/FinamWeb/finam-skill",
+  "repository": "https://github.com/FinamWeb/finam-skill",
   "license": "MIT",
   "keywords": [
     "finam",
@@ -31,5 +31,5 @@
     "algo-trading",
     "orders"
   ],
-  "skills": "./.ai/skills/"
+  "skills": "./skills/"
 }

@@ -1,23 +1,25 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "finam-trade-api",
-  "version": "1.0.1",
-  "description": "Finam Trade API plugin for Claude Code — algorithmic trading, market data, and order management through Finam broker.",
+  "name": "finam-skill",
+  "version": "1.0.2",
+  "description": "Finam Trade API — algorithmic trading, market data, and order management through Finam broker.",
   "owner": {
-    "name": "Finam",
-    "url": "https://github.com/FinamWeb"
+    "name": "Alexander Panov",
+    "url": "https://github.com/Alexander-Panov"
   },
   "plugins": [
     {
       "name": "finam",
-      "description": "Finam Trade API skill for Claude Code. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
-      "version": "1.0.1",
+      "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
+      "version": "1.0.2",
       "author": {
-        "name": "Alexander"
+        "name": "Alexander Panov"
       },
-      "source": "./.ai",
-      "category": "finance",
-      "strict": false
+      "source": {
+        "source": "github",
+        "repo": "FinamWeb/finam-skill"
+      },
+      "category": "finance"
     }
   ]
 }

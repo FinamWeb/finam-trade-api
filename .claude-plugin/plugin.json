@@ -1,12 +1,12 @@
 {
   "name": "finam",
-  "version": "1.0.1",
-  "description": "Finam Trade API skill for Claude Code. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
+  "version": "1.0.2",
+  "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
   "author": {
-    "name": "Finam",
-    "url": "https://github.com/FinamWeb"
+    "name": "Alexander Panov",
+    "url": "https://github.com/Alexander-Panov"
   },
-  "homepage": "https://github.com/FinamWeb/finam-trade-api",
+  "homepage": "https://github.com/FinamWeb/finam-skill",
   "license": "MIT",
   "keywords": [
     "finam",
