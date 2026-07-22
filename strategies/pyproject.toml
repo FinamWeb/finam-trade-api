@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+testpaths = ["sma_crossover/tests"]
+pythonpath = [".."]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+follow_imports = "skip"
+ignore_missing_imports = true
+exclude = ["sma_crossover/tests/"]

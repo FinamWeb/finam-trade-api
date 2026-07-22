@@ -59,6 +59,20 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+## Brand-neutral example facade
+
+The monorepo's reusable strategy examples import a deliberately small
+`trade_api` namespace so the same example code can be used by compatible
+white-label distributions without changing imports:
+
+```python
+from trade_api import Client, BarsRequest, TimeFrame
+```
+
+`Client` is the synchronous SDK client. The facade also exports the bar,
+account, and order message types used by the examples. The complete SDK surface
+remains available through `finam_trade_api`.
+
 ## Available services
 
 The client exposes the full Trade API surface via sub-clients:

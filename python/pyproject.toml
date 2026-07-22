@@ -55,10 +55,11 @@ Repository = "https://github.com/FinamWeb/finam-trade-api"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["finam_trade_api*", "finam_trade_api.proto*"]
+include = ["finam_trade_api*", "finam_trade_api.proto*", "trade_api*"]
 
 [tool.setuptools.package-data]
 "finam_trade_api" = ["py.typed"]
+"trade_api" = ["py.typed"]
 # Ship generated type stubs (.pyi) alongside the runtime modules so downstream
 # type-checkers see the proto messages with their full field types.
 "finam_trade_api.proto" = ["**/*.pyi"]
