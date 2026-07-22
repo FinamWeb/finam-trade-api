@@ -439,6 +439,8 @@ message GetAssetParamsResponse {
   google.protobuf.BoolValue is_tradable = 12;
   // Допустимая цена. Помогает определить можно ли выставлять ордера с отрицательной ценой для финансового инструмента
   PriceType price_type = 13;
+  // Размер лота инструмента для торговых операций. Если поле равно 0 - значение отсутствует
+  int64 trade_lot_size = 14;
 }
 
 // Запрос получения цепочки опционов
@@ -635,5 +637,7 @@ message Constituents {
   string cik = 5;
   // Дата добавления бумаги в индекс
   google.type.Date index_inclusion_date = 6;
+  // Вес инструмента в индексе
+  google.type.Decimal weight = 7;
 }
 
