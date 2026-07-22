@@ -1,0 +1,105 @@
+name: Sync plugin manifests
+
+on:
+  pull_request:
+    paths:
+      - .claude-plugin/plugin.json
+      - .claude-plugin/marketplace.json
+      - .cursor-plugin/plugin.json
+      - .cursor-plugin/marketplace.json
+      - .codex-plugin/plugin.json
+      - qwen-extension.json
+  push:
+    branches: [main]
+    paths:
+      - .claude-plugin/plugin.json
+      - .claude-plugin/marketplace.json
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Check version and description in sync
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate consistency
+        run: |
+          V=$(jq -r '.version'     .claude-plugin/plugin.json)
+          D=$(jq -r '.description' .claude-plugin/plugin.json)
+          DS=$(jq -r '.description' .claude-plugin/marketplace.json)
+          fail=0
+          check_v() {
+            GOT=$(jq -r "$2" "$1")
+            [ "$GOT" = "$V" ] || { echo "DRIFT version: $1 → $2 = $GOT (expected $V)"; fail=1; }
+          }
+          check_d() {
+            GOT=$(jq -r "$2" "$1")
+            [ "$GOT" = "$D" ] || { echo "DRIFT description: $1 → $2"; fail=1; }
+          }
+          check_ds() {
+            GOT=$(jq -r "$2" "$1")
+            [ "$GOT" = "$DS" ] || { echo "DRIFT short_description: $1 → $2"; fail=1; }
+          }
+          check_v .claude-plugin/marketplace.json '.version'
+          check_v .claude-plugin/marketplace.json '.plugins[0].version'
+          check_v .cursor-plugin/plugin.json      '.version'
+          check_v .cursor-plugin/marketplace.json '.metadata.version'
+          check_v .codex-plugin/plugin.json       '.version'
+          check_v qwen-extension.json             '.version'
+          check_d .claude-plugin/marketplace.json '.plugins[0].description'
+          check_d .cursor-plugin/plugin.json      '.description'
+          check_d .cursor-plugin/marketplace.json '.plugins[0].description'
+          check_d .codex-plugin/plugin.json       '.description'
+          check_d .codex-plugin/plugin.json       '.interface.longDescription'
+          check_ds .codex-plugin/plugin.json      '.interface.shortDescription'
+          [ $fail -eq 0 ] && echo "OK: version=$V, descriptions in sync" || exit 1
+
+  sync:
+    name: Propagate version and description
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync from .claude-plugin/plugin.json and .claude-plugin/marketplace.json
+        run: |
+          V=$(jq -r '.version'     .claude-plugin/plugin.json)
+          D=$(jq -r '.description' .claude-plugin/plugin.json)
+          DS=$(jq -r '.description' .claude-plugin/marketplace.json)
+
+          patch() { local f="$1"; shift; jq "$@" "$f" > "$f.tmp" && mv "$f.tmp" "$f"; }
+
+          patch .claude-plugin/marketplace.json \
+            --arg v "$V" --arg d "$D" \
+            '.version = $v | .plugins[0].version = $v | .plugins[0].description = $d'
+
+          patch .cursor-plugin/plugin.json \
+            --arg v "$V" --arg d "$D" \
+            '.version = $v | .description = $d'
+
+          patch .cursor-plugin/marketplace.json \
+            --arg v "$V" --arg d "$D" \
+            '.metadata.version = $v | .plugins[0].description = $d'
+
+          patch .codex-plugin/plugin.json \
+            --arg v "$V" --arg d "$D" --arg ds "$DS" \
+            '.version = $v | .description = $d | .interface.longDescription = $d | .interface.shortDescription = $ds'
+
+          patch qwen-extension.json \
+            --arg v "$V" \
+            '.version = $v'
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && echo "Nothing to commit" && exit 0
+          git add .claude-plugin/marketplace.json \
+                  .cursor-plugin/plugin.json .cursor-plugin/marketplace.json \
+                  .codex-plugin/plugin.json qwen-extension.json
+          git commit -m "chore: sync manifests from .claude-plugin/plugin.json [skip ci]"
+          git push

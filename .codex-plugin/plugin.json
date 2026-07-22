@@ -1,0 +1,45 @@
+{
+  "name": "finam",
+  "version": "1.0.2",
+  "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
+  "author": {
+    "name": "Alexander Panov",
+    "url": "https://github.com/Alexander-Panov"
+  },
+  "homepage": "https://github.com/FinamWeb/finam-skill",
+  "repository": "https://github.com/FinamWeb/finam-skill",
+  "license": "MIT",
+  "keywords": [
+    "finam",
+    "trade-api",
+    "rest",
+    "grpc",
+    "websocket",
+    "market-data",
+    "ohlcv",
+    "orderbook",
+    "orders",
+    "portfolio",
+    "algo-trading",
+    "finance"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Finam Trade API",
+    "shortDescription": "Finam Trade API — algorithmic trading, market data, and order management through Finam broker.",
+    "longDescription": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
+    "developerName": "Alexander Panov",
+    "category": "Finance",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/FinamWeb/finam-skill",
+    "defaultPrompt": [
+      "Проведи глубокий анализ моего портфеля. Покажи структуру, динамику и предложи балансировку.",
+      "Найди все акции на Мосбирже из финансового сектора, которые выросли более чем на 5% за неделю при объеме торгов выше 500 млн рублей.",
+      "Построй свечной график SBER@MISX за последний месяц с индикаторами RSI и MACD",
+      "Проверь стратегию арбитража между фьючерсами Сбер и Сбер-преф за последние 3 месяца"
+    ]
+  }
+}

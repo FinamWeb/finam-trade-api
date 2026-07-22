@@ -1,0 +1,17 @@
+{
+  "name": "finam-cursor-marketplace",
+  "owner": {
+    "name": "Finam"
+  },
+  "metadata": {
+    "description": "Finam Trade API plugin collection for algorithmic trading and market data workflows.",
+    "version": "1.0.2"
+  },
+  "plugins": [
+    {
+      "name": "finam",
+      "source": ".",
+      "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts."
+    }
+  ]
+}
