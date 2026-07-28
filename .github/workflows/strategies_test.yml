@@ -38,6 +38,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e "./python[dev]"
 
+      # The proto stubs are gitignored (python/.gitignore), so a fresh
+      # checkout has no finam_trade_api/proto/ package. Without this step the
+      # editable-installed SDK fails to import at all — every strategy test
+      # errors out with ModuleNotFoundError: No module named
+      # 'finam_trade_api.proto'.
+      - name: Generate proto stubs
+        working-directory: python
+        run: ./scripts/generate_proto.sh
+
       - name: Run strategy tests
         run: python -m pytest strategies/sma_crossover/tests
 
