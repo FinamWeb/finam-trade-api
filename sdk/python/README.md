@@ -223,18 +223,18 @@ client = FinamClient(secret="...", retry_policy=policy)
 From the repository root:
 
 ```sh
-cd python
+cd sdk/python
 pip install -e ".[dev]"
 ./scripts/generate_proto.sh
 ```
 
-`scripts/generate_proto.sh` compiles the `.proto` files in `../proto/` into
+`scripts/generate_proto.sh` compiles the `.proto` files in `../../proto/` into
 `finam_trade_api/proto/`. Re-run it whenever the protos change.
 
 ## Layout
 
 ```
-python/
+sdk/python/
 ├── pyproject.toml
 ├── README.md
 ├── LICENSE
