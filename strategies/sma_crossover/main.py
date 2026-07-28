@@ -5,14 +5,13 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
-from typing import Optional, Sequence
 
 from google.protobuf.timestamp_pb2 import Timestamp
 from google.type.decimal_pb2 import Decimal as ProtoDecimal
 from google.type.interval_pb2 import Interval
-
 from trade_api import (
     Bar,
     BarsRequest,
@@ -48,7 +47,7 @@ TIMEFRAMES: dict[str, tuple[int, int]] = {
 }
 
 
-def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the SMA 9/30 crossover strategy")
     parser.add_argument("--secret", default=os.getenv("TRADE_API_SECRET"))
     parser.add_argument("--account-id", default=os.getenv("TRADE_API_ACCOUNT_ID"))
@@ -209,7 +208,7 @@ def run(client: Client, args: argparse.Namespace) -> None:
             pending = bar
 
 
-def main(argv: Optional[Sequence[str]] = None) -> None:
+def main(argv: Sequence[str] | None = None) -> None:
     args = _parse_args(argv)
     logging.basicConfig(
         level=getattr(logging, args.log_level),

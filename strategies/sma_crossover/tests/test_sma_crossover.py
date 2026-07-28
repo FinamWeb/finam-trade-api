@@ -4,11 +4,9 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-
-from trade_api import Bar, BarsResponse, GetAccountResponse, OrderState, Position, Side
-
 from strategies.sma_crossover.main import _ordered_bars, _place_order, run
 from strategies.sma_crossover.strategy import evaluate
+from trade_api import Bar, BarsResponse, GetAccountResponse, OrderState, Position, Side
 
 
 def make_bar(seconds: int, close: str = "0") -> Bar:
@@ -22,7 +20,7 @@ def args(**overrides: Any) -> SimpleNamespace:
     values = {
         "symbol": "SBER@MISX",
         "timeframe": "M5",
-        "quantity": Decimal("2"),
+        "quantity": Decimal(2),
         "account_id": "A1",
         "execute": False,
         "check": False,
@@ -75,7 +73,7 @@ def test_evaluate_detects_one_entry_and_one_exit() -> None:
 
 def test_evaluate_requires_slow_window() -> None:
     with pytest.raises(ValueError, match="30 closes"):
-        evaluate([Decimal("1")] * 29)
+        evaluate([Decimal(1)] * 29)
 
 
 def test_ordered_bars_sorts_and_keeps_latest_update() -> None:

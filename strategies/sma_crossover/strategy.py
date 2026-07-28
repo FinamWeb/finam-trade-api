@@ -1,7 +1,8 @@
 """The SMA 9/30 rule, independent from APIs and order execution."""
 
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Literal, Optional, Sequence
+from typing import Literal, Optional
 
 Signal = Optional[Literal["entry", "exit"]]
 
