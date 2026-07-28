@@ -1,0 +1,24 @@
+# The examples deliberately depend on the published SDK rather than the source
+# tree in sdk/python, so the code here is exactly what a user of the package
+# would write. Install with: python -m pip install -r strategies/requirements.txt
+#
+# Requires Python 3.10+. The finam-sdk 2.18.0 wheel ships proto stubs generated
+# with protobuf gencode 7.35, which refuses to load on a protobuf runtime older
+# than 7.x — and protobuf 7.x itself requires Python >= 3.10. So despite the
+# SDK's own `requires-python = ">=3.9"`, importing it under 3.9 raises
+# google.protobuf.runtime_version.VersionError.
+finam-sdk>=2.18.0
+
+# Imported directly by the example for Timestamp/Interval/Decimal messages.
+# Both arrive transitively via finam-sdk; listed because this code uses them.
+protobuf>=7.35
+googleapis-common-protos>=1.62
+
+# Dev tooling used by the strategy CI job.
+pytest>=7
+# Upper bound is deliberate: ruff is pre-1.0, so minor releases expand the
+# default rule set. 0.16 added I/UP/FURB to the defaults and turned CI red with
+# no code change. Bump this consciously and fix the new findings in the same
+# commit, rather than letting a fresh CI resolve do it for you.
+ruff>=0.3,<0.17
+mypy>=1.8
