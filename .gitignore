@@ -4,3 +4,18 @@ out/
 *.iml
 /finam-trade-api-go/.gradle/
 node_modules
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
