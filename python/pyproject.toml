@@ -42,7 +42,11 @@ dev = [
     "pytest-cov>=4",
     "mypy>=1.8",
     "mypy-protobuf>=3.6",
-    "ruff>=0.3",
+    # Upper bound is deliberate: ruff is pre-1.0, so minor releases expand the
+    # default rule set. 0.16 added I/UP/FURB to the defaults and turned CI red
+    # with no code change. Bump this consciously and fix the new findings in the
+    # same commit, rather than letting a fresh CI resolve do it for you.
+    "ruff>=0.3,<0.17",
     # Required only to regenerate stubs from .proto via scripts/generate_proto.sh.
     # Shipped stubs are committed to the repo, so end users never need protoc.
     "grpcio-tools>=1.60",
