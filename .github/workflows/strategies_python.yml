@@ -57,4 +57,4 @@ jobs:
 
       - name: Type-check
         if: matrix.python-version == '3.13'
-        run: python -m mypy ${{ matrix.strategy-dir }}
+        run: python -m mypy .

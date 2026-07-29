@@ -33,5 +33,5 @@ Its [Python implementation](strategies/sma_crossover/python/) runs against
 ```sh
 cd strategies/sma_crossover/python
 python -m pip install -r requirements.txt
-TRADE_API_SECRET=... python -m sma_crossover --symbol SBER@MISX --check
+TRADE_API_SECRET=... python main.py --symbol SBER@MISX --check
 ```

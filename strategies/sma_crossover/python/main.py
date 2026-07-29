@@ -28,7 +28,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from google.type.decimal_pb2 import Decimal as ProtoDecimal
 from google.type.interval_pb2 import Interval
 
-from .strategy import Signal, evaluate
+from strategy import Signal, evaluate
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +50,8 @@ TIMEFRAMES: dict[str, tuple[int, int]] = {
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    # Set prog explicitly: only Python 3.14+ infers "python -m <pkg>" from
-    # sys.argv[0]; older versions show a bare "__main__.py" in the help text.
     parser = argparse.ArgumentParser(
-        prog="python -m sma_crossover",
+        prog="python main.py",
         description="Run the SMA 9/30 crossover strategy",
     )
     parser.add_argument("--secret", default=os.getenv("TRADE_API_SECRET"))

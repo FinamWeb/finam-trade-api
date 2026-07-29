@@ -25,6 +25,10 @@ strategies/
     js/                # (same shape, per language)
 ```
 
+Implementations stay flat inside their language directory — source files at the
+top level, no package scaffolding wrapping them. There is one program per
+directory, so the extra nesting would only repeat the strategy name.
+
 The strategy README is language-neutral and is the single source of truth for
 behavior. Language directories document only installation, running, and tests
 for that ecosystem.

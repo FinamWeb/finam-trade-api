@@ -12,8 +12,8 @@ runs.
 
 ## Read the implementation in this order
 
-1. [`sma_crossover/strategy.py`](sma_crossover/strategy.py) — the small, pure SMA calculation and crossover rule.
-2. [`sma_crossover/main.py`](sma_crossover/main.py) — history, completed live bars, dry-run, and guarded orders.
+1. [`strategy.py`](strategy.py) — the small, pure SMA calculation and crossover rule.
+2. [`main.py`](main.py) — history, completed live bars, dry-run, and guarded orders.
 3. [`tests/test_sma_crossover.py`](tests/test_sma_crossover.py) — executable examples of expected behavior.
 
 The calculation is deliberately independent of the SDK. It can be tested or
@@ -38,7 +38,7 @@ but never reads an account or places an order.
 
 ```sh
 TRADE_API_SECRET=... \
-python -m sma_crossover \
+python main.py \
   --symbol SBER@MISX \
   --timeframe M5 \
   --quantity 1
@@ -51,7 +51,7 @@ Environment variables work in place of flags — see the table in
 For the bounded read-only smoke test against the live API:
 
 ```sh
-TRADE_API_SECRET=... python -m sma_crossover --symbol SBER@MISX --check
+TRADE_API_SECRET=... python main.py --symbol SBER@MISX --check
 ```
 
 To place real market orders, pass an account ID and `--execute`:
@@ -59,10 +59,14 @@ To place real market orders, pass an account ID and `--execute`:
 ```sh
 TRADE_API_SECRET=... \
 TRADE_API_ACCOUNT_ID=... \
-python -m sma_crossover --symbol SBER@MISX --quantity 1 --execute
+python main.py --symbol SBER@MISX --quantity 1 --execute
 ```
 
-Full flag reference: `python -m sma_crossover --help`.
+Full flag reference: `python main.py --help`.
+
+The example is deliberately flat — two modules and a test file, no package
+scaffolding — so it can be read top to bottom and dropped into an existing
+project without rewiring imports.
 
 ## Test
 
@@ -72,5 +76,5 @@ No secret or network access is required:
 python -m pytest
 python -m ruff check .
 python -m ruff format --check .
-python -m mypy sma_crossover
+python -m mypy .
 ```
