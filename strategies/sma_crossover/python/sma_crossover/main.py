@@ -50,7 +50,12 @@ TIMEFRAMES: dict[str, tuple[int, int]] = {
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the SMA 9/30 crossover strategy")
+    # Set prog explicitly: only Python 3.14+ infers "python -m <pkg>" from
+    # sys.argv[0]; older versions show a bare "__main__.py" in the help text.
+    parser = argparse.ArgumentParser(
+        prog="python -m sma_crossover",
+        description="Run the SMA 9/30 crossover strategy",
+    )
     parser.add_argument("--secret", default=os.getenv("TRADE_API_SECRET"))
     parser.add_argument("--account-id", default=os.getenv("TRADE_API_ACCOUNT_ID"))
     parser.add_argument("--symbol", default=os.getenv("TRADE_API_SYMBOL"))

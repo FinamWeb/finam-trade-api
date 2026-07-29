@@ -14,8 +14,11 @@ for Python, Kotlin, JavaScript, and Go.
 ## Trading strategy examples
 
 The [strategies directory](strategies/README.md) contains readable, runnable
-examples built with the published Python SDK (`finam-sdk` on PyPI). Start with
-the [SMA 9/30 crossover](strategies/sma_crossover/README.md), which
+examples built with the published SDKs. Each strategy is described once in a
+language-neutral README, then implemented per language in a self-contained
+directory beneath it.
+
+Start with the [SMA 9/30 crossover](strategies/sma_crossover/README.md), which
 demonstrates:
 
 - historical and streaming candles;
@@ -24,15 +27,11 @@ demonstrates:
 - dry-run execution by default;
 - guarded market order placement.
 
-From the repository root, install the SDK and open the example guide:
+Its [Python implementation](strategies/sma_crossover/python/) runs against
+`finam-sdk` from PyPI:
 
 ```sh
-python -m pip install -r strategies/requirements.txt
-python -m strategies.sma_crossover --help
-```
-
-With an API secret, run a bounded read-only smoke test:
-
-```sh
-TRADE_API_SECRET=... python -m strategies.sma_crossover --symbol SBER@MISX --check
+cd strategies/sma_crossover/python
+python -m pip install -r requirements.txt
+TRADE_API_SECRET=... python -m sma_crossover --symbol SBER@MISX --check
 ```

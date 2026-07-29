@@ -1,15 +1,15 @@
-name: Python strategy tests
+name: Python strategy examples
 
 on:
   push:
     branches: ["main"]
     paths:
-      - "strategies/**"
-      - ".github/workflows/strategies_test.yml"
+      - "strategies/*/python/**"
+      - ".github/workflows/strategies_python.yml"
   pull_request:
     paths:
-      - "strategies/**"
-      - ".github/workflows/strategies_test.yml"
+      - "strategies/*/python/**"
+      - ".github/workflows/strategies_python.yml"
 
 jobs:
   test:
@@ -17,10 +17,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Add a directory name here when a strategy gains a Python
+        # implementation. Each one is self-contained, so it gets its own run.
+        strategy-dir: ["sma_crossover"]
         # 3.10 is the floor, not 3.9: the finam-sdk wheel ships proto stubs
         # generated with protobuf gencode 7.35, which won't load on a protobuf
         # runtime below 7.x, and protobuf 7.x requires Python >= 3.10.
         python-version: ["3.10", "3.13"]
+
+    defaults:
+      run:
+        working-directory: strategies/${{ matrix.strategy-dir }}/python
 
     steps:
       - name: Checkout repository
@@ -38,16 +45,16 @@ jobs:
       - name: Install published SDK and test tools
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r strategies/requirements.txt
+          python -m pip install -r requirements.txt
 
-      - name: Run strategy tests
-        run: python -m pytest strategies/sma_crossover/tests
+      - name: Run tests
+        run: python -m pytest
 
-      - name: Lint strategy
+      - name: Lint
         run: |
-          python -m ruff check strategies
-          python -m ruff format --check strategies
+          python -m ruff check .
+          python -m ruff format --check .
 
-      - name: Type-check strategy
+      - name: Type-check
         if: matrix.python-version == '3.13'
-        run: python -m mypy --config-file strategies/pyproject.toml strategies/sma_crossover
+        run: python -m mypy ${{ matrix.strategy-dir }}

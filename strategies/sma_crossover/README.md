@@ -1,7 +1,18 @@
-# SMA 9/30 crossover example
+# SMA 9/30 crossover
 
-This example implements the following long-only rule with the published Python
-SDK (`pip install finam-sdk`, imported as `finam_trade_api`):
+A long-only moving-average crossover strategy, implemented once per language
+against the corresponding published Trade API SDK.
+
+| Language | Implementation | SDK |
+| --- | --- | --- |
+| Python | [`python/`](python/) | [`finam-sdk`](https://pypi.org/project/finam-sdk/) |
+
+This page describes the strategy itself: the rule, how candles are handled, and
+the safety guards every implementation must honor. Each language directory has
+its own README covering only installation, running, and tests for that
+ecosystem.
+
+## The rule
 
 - **Entry:** previous SMA 9 ≤ previous SMA 30, and current SMA 9 > current SMA 30.
 - **Exit:** previous SMA 9 ≥ previous SMA 30, and current SMA 9 < current SMA 30.
@@ -10,105 +21,36 @@ SDK (`pip install finam-sdk`, imported as `finam_trade_api`):
 - A signal is emitted once on the crossover candle, not on every candle while
   one average remains above the other.
 
-## Read the implementation in this order
-
-1. [`strategy.py`](strategy.py) — the small, pure SMA calculation and crossover rule.
-2. [`main.py`](main.py) — history, completed live bars, dry-run, and guarded orders.
-3. [`tests/test_sma_crossover.py`](tests/test_sma_crossover.py) — executable examples of expected behavior.
-
-The calculation is deliberately independent of the SDK. Developers can test or
-reuse it without credentials, networking, or protobuf messages.
+Two adjacent SMA 30 values are needed to detect a crossover, so the rule needs
+31 closes before it can emit its first signal.
 
 ## Data and execution flow
 
 ```text
-client.market_data.Bars ───────┐
-                               ├─> completed candles ─> SMA 9/30 ─> signal
-client.market_data.SubscribeBars┘                                  │
-                                                                  ├─> dry-run log
-client.accounts.GetAccount ────────────────────────────────────────┤
-client.orders.PlaceOrder <─────────────────────────────────────────┘
+market_data.Bars ───────┐
+                        ├─> completed candles ─> SMA 9/30 ─> signal
+market_data.SubscribeBars┘                                  │
+                                                           ├─> dry-run log
+accounts.GetAccount ────────────────────────────────────────┤
+orders.PlaceOrder <─────────────────────────────────────────┘
 ```
 
-The SDK already provides all required operations; the example does not import
-generated stubs directly or implement a separate transport.
-
-## Run from the repository root
-
-Install the published SDK and tooling once (Python 3.10+):
-
-```sh
-python -m pip install -r strategies/requirements.txt
-```
-
-Run safely without placing orders:
-
-```sh
-TRADE_API_SECRET=... \
-python -m strategies.sma_crossover \
-  --symbol SBER@MISX \
-  --timeframe M5 \
-  --quantity 1
-```
-
-You can use environment variables instead of flags. Copy `.env.example` as a
-reference; Python does not automatically load that file.
-
-| Environment variable | Required | Default |
-| --- | --- | --- |
-| `TRADE_API_SECRET` | Yes | — |
-| `TRADE_API_SYMBOL` | If `--symbol` is omitted | — |
-| `TRADE_API_ACCOUNT_ID` | Only with `--execute` | — |
-| `TRADE_API_TIMEFRAME` | No | `M5` |
-| `TRADE_API_QUANTITY` | No | `1` |
-| `TRADE_API_LOG_LEVEL` | No | `INFO` |
-
-Supported timeframes are `M1`, `M5`, `M15`, `M30`, `H1`, `H2`, `H4`, `H8`,
-`D`, `W`, `MN`, and `QR`.
-
-## Smoke-test the real API read-only
-
-Use `--check` to authenticate, fetch historical bars, calculate the latest
-confirmed SMA values, print one result, and exit:
-
-```sh
-TRADE_API_SECRET=... \
-python -m strategies.sma_crossover \
-  --symbol SBER@MISX \
-  --timeframe M5 \
-  --check
-```
-
-This mode never opens the live bar subscription, reads an account, or places an
-order.
-A successful result looks like:
-
-```text
-History check passed: close=... sma9=... sma30=... signal=...
-```
+Each SDK already provides all required operations. An implementation should not
+import generated stubs directly or build its own transport.
 
 ## How completed candles are handled
 
-The newest historical or streamed candle is kept pending. Updates with the same
-timestamp replace it. Only a bar with a later timestamp confirms that the
-pending candle has closed, at which point it is passed to the SMA calculator.
+The newest historical or streamed candle is kept pending. Updates carrying the
+same timestamp replace it. Only a bar with a later timestamp confirms that the
+pending candle has closed, at which point it is passed to the SMA calculation.
 
-Historical bars warm up the averages without placing orders. The example keeps
-the live loop intentionally direct; production applications should add stream
-reconnection, missed-bar backfill, persistent position state, monitoring, and
-risk limits around this core flow.
+Historical bars warm up the averages without placing orders.
 
-## Enable real orders explicitly
+## Safety guards
 
-```sh
-TRADE_API_SECRET=... \
-TRADE_API_ACCOUNT_ID=... \
-python -m strategies.sma_crossover \
-  --symbol SBER@MISX \
-  --timeframe M5 \
-  --quantity 1 \
-  --execute
-```
+Dry-run is the default. Reading market data and printing signals must never
+require an account ID, and must never read an account or place an order. Real
+trading requires an account ID plus an explicit opt-in flag.
 
 Before an order is submitted:
 
@@ -117,18 +59,40 @@ Before an order is submitted:
 - exit quantity is capped by the current long position, preventing a new short;
 - the signal candle produces a deterministic client order ID.
 
-Use a dedicated account/position for this example. The API exposes the aggregate
-position for a symbol, so the process cannot distinguish a manual position from
-one opened by the strategy. Real market orders also carry price and liquidity
-risk.
+Use a dedicated account for this example. The API exposes the aggregate position
+for a symbol, so the process cannot distinguish a manual position from one
+opened by the strategy. Real market orders also carry price and liquidity risk.
 
-## Run tests
+## Configuration
 
-No secret or network access is required:
+Every implementation reads the same settings, whether from flags or environment
+variables. Copy [`.env.example`](.env.example) as a reference.
 
-```sh
-python -m pytest strategies/sma_crossover/tests
-python -m ruff check strategies
-python -m ruff format --check strategies
-python -m mypy --config-file strategies/pyproject.toml strategies/sma_crossover
+| Environment variable | Required | Default |
+| --- | --- | --- |
+| `TRADE_API_SECRET` | Yes | — |
+| `TRADE_API_SYMBOL` | Yes | — |
+| `TRADE_API_ACCOUNT_ID` | Only when placing real orders | — |
+| `TRADE_API_TIMEFRAME` | No | `M5` |
+| `TRADE_API_QUANTITY` | No | `1` |
+| `TRADE_API_LOG_LEVEL` | No | `INFO` |
+
+Symbols use `ticker@mic` format, for example `SBER@MISX`. Supported timeframes
+are `M1`, `M5`, `M15`, `M30`, `H1`, `H2`, `H4`, `H8`, `D`, `W`, `MN`, and `QR`.
+
+## Read-only smoke test
+
+Every implementation offers a check mode that authenticates, fetches historical
+bars, calculates the latest confirmed SMA values, prints one line, and exits
+without opening the live subscription, reading an account, or placing an order:
+
+```text
+History check passed: close=... sma9=... sma30=... signal=...
 ```
+
+## Scope
+
+This is learning material, not a production trading system. Applications derived
+from it still need persistent state, stream reconnection, missed-bar backfill,
+monitoring, risk limits, reconciliation, and operational controls appropriate to
+their use case.

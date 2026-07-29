@@ -1,72 +1,50 @@
 # Strategy examples
 
-This directory shows how to build trading strategies with the published Python
-SDK (`finam-sdk` on PyPI). The examples favor readable code, safe defaults, and
-explicit API calls so developers can copy the patterns into their own
-applications.
-
-They install the SDK from PyPI rather than from [sdk/python/](../sdk/python/) on
-purpose: the example code is then exactly what a user of the package writes, and
-it keeps working without a local checkout or generated proto stubs.
+Runnable trading strategies built with the published Trade API SDKs. The
+examples favor readable code, safe defaults, and explicit API calls so
+developers can copy the patterns — or the directories themselves — into their
+own applications.
 
 ## Available strategies
 
-| Strategy | Rule | Start here |
+| Strategy | Rule | Languages |
 | --- | --- | --- |
-| SMA 9/30 crossover | Enter when SMA 9 crosses above SMA 30; exit on the reverse crossover | [`sma_crossover/README.md`](sma_crossover/README.md) |
+| [SMA 9/30 crossover](sma_crossover/README.md) | Enter when SMA 9 crosses above SMA 30; exit on the reverse crossover | [Python](sma_crossover/python/) |
 
-## Run the SMA example in three steps
+## Layout
 
-Run these commands from the repository root. Python 3.10 or newer is required —
-the published SDK wheel carries protobuf 7 gencode, and protobuf 7 dropped
-Python 3.9.
+Each strategy owns a directory, and each language implementation lives inside
+it:
 
-1. Create a virtual environment:
-
-   ```sh
-   python -m venv .venv
-   source .venv/bin/activate
-   ```
-
-2. Install the published SDK and development tools:
-
-   ```sh
-   python -m pip install -r strategies/requirements.txt
-   ```
-
-3. Start the strategy in safe dry-run mode:
-
-   ```sh
-   TRADE_API_SECRET=... \
-   python -m strategies.sma_crossover \
-     --symbol SBER@MISX \
-     --timeframe M5 \
-     --quantity 1
-   ```
-
-Dry-run is the default: the example reads real market data and prints signals,
-but it does not read an account or place orders. Real trading requires both an
-account ID and the explicit `--execute` flag.
-
-For a bounded read-only smoke test that exits after loading history:
-
-```sh
-TRADE_API_SECRET=... \
-python -m strategies.sma_crossover --symbol SBER@MISX --check
+```text
+strategies/
+  <strategy>/
+    README.md          # the rule, candle handling, safety guards, configuration
+    .env.example       # settings shared by every implementation
+    python/            # self-contained implementation + its own README
+    js/                # (same shape, per language)
 ```
 
-## Example conventions
+The strategy README is language-neutral and is the single source of truth for
+behavior. Language directories document only installation, running, and tests
+for that ecosystem.
 
-Every strategy added here should:
+## Conventions
 
-- have its own directory and README;
-- depend on the published SDK, not on a local source tree;
+Every implementation added here should:
+
+- depend on the **published** SDK for its language, never on the source tree in
+  this repository — the example code then matches what a user of the package
+  writes, and the directory stays runnable once copied out;
+- be self-contained: its own dependency manifest and tool configuration, so no
+  file outside the directory is needed to run it;
 - keep signal calculation separate from API and order code;
 - evaluate completed candles rather than changing candles;
-- start in dry-run mode;
-- require an explicit flag before placing orders;
-- include focused unit tests that do not need credentials or network access.
+- start in dry-run mode, and require an explicit flag before placing orders;
+- honor the safety guards described in the strategy README;
+- read the same environment variables as the other implementations;
+- include focused unit tests that need no credentials or network access.
 
-The strategy examples are learning material, not a production trading system.
+These examples are learning material, not a production trading system.
 Applications derived from them still need persistent state, monitoring, risk
 limits, reconciliation, and operational controls appropriate to their use case.

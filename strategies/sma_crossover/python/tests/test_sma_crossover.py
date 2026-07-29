@@ -7,8 +7,9 @@ import pytest
 from finam_trade_api.accounts import GetAccountResponse, Position
 from finam_trade_api.market_data import Bar, BarsResponse
 from finam_trade_api.orders import OrderState, Side
-from strategies.sma_crossover.main import _ordered_bars, _place_order, run
-from strategies.sma_crossover.strategy import evaluate
+
+from sma_crossover.main import _ordered_bars, _place_order, run
+from sma_crossover.strategy import evaluate
 
 
 def make_bar(seconds: int, close: str = "0") -> Bar:

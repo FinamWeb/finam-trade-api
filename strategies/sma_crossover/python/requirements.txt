@@ -1,6 +1,7 @@
-# The examples deliberately depend on the published SDK rather than the source
+# This example deliberately depends on the published SDK rather than the source
 # tree in sdk/python, so the code here is exactly what a user of the package
-# would write. Install with: python -m pip install -r strategies/requirements.txt
+# would write — and so the directory stays copy-out runnable.
+# Install from this directory with: python -m pip install -r requirements.txt
 #
 # Requires Python 3.10+. The finam-sdk 2.18.0 wheel ships proto stubs generated
 # with protobuf gencode 7.35, which refuses to load on a protobuf runtime older
