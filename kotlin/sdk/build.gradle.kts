@@ -74,6 +74,10 @@ protobuf {
     }
     generateProtoTasks {
         all().forEach { task ->
+            task.generateDescriptorSet = true
+            task.descriptorSetOptions.includeImports = true
+            task.descriptorSetOptions.includeSourceInfo = true
+            task.descriptorSetOptions.path = "${projectDir}/build/libs/tradeapi-${project.version}.pb"
             task.plugins {
                 create("grpc")
                 create("grpckt")
