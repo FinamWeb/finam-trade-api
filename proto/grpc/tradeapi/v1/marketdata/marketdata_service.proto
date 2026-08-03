@@ -335,6 +335,8 @@ message Bar {
   google.type.Decimal close = 5;
   // Объём торгов за свечу в шт.
   google.type.Decimal volume = 6;
+  // Признак того, что данные являются снэпшотом
+  bool is_data_snapshot = 7;
 }
 
 // Информация о котировке
@@ -390,6 +392,8 @@ message Quote {
   google.type.Decimal change = 15;
   // Открытый интерес. Общее количество незакрытых (активных) контрактов по деривативу.
   google.type.Decimal open_interest = 16;
+  // Признак того, что данные являются снэпшотом
+  bool is_data_snapshot = 17;
 
   oneof additions {
     // Информация об опционе
@@ -448,6 +452,8 @@ message Trade {
   Side side = 6;
   // Открытый интерес на момент совершения сделки.
   google.type.Decimal open_interest = 7;
+  // Признак того, что данные являются снэпшотом
+  bool is_data_snapshot = 8;
 }
 
 // Ошибка стрим сервиса
@@ -493,6 +499,8 @@ message StreamOrderBook {
   string symbol = 1;
   // Уровни стакана
   repeated Row rows = 2;
+  // Признак того, что данные являются снэпшотом
+  bool is_data_snapshot = 3;
 }
 
 // Запрос списка последних сделок по инструменту. Стрим
