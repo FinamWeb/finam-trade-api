@@ -6,8 +6,8 @@
     "name": "Alexander Panov",
     "url": "https://github.com/Alexander-Panov"
   },
-  "homepage": "https://github.com/FinamWeb/finam-skill",
-  "repository": "https://github.com/FinamWeb/finam-skill",
+  "homepage": "https://github.com/FinamWeb/finam-trade-api",
+  "repository": "https://github.com/FinamWeb/finam-trade-api",
   "license": "MIT",
   "keywords": [
     "finam",
@@ -23,7 +23,7 @@
     "algo-trading",
     "finance"
   ],
-  "skills": "./skills/",
+  "skills": "./.ai/skills/",
   "interface": {
     "displayName": "Finam Trade API",
     "shortDescription": "Finam Trade API — algorithmic trading, market data, and order management through Finam broker.",
@@ -34,12 +34,28 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/FinamWeb/finam-skill",
+    "websiteURL": "https://github.com/FinamWeb/finam-trade-api",
     "defaultPrompt": [
       "Проведи глубокий анализ моего портфеля. Покажи структуру, динамику и предложи балансировку.",
       "Найди все акции на Мосбирже из финансового сектора, которые выросли более чем на 5% за неделю при объеме торгов выше 500 млн рублей.",
       "Построй свечной график SBER@MISX за последний месяц с индикаторами RSI и MACD",
       "Проверь стратегию арбитража между фьючерсами Сбер и Сбер-преф за последние 3 месяца"
     ]
+  },
+  "variables": {
+    "type": "object",
+    "properties": {
+      "FINAM_API_KEY": {
+        "type": "string",
+        "title": "Finam API Key",
+        "description": "API token from api.finam.ru/docs/tokens"
+      },
+      "FINAM_ACCOUNT_ID": {
+        "type": "string",
+        "title": "Finam Account ID",
+        "description": "Account number from lk.finam.ru (digits only, without КлФ- prefix)"
+      }
+    },
+    "required": ["FINAM_API_KEY", "FINAM_ACCOUNT_ID"]
   }
 }

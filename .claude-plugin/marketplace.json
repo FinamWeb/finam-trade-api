@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "finam-skill",
+  "name": "finam-trade-api",
   "version": "1.0.2",
   "description": "Finam Trade API — algorithmic trading, market data, and order management through Finam broker.",
   "owner": {
@@ -15,11 +15,9 @@
       "author": {
         "name": "Alexander Panov"
       },
-      "source": {
-        "source": "github",
-        "repo": "FinamWeb/finam-skill"
-      },
-      "category": "finance"
+      "source": "./.ai",
+      "category": "finance",
+      "strict": false
     }
   ]
 }

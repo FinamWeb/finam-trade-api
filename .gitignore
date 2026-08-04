@@ -25,3 +25,6 @@ dist/
 .coverage.*
 coverage.xml
 htmlcov/
+
+# ai
+CLAUDE.md

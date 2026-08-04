@@ -29,6 +29,7 @@ jobs:
           V=$(jq -r '.version'     .claude-plugin/plugin.json)
           D=$(jq -r '.description' .claude-plugin/plugin.json)
           DS=$(jq -r '.description' .claude-plugin/marketplace.json)
+          MN=$(jq -r '.name' .claude-plugin/marketplace.json)
           fail=0
           check_v() {
             GOT=$(jq -r "$2" "$1")
@@ -42,6 +43,10 @@ jobs:
             GOT=$(jq -r "$2" "$1")
             [ "$GOT" = "$DS" ] || { echo "DRIFT short_description: $1 → $2"; fail=1; }
           }
+          check_mn() {
+            GOT=$(jq -r '.name' "$1")
+            [ "$GOT" = "$MN" ] || { echo "DRIFT marketplace name: $1 → .name = $GOT (expected $MN)"; fail=1; }
+          }
           check_v .claude-plugin/marketplace.json '.version'
           check_v .claude-plugin/marketplace.json '.plugins[0].version'
           check_v .cursor-plugin/plugin.json      '.version'
@@ -54,6 +59,8 @@ jobs:
           check_d .codex-plugin/plugin.json       '.description'
           check_d .codex-plugin/plugin.json       '.interface.longDescription'
           check_ds .codex-plugin/plugin.json      '.interface.shortDescription'
+          check_mn .cursor-plugin/marketplace.json
+          check_mn .agents/plugins/marketplace.json
           [ $fail -eq 0 ] && echo "OK: version=$V, descriptions in sync" || exit 1
 
   sync:
