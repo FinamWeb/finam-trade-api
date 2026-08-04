@@ -4,12 +4,12 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'python/**'
+      - 'sdk/python/**'
       - 'proto/**'
       - '.github/workflows/python_test.yml'
   pull_request:
     paths:
-      - 'python/**'
+      - 'sdk/python/**'
       - 'proto/**'
       - '.github/workflows/python_test.yml'
 
@@ -23,7 +23,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: python
+        working-directory: sdk/python
 
     steps:
       - name: Checkout repository
@@ -50,7 +50,7 @@ jobs:
       - name: Verify committed stubs match regenerated output
         run: |
           if ! git diff --quiet finam_trade_api/proto/; then
-            echo "::error::Committed proto stubs are stale. Run 'cd python && ./scripts/generate_proto.sh' and commit the result."
+            echo "::error::Committed proto stubs are stale. Run 'cd sdk/python && ./scripts/generate_proto.sh' and commit the result."
             git diff --stat finam_trade_api/proto/
             exit 1
           fi
@@ -100,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
-          path: python/coverage.xml
+          path: sdk/python/coverage.xml
 
   build:
     # Verifies the package builds, the wheel/sdist are well-formed, and the
@@ -110,7 +110,7 @@ jobs:
     needs: test
     defaults:
       run:
-        working-directory: python
+        working-directory: sdk/python
 
     steps:
       - name: Checkout repository
@@ -147,7 +147,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-dist
-          path: python/dist/*
+          path: sdk/python/dist/*
           # Retained so the publish workflow (Phase 3) can download and
           # upload exactly what CI tested, instead of rebuilding.
           retention-days: 30

@@ -904,7 +904,9 @@ type GetAssetParamsResponse struct {
 	// Новое поле. Позволяет различать false и "не установлено".
 	IsTradable *wrapperspb.BoolValue `protobuf:"bytes,12,opt,name=is_tradable,json=isTradable,proto3" json:"is_tradable,omitempty"`
 	// Допустимая цена. Помогает определить можно ли выставлять ордера с отрицательной ценой для финансового инструмента
-	PriceType     PriceType `protobuf:"varint,13,opt,name=price_type,json=priceType,proto3,enum=grpc.tradeapi.v1.assets.PriceType" json:"price_type,omitempty"`
+	PriceType PriceType `protobuf:"varint,13,opt,name=price_type,json=priceType,proto3,enum=grpc.tradeapi.v1.assets.PriceType" json:"price_type,omitempty"`
+	// Размер лота инструмента для торговых операций. Если поле равно 0 - значение отсутствует
+	TradeLotSize  int64 `protobuf:"varint,14,opt,name=trade_lot_size,json=tradeLotSize,proto3" json:"trade_lot_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1031,6 +1033,13 @@ func (x *GetAssetParamsResponse) GetPriceType() PriceType {
 		return x.PriceType
 	}
 	return PriceType_UNKNOWN
+}
+
+func (x *GetAssetParamsResponse) GetTradeLotSize() int64 {
+	if x != nil {
+		return x.TradeLotSize
+	}
+	return 0
 }
 
 // Запрос получения цепочки опционов
@@ -2228,7 +2237,7 @@ const file_grpc_tradeapi_v1_assets_assets_service_proto_rawDesc = "" +
 	"\x15GetAssetParamsRequest\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x02 \x01(\tR\taccountId\"\xfa\x05\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\"\xa0\x06\n" +
 	"\x16GetAssetParamsResponse\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1d\n" +
 	"\n" +
@@ -2246,7 +2255,8 @@ const file_grpc_tradeapi_v1_assets_assets_service_proto_rawDesc = "" +
 	"\vis_tradable\x18\f \x01(\v2\x1a.google.protobuf.BoolValueR\n" +
 	"isTradable\x12A\n" +
 	"\n" +
-	"price_type\x18\r \x01(\x0e2\".grpc.tradeapi.v1.assets.PriceTypeR\tpriceType\"\x92\x01\n" +
+	"price_type\x18\r \x01(\x0e2\".grpc.tradeapi.v1.assets.PriceTypeR\tpriceType\x12$\n" +
+	"\x0etrade_lot_size\x18\x0e \x01(\x03R\ftradeLotSize\"\x92\x01\n" +
 	"\x13OptionsChainRequest\x12+\n" +
 	"\x11underlying_symbol\x18\x01 \x01(\tR\x10underlyingSymbol\x12\x12\n" +
 	"\x04root\x18\x02 \x01(\tR\x04root\x12:\n" +

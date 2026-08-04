@@ -125,7 +125,7 @@ filename — PyPI expects `publish_python.yml` literally.
 Run locally to see the exact issue:
 
 ```sh
-cd python
+cd sdk/python
 python -m build
 twine check --strict dist/*
 ```
@@ -135,7 +135,7 @@ Most common: README contains a markdown construct PyPI can't render
 
 ## What ships in the wheel
 
-The build pipeline (see [.github/workflows/python_test.yml](../.github/workflows/python_test.yml))
+The build pipeline (see [.github/workflows/python_test.yml](../../.github/workflows/python_test.yml))
 verifies on every PR that the wheel contains:
 
 - `finam_trade_api/` — hand-written modules + per-service shim re-exports.

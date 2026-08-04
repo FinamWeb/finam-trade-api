@@ -18,7 +18,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$PYTHON_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$PYTHON_DIR/../.." && pwd)"
 
 PROTO_ROOT="$REPO_ROOT/proto"
 OUT_DIR="$PYTHON_DIR/finam_trade_api/proto"

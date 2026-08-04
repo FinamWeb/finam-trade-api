@@ -8,7 +8,7 @@ name: Publish Python SDK to PyPI
 #
 # Authentication uses PyPI trusted publishing (OIDC) — no API tokens are
 # stored as repo secrets. Both PyPI and TestPyPI need a one-time trusted
-# publisher configured on the project page; see python/RELEASING.md.
+# publisher configured on the project page; see sdk/python/RELEASING.md.
 
 on:
   release:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: python
+        working-directory: sdk/python
 
     outputs:
       is_prerelease: ${{ steps.classify.outputs.is_prerelease }}
@@ -87,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-dist
-          path: python/dist/*
+          path: sdk/python/dist/*
           retention-days: 30
 
   publish-testpypi:
