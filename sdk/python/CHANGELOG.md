@@ -9,6 +9,13 @@ The PyPI distribution is `finam-sdk`; the Python import name is
 
 ## [Unreleased]
 
+## [2.18.1] — 2026-08-03
+
+### Added
+
+- `GetAssetParamsResponse.trade_lot_size` — lot size of the instrument for trading operations;
+  0 if the value is not available.
+
 ## [2.18.0] — 2026-07-20
 
 ### Added
@@ -70,7 +77,8 @@ Initial public release.
   `finam-trade-api` name is held by an unrelated third-party REST client.
   Import name stays `finam_trade_api`.
 
-[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.18.0...HEAD
+[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.18.1...HEAD
+[2.18.1]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.18.1
 [2.18.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.18.0
 [2.17.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.17.0
 [2.16.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.16.0

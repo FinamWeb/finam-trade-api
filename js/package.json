@@ -1,6 +1,6 @@
 {
   "name": "@finam/grpc-tradeapi",
-  "version": "2.18.0",
+  "version": "2.18.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/FinamWeb/finam-trade-api",
