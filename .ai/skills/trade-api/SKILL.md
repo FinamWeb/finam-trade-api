@@ -560,7 +560,7 @@ async def stream_with_reconnect(symbols: list[str]) -> None:
             await asyncio.sleep(5)  # brief pause before reconnect
 ```
 
-## Strategies Examples
+## Strategy Examples
 
 Ready-to-run strategy implementations built with the Finam SDK.
 
