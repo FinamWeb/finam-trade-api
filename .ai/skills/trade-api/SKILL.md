@@ -559,3 +559,29 @@ async def stream_with_reconnect(symbols: list[str]) -> None:
         except grpc.RpcError:
             await asyncio.sleep(5)  # brief pause before reconnect
 ```
+
+## Strategies Examples
+
+Ready-to-run strategy implementations built with the Finam SDK.
+
+**Index:** `https://raw.githubusercontent.com/FinamWeb/finam-trade-api/main/strategies/README.md`
+
+When the user asks about strategies or wants to copy one:
+
+1. Fetch the index above to discover available strategies and their language implementations.
+2. Follow the links in the index to fetch the specific strategy README (`strategies/<name>/README.md`) — it describes the rule, candle handling, safety guards, and configuration.
+3. To **copy** a strategy locally:
+   - Ask which language (if multiple are available) and which target directory (default: `./<strategy_name>`).
+   - Use the GitHub Contents API to list files — it returns filenames and download URLs. Fetch the top-level strategy directory first, then the language subdirectory:
+     ```
+     https://api.github.com/repos/FinamWeb/finam-trade-api/contents/strategies/<name>
+     https://api.github.com/repos/FinamWeb/finam-trade-api/contents/strategies/<name>/<lang>
+     ```
+   - Download all files in a single Bash call using the `download_url` values from the API response:
+     ```bash
+     mkdir -p "<target_dir>/<lang>"
+     curl -sL "url1" -o "<target_dir>/file1" \
+          "url2" -o "<target_dir>/file2" ...
+     ```
+     Do not copy subdirectories — only top-level files in each directory.
+4. After writing all files, show the user how to install dependencies and run the dry-run check (see the language README for exact commands).
