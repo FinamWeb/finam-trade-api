@@ -1,0 +1,20 @@
+{
+  "name": "finam",
+  "version": "1.0.2",
+  "contextFileName": "QWEN.md",
+  "skills": ".ai/skills",
+  "settings": [
+    {
+      "name": "Finam API Key",
+      "description": "API token from api.finam.ru/docs/tokens",
+      "envVar": "FINAM_API_KEY",
+      "sensitive": true
+    },
+    {
+      "name": "Finam Account ID",
+      "description": "Account number from lk.finam.ru (digits only, without КлФ- prefix)",
+      "envVar": "FINAM_ACCOUNT_ID",
+      "sensitive": false
+    }
+  ]
+}

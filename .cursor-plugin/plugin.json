@@ -1,0 +1,43 @@
+{
+  "name": "finam",
+  "version": "1.0.2",
+  "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
+  "author": {
+    "name": "Finam",
+    "url": "https://github.com/FinamWeb"
+  },
+  "homepage": "https://github.com/FinamWeb/finam-trade-api",
+  "repository": "https://github.com/FinamWeb/finam-trade-api",
+  "license": "MIT",
+  "keywords": [
+    "finam",
+    "trade-api",
+    "rest",
+    "grpc",
+    "websocket",
+    "market-data",
+    "ohlcv",
+    "orderbook",
+    "orders",
+    "portfolio",
+    "algo-trading",
+    "finance"
+  ],
+  "skills": "./.ai/skills/",
+  "variables": {
+    "type": "object",
+    "properties": {
+      "FINAM_API_KEY": {
+        "type": "string",
+        "title": "Finam API Key",
+        "description": "API token from api.finam.ru/docs/tokens"
+      },
+      "FINAM_ACCOUNT_ID": {
+        "type": "string",
+        "title": "Finam Account ID",
+        "description": "Account number from lk.finam.ru (digits only, without КлФ- prefix)"
+      }
+    },
+    "required": ["FINAM_API_KEY", "FINAM_ACCOUNT_ID"]
+  }
+}
