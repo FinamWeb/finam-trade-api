@@ -7,6 +7,7 @@ import grpc.tradeapi.v1.auth.AuthServiceGrpcKt
 import grpc.tradeapi.v1.auth.SubscribeJwtRenewalRequest
 import grpc.tradeapi.v1.auth.TokenDetailsRequest
 import grpc.tradeapi.v1.auth.TokenDetailsResponse
+import grpc.tradeapi.v1.corporateactions.CorporateActionsServiceGrpcKt
 import grpc.tradeapi.v1.marketdata.MarketDataServiceGrpcKt
 import grpc.tradeapi.v1.orders.OrdersServiceGrpcKt
 import io.grpc.ManagedChannel
@@ -113,6 +114,9 @@ class TradeAPIClient(
 
     fun authServiceStub(): AuthServiceGrpcKt.AuthServiceCoroutineStub =
         AuthServiceGrpcKt.AuthServiceCoroutineStub(grpc)
+
+    fun corporateActionsServiceStub(): CorporateActionsServiceGrpcKt.CorporateActionsServiceCoroutineStub =
+        CorporateActionsServiceGrpcKt.CorporateActionsServiceCoroutineStub(grpc).authorized()
 
     fun marketDataServiceStub(): MarketDataServiceGrpcKt.MarketDataServiceCoroutineStub =
         MarketDataServiceGrpcKt.MarketDataServiceCoroutineStub(grpc).authorized()
