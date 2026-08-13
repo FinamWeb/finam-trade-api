@@ -973,9 +973,11 @@ type Bar struct {
 	// Цена закрытия свечи
 	Close *decimal.Decimal `protobuf:"bytes,5,opt,name=close,proto3" json:"close,omitempty"`
 	// Объём торгов за свечу в шт.
-	Volume        *decimal.Decimal `protobuf:"bytes,6,opt,name=volume,proto3" json:"volume,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Volume *decimal.Decimal `protobuf:"bytes,6,opt,name=volume,proto3" json:"volume,omitempty"`
+	// Признак того, что данные являются снэпшотом
+	IsDataSnapshot bool `protobuf:"varint,7,opt,name=is_data_snapshot,json=isDataSnapshot,proto3" json:"is_data_snapshot,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Bar) Reset() {
@@ -1050,6 +1052,13 @@ func (x *Bar) GetVolume() *decimal.Decimal {
 	return nil
 }
 
+func (x *Bar) GetIsDataSnapshot() bool {
+	if x != nil {
+		return x.IsDataSnapshot
+	}
+	return false
+}
+
 // Информация о котировке
 type Quote struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1085,6 +1094,8 @@ type Quote struct {
 	Change *decimal.Decimal `protobuf:"bytes,15,opt,name=change,proto3" json:"change,omitempty"`
 	// Открытый интерес. Общее количество незакрытых (активных) контрактов по деривативу.
 	OpenInterest *decimal.Decimal `protobuf:"bytes,16,opt,name=open_interest,json=openInterest,proto3" json:"open_interest,omitempty"`
+	// Признак того, что данные являются снэпшотом
+	IsDataSnapshot bool `protobuf:"varint,17,opt,name=is_data_snapshot,json=isDataSnapshot,proto3" json:"is_data_snapshot,omitempty"`
 	// Types that are valid to be assigned to Additions:
 	//
 	//	*Quote_Option_
@@ -1235,6 +1246,13 @@ func (x *Quote) GetOpenInterest() *decimal.Decimal {
 	return nil
 }
 
+func (x *Quote) GetIsDataSnapshot() bool {
+	if x != nil {
+		return x.IsDataSnapshot
+	}
+	return false
+}
+
 func (x *Quote) GetAdditions() isQuote_Additions {
 	if x != nil {
 		return x.Additions
@@ -1324,9 +1342,11 @@ type Trade struct {
 	// Сторона сделки (buy или sell)
 	Side v1.Side `protobuf:"varint,6,opt,name=side,proto3,enum=grpc.tradeapi.v1.Side" json:"side,omitempty"`
 	// Открытый интерес на момент совершения сделки.
-	OpenInterest  *decimal.Decimal `protobuf:"bytes,7,opt,name=open_interest,json=openInterest,proto3" json:"open_interest,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	OpenInterest *decimal.Decimal `protobuf:"bytes,7,opt,name=open_interest,json=openInterest,proto3" json:"open_interest,omitempty"`
+	// Признак того, что данные являются снэпшотом
+	IsDataSnapshot bool `protobuf:"varint,8,opt,name=is_data_snapshot,json=isDataSnapshot,proto3" json:"is_data_snapshot,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Trade) Reset() {
@@ -1408,6 +1428,13 @@ func (x *Trade) GetOpenInterest() *decimal.Decimal {
 	return nil
 }
 
+func (x *Trade) GetIsDataSnapshot() bool {
+	if x != nil {
+		return x.IsDataSnapshot
+	}
+	return false
+}
+
 // Ошибка стрим сервиса
 type StreamError struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1469,9 +1496,11 @@ type StreamOrderBook struct {
 	// Символ инструмента
 	Symbol string `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	// Уровни стакана
-	Rows          []*StreamOrderBook_Row `protobuf:"bytes,2,rep,name=rows,proto3" json:"rows,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Rows []*StreamOrderBook_Row `protobuf:"bytes,2,rep,name=rows,proto3" json:"rows,omitempty"`
+	// Признак того, что данные являются снэпшотом
+	IsDataSnapshot bool `protobuf:"varint,3,opt,name=is_data_snapshot,json=isDataSnapshot,proto3" json:"is_data_snapshot,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *StreamOrderBook) Reset() {
@@ -1516,6 +1545,13 @@ func (x *StreamOrderBook) GetRows() []*StreamOrderBook_Row {
 		return x.Rows
 	}
 	return nil
+}
+
+func (x *StreamOrderBook) GetIsDataSnapshot() bool {
+	if x != nil {
+		return x.IsDataSnapshot
+	}
+	return false
 }
 
 // Запрос списка последних сделок по инструменту. Стрим
@@ -2012,14 +2048,15 @@ const file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDesc = "" +
 	"\ttimeframe\x18\x02 \x01(\x0e2&.grpc.tradeapi.v1.marketdata.TimeFrameR\ttimeframe\"e\n" +
 	"\x15SubscribeBarsResponse\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x124\n" +
-	"\x04bars\x18\x02 \x03(\v2 .grpc.tradeapi.v1.marketdata.BarR\x04bars\"\x95\x02\n" +
+	"\x04bars\x18\x02 \x03(\v2 .grpc.tradeapi.v1.marketdata.BarR\x04bars\"\xbf\x02\n" +
 	"\x03Bar\x128\n" +
 	"\ttimestamp\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12(\n" +
 	"\x04open\x18\x02 \x01(\v2\x14.google.type.DecimalR\x04open\x12(\n" +
 	"\x04high\x18\x03 \x01(\v2\x14.google.type.DecimalR\x04high\x12&\n" +
 	"\x03low\x18\x04 \x01(\v2\x14.google.type.DecimalR\x03low\x12*\n" +
 	"\x05close\x18\x05 \x01(\v2\x14.google.type.DecimalR\x05close\x12,\n" +
-	"\x06volume\x18\x06 \x01(\v2\x14.google.type.DecimalR\x06volume\"\xcf\t\n" +
+	"\x06volume\x18\x06 \x01(\v2\x14.google.type.DecimalR\x06volume\x12(\n" +
+	"\x10is_data_snapshot\x18\a \x01(\bR\x0eisDataSnapshot\"\xf9\t\n" +
 	"\x05Quote\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x128\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12&\n" +
@@ -2037,7 +2074,8 @@ const file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDesc = "" +
 	"\x03low\x18\r \x01(\v2\x14.google.type.DecimalR\x03low\x12*\n" +
 	"\x05close\x18\x0e \x01(\v2\x14.google.type.DecimalR\x05close\x12,\n" +
 	"\x06change\x18\x0f \x01(\v2\x14.google.type.DecimalR\x06change\x129\n" +
-	"\ropen_interest\x18\x10 \x01(\v2\x14.google.type.DecimalR\fopenInterest\x12C\n" +
+	"\ropen_interest\x18\x10 \x01(\v2\x14.google.type.DecimalR\fopenInterest\x12(\n" +
+	"\x10is_data_snapshot\x18\x11 \x01(\bR\x0eisDataSnapshot\x12C\n" +
 	"\x06option\x182 \x01(\v2).grpc.tradeapi.v1.marketdata.Quote.OptionH\x00R\x06option\x1a\xa1\x03\n" +
 	"\x06Option\x129\n" +
 	"\ropen_interest\x18\x01 \x01(\v2\x14.google.type.DecimalR\fopenInterest\x12C\n" +
@@ -2064,7 +2102,7 @@ const file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDesc = "" +
 	"\n" +
 	"ACTION_ADD\x10\x02\x12\x11\n" +
 	"\rACTION_UPDATE\x10\x03B\x06\n" +
-	"\x04side\"\xad\x02\n" +
+	"\x04side\"\xd7\x02\n" +
 	"\x05Trade\x12\x19\n" +
 	"\btrade_id\x18\x01 \x01(\tR\atradeId\x12\x12\n" +
 	"\x04mpid\x18\x02 \x01(\tR\x04mpid\x128\n" +
@@ -2072,13 +2110,15 @@ const file_grpc_tradeapi_v1_marketdata_marketdata_service_proto_rawDesc = "" +
 	"\x05price\x18\x04 \x01(\v2\x14.google.type.DecimalR\x05price\x12(\n" +
 	"\x04size\x18\x05 \x01(\v2\x14.google.type.DecimalR\x04size\x12*\n" +
 	"\x04side\x18\x06 \x01(\x0e2\x16.grpc.tradeapi.v1.SideR\x04side\x129\n" +
-	"\ropen_interest\x18\a \x01(\v2\x14.google.type.DecimalR\fopenInterest\"C\n" +
+	"\ropen_interest\x18\a \x01(\v2\x14.google.type.DecimalR\fopenInterest\x12(\n" +
+	"\x10is_data_snapshot\x18\b \x01(\bR\x0eisDataSnapshot\"C\n" +
 	"\vStreamError\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\"\x8a\x04\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\"\xb4\x04\n" +
 	"\x0fStreamOrderBook\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12D\n" +
-	"\x04rows\x18\x02 \x03(\v20.grpc.tradeapi.v1.marketdata.StreamOrderBook.RowR\x04rows\x1a\x98\x03\n" +
+	"\x04rows\x18\x02 \x03(\v20.grpc.tradeapi.v1.marketdata.StreamOrderBook.RowR\x04rows\x12(\n" +
+	"\x10is_data_snapshot\x18\x03 \x01(\bR\x0eisDataSnapshot\x1a\x98\x03\n" +
 	"\x03Row\x12*\n" +
 	"\x05price\x18\x01 \x01(\v2\x14.google.type.DecimalR\x05price\x123\n" +
 	"\tsell_size\x18\x02 \x01(\v2\x14.google.type.DecimalH\x00R\bsellSize\x121\n" +

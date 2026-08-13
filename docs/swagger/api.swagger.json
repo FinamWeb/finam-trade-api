@@ -3923,6 +3923,10 @@
         "volume": {
           "$ref": "#/definitions/typeDecimal",
           "description": "Объём торгов за свечу в шт."
+        },
+        "is_data_snapshot": {
+          "type": "boolean",
+          "title": "Признак того, что данные являются снэпшотом"
         }
       },
       "title": "Информация об агрегированной свече"
@@ -4088,6 +4092,10 @@
           "$ref": "#/definitions/typeDecimal",
           "description": "Открытый интерес. Общее количество незакрытых (активных) контрактов по деривативу."
         },
+        "is_data_snapshot": {
+          "type": "boolean",
+          "title": "Признак того, что данные являются снэпшотом"
+        },
         "option": {
           "$ref": "#/definitions/marketdataQuoteOption",
           "title": "Информация об опционе"
@@ -4176,6 +4184,10 @@
             "$ref": "#/definitions/marketdataStreamOrderBookRow"
           },
           "title": "Уровни стакана"
+        },
+        "is_data_snapshot": {
+          "type": "boolean",
+          "title": "Признак того, что данные являются снэпшотом"
         }
       },
       "title": "Стакан по инструменту. Стрим"
@@ -5048,6 +5060,10 @@
         "open_interest": {
           "$ref": "#/definitions/typeDecimal",
           "description": "Открытый интерес на момент совершения сделки."
+        },
+        "is_data_snapshot": {
+          "type": "boolean",
+          "title": "Признак того, что данные являются снэпшотом"
         }
       },
       "title": "Информация о сделке"
