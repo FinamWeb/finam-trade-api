@@ -9,6 +9,13 @@ The PyPI distribution is `finam-sdk`; the Python import name is
 
 ## [Unreleased]
 
+## [2.19.0] — 2026-08-13
+
+### Added
+
+- `Bar.is_data_snapshot`, `Quote.is_data_snapshot`, `Trade.is_data_snapshot`, and
+  `StreamOrderBook.is_data_snapshot` — flag indicating the data is a snapshot.
+
 ## [2.18.1] — 2026-08-03
 
 ### Added
@@ -77,7 +84,8 @@ Initial public release.
   `finam-trade-api` name is held by an unrelated third-party REST client.
   Import name stays `finam_trade_api`.
 
-[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.18.1...HEAD
+[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.19.0...HEAD
+[2.19.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.19.0
 [2.18.1]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.18.1
 [2.18.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.18.0
 [2.17.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.17.0

@@ -31,7 +31,7 @@ from .exceptions import (
 )
 from .retry import DEFAULT_POLICY, RetryPolicy
 
-__version__ = "2.18.1"
+__version__ = "2.19.0"
 
 __all__ = [
     "FinamClient",
