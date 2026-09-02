@@ -1,0 +1,102 @@
+{
+  "name": "@finam/trade-api",
+  "version": "2.19.1",
+  "description": "Official TypeScript SDK for the Finam Trade API (gRPC)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./accounts": {
+      "types": "./dist/accounts.d.ts",
+      "import": "./dist/accounts.js"
+    },
+    "./assets": {
+      "types": "./dist/assets.d.ts",
+      "import": "./dist/assets.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js"
+    },
+    "./corporate-actions": {
+      "types": "./dist/corporate-actions.d.ts",
+      "import": "./dist/corporate-actions.js"
+    },
+    "./market-data": {
+      "types": "./dist/market-data.d.ts",
+      "import": "./dist/market-data.js"
+    },
+    "./metrics": {
+      "types": "./dist/metrics.d.ts",
+      "import": "./dist/metrics.js"
+    },
+    "./orders": {
+      "types": "./dist/orders.d.ts",
+      "import": "./dist/orders.js"
+    },
+    "./reports": {
+      "types": "./dist/reports.d.ts",
+      "import": "./dist/reports.js"
+    }
+  },
+  "scripts": {
+    "build": "npm run generate && npm run clean && tsc -p tsconfig.json",
+    "check": "npm run generate && biome ci src tests && tsc -p tsconfig.check.json && vitest run",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "dev": "npm run generate && npm run clean && tsc -p tsconfig.json --watch",
+    "format": "biome check --write src tests",
+    "generate": "./scripts/generate_proto.sh",
+    "lint": "biome ci src tests",
+    "test": "npm run generate && vitest run",
+    "typecheck": "npm run generate && tsc -p tsconfig.check.json",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "finam",
+    "trading",
+    "grpc",
+    "typescript",
+    "sdk"
+  ],
+  "license": "MIT",
+  "author": "Finam",
+  "homepage": "https://github.com/FinamWeb/finam-trade-api/tree/main/sdk/node",
+  "bugs": {
+    "url": "https://github.com/FinamWeb/finam-trade-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FinamWeb/finam-trade-api.git",
+    "directory": "sdk/node"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.13.0",
+    "nice-grpc": "^2.1.16",
+    "nice-grpc-client-middleware-retry": "^3.1.15",
+    "nice-grpc-common": "^2.0.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.5",
+    "@types/node": "^24.1.0",
+    "grpc-tools": "^1.13.1",
+    "ts-proto": "^2.12.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

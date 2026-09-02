@@ -25,3 +25,5 @@ dist/
 .coverage.*
 coverage.xml
 htmlcov/
+# Generated language bindings
+sdk/node/src/generated/

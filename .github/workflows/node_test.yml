@@ -1,0 +1,84 @@
+name: Node SDK CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'sdk/node/**'
+      - 'examples/sdk/node/**'
+      - 'examples/strategies/*/node/**'
+      - 'proto/**'
+      - '.github/workflows/node_test.yml'
+  pull_request:
+    paths:
+      - 'sdk/node/**'
+      - 'examples/sdk/node/**'
+      - 'examples/strategies/*/node/**'
+      - 'proto/**'
+      - '.github/workflows/node_test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: node-sdk-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+
+    defaults:
+      run:
+        working-directory: sdk/node
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: sdk/node/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint, type-check, and test
+        run: npm run check
+
+      - name: Build package
+        run: npm run build
+
+      - name: Verify package contents
+        run: npm pack --dry-run
+
+      # Examples pin the published @finam/trade-api. Their lockfiles exist only
+      # once that package has been released, so `npm ci` runs when a lockfile
+      # is committed and the local SDK is linked on top either way.
+      - name: Check focused examples against this SDK
+        if: matrix.node-version == 20
+        working-directory: examples/sdk/node
+        run: |
+          if [ -f package-lock.json ]; then npm ci; fi
+          npm install --no-save ../../../sdk/node
+          npm run check
+
+      - name: Check strategies against this SDK
+        if: matrix.node-version == 20
+        working-directory: ${{ github.workspace }}
+        run: |
+          for strategy in examples/strategies/*/node; do
+            echo "Checking $strategy"
+            cd "$GITHUB_WORKSPACE/$strategy"
+            if [ -f package-lock.json ]; then npm ci; fi
+            npm install --no-save "$GITHUB_WORKSPACE/sdk/node"
+            npm run check
+          done

@@ -1,0 +1,155 @@
+name: Publish Node SDK to npm
+
+# Python and Node share one SDK version and GitHub Release:
+#   2.18.1          -> npm dist-tag "latest"
+#   2.19.0-rc.1     -> npm dist-tag "next"
+#
+# Publishing authenticates with the repository secret NPM_TOKEN.
+# See sdk/node/RELEASING.md.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing SDK version tag to publish (for example 2.18.1)
+        required: true
+        type: string
+
+concurrency:
+  group: publish-node-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: sdk/node
+
+    outputs:
+      dist_tag: ${{ steps.release.outputs.dist_tag }}
+      package_version: ${{ steps.release.outputs.package_version }}
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Verify release tag and package versions
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          LOCK_VERSION=$(node -p "require('./package-lock.json').version")
+          PYTHON_VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('../python/pyproject.toml', 'rb'))['project']['version'])")
+
+          if [ "$RELEASE_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "::error::Tag version $RELEASE_VERSION does not match package.json version $PACKAGE_VERSION"
+            exit 1
+          fi
+          if [ "$PACKAGE_VERSION" != "$LOCK_VERSION" ]; then
+            echo "::error::package.json version $PACKAGE_VERSION does not match package-lock.json version $LOCK_VERSION"
+            exit 1
+          fi
+          if [ "$PACKAGE_VERSION" != "$PYTHON_VERSION" ]; then
+            echo "::error::Node version $PACKAGE_VERSION does not match Python version $PYTHON_VERSION"
+            exit 1
+          fi
+
+          if [[ "$PACKAGE_VERSION" == *-* ]]; then
+            DIST_TAG=next
+          else
+            DIST_TAG=latest
+          fi
+
+          echo "package_version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Validated @finam/trade-api@$PACKAGE_VERSION (npm tag: $DIST_TAG)"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint, type-check, and test
+        run: npm run check
+
+      - name: Pack release tarball
+        run: |
+          mkdir -p package
+          npm pack --pack-destination package
+
+      - name: Smoke-test packed package
+        run: |
+          mkdir -p "$RUNNER_TEMP/node-sdk-smoke"
+          npm install --prefix "$RUNNER_TEMP/node-sdk-smoke" "$PWD"/package/*.tgz
+          cd "$RUNNER_TEMP/node-sdk-smoke"
+          node --input-type=module -e '
+            const sdk = await import("@finam/trade-api");
+            const orders = await import("@finam/trade-api/orders");
+            if (typeof sdk.createTradeApi !== "function") process.exit(1);
+            if (orders.Side.SIDE_BUY !== 1) process.exit(1);
+            console.log("Packed package import passed");
+          '
+
+      - name: Upload release tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-package-${{ steps.release.outputs.package_version }}
+          path: sdk/node/package/*.tgz
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: Setup Node.js for npmjs.org
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Download verified tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: node-package-${{ needs.build.outputs.package_version }}
+          path: package
+
+      - name: Verify npm token is configured
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::Add a repository Actions secret named NPM_TOKEN"
+            exit 1
+          fi
+
+      - name: Publish package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DIST_TAG: ${{ needs.build.outputs.dist_tag }}
+        run: npm publish "$GITHUB_WORKSPACE"/package/*.tgz --access public --tag "$DIST_TAG"
