@@ -1,0 +1,29 @@
+{
+  "name": "@finam/example-node-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Standalone consumer examples for the published Finam Node.js SDK",
+  "type": "module",
+  "scripts": {
+    "auth": "tsx auth-and-account.ts",
+    "check": "npm run lint && npm run typecheck",
+    "format": "biome check --write .",
+    "lint": "biome ci .",
+    "order": "tsx place-limit-order.ts",
+    "quotes": "tsx subscribe-quotes.ts",
+    "smoke": "npm run auth",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@finam/trade-api": "2.19.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.5",
+    "@types/node": "^24.1.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  }
+}

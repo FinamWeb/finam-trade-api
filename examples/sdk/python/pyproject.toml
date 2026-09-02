@@ -1,0 +1,29 @@
+[project]
+name = "finam-python-sdk-examples"
+version = "0.0.0"
+description = "Standalone consumer examples for the published Finam Python SDK"
+requires-python = ">=3.10"
+dependencies = [
+    "finam-sdk==2.19.0",
+    "protobuf>=7.35",
+    "googleapis-common-protos>=1.62",
+]
+
+[dependency-groups]
+dev = [
+    "mypy==2.3.0",
+    "ruff==0.16.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B", "SIM", "C901", "PLR0915", "RUF"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+follow_imports = "skip"
+ignore_missing_imports = true

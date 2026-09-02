@@ -1,0 +1,228 @@
+name: Published SDK Consumer CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'examples/sdk/**'
+      - 'examples/strategies/**'
+      - '.github/workflows/published_strategy_test.yml'
+  pull_request:
+    paths:
+      - 'examples/sdk/**'
+      - 'examples/strategies/**'
+      - '.github/workflows/published_strategy_test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-sdk-example:
+    name: Python examples against PyPI SDK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/sdk/python
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.12"
+          version: "0.11.32"
+          enable-cache: false
+
+      - name: Install published SDK and check tools
+        run: uv sync --locked
+
+      - name: Verify published SDK identity
+        env:
+          REPOSITORY_SDK_SOURCE: ${{ github.workspace }}/sdk/python
+        run: |
+          uv run python -c "
+          import os, tomllib
+          from importlib.metadata import version
+          from pathlib import Path
+          import finam_trade_api
+
+          with open('pyproject.toml', 'rb') as manifest:
+              pins = tomllib.load(manifest)['project']['dependencies']
+          expected = next(p for p in pins if p.startswith('finam-sdk')).split('==')[1]
+          installed = version('finam-sdk')
+          assert installed == expected, f'installed {installed}, manifest pins {expected}'
+          package_path = Path(finam_trade_api.__file__).resolve()
+          source_path = Path(os.environ['REPOSITORY_SDK_SOURCE']).resolve()
+          assert not package_path.is_relative_to(source_path), package_path
+          print(f'Python example uses finam-sdk {installed} from {package_path}')
+          "
+
+      - name: Lint and type-check
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy .
+
+  node-sdk-example:
+    name: Node examples against npm SDK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/sdk/node
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The Node examples pin @finam/trade-api, which exists on npm only after
+      # the first release of sdk/node. Until that release lands and the
+      # lockfiles are committed there is nothing published to test against,
+      # so the remaining steps are skipped rather than failed. node_test.yml
+      # still checks every example against the SDK built from this checkout.
+      - name: Detect committed lockfile
+        id: lockfile
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::examples/sdk/node has no package-lock.json yet; skipping the published-package check"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.lockfile.outputs.present == 'true'
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: examples/sdk/node/package-lock.json
+
+      - name: Install published SDK and check tools
+        if: steps.lockfile.outputs.present == 'true'
+        run: npm ci
+
+      - name: Verify published SDK identity
+        if: steps.lockfile.outputs.present == 'true'
+        env:
+          REPOSITORY_SDK_SOURCE: ${{ github.workspace }}/sdk/node
+        run: |
+          expected="$(node -p "require('./package.json').dependencies['@finam/trade-api']")"
+          echo "package.json pins @finam/trade-api@${expected}"
+          npm ls "@finam/trade-api@${expected}" --depth=0
+          node --input-type=module -e '
+            import { realpathSync } from "node:fs";
+            import { fileURLToPath } from "node:url";
+            const sdk = await import("@finam/trade-api");
+            if (typeof sdk.withTradeApi !== "function") process.exit(1);
+            const packagePath = realpathSync(fileURLToPath(import.meta.resolve("@finam/trade-api")));
+            const sourcePath = realpathSync(process.env.REPOSITORY_SDK_SOURCE);
+            if (packagePath.startsWith(`${sourcePath}/`)) process.exit(1);
+            console.log(`Node example imported the published SDK from ${packagePath}`);
+          '
+
+      - name: Lint and type-check
+        if: steps.lockfile.outputs.present == 'true'
+        run: npm run check
+
+  python:
+    name: Python ${{ matrix.example }} against PyPI SDK
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [sma_crossover, macd_zero_cross, rsi_threshold]
+    defaults:
+      run:
+        working-directory: examples/strategies/${{ matrix.example }}/python
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.12"
+          version: "0.11.32"
+          enable-cache: false
+
+      - name: Install published SDK and test tools
+        run: uv sync --locked
+
+      - name: Verify published SDK identity
+        env:
+          REPOSITORY_SDK_SOURCE: ${{ github.workspace }}/sdk/python
+        run: |
+          uv run python -c "
+          import os, tomllib
+          from importlib.metadata import version
+          from pathlib import Path
+          import finam_trade_api
+
+          with open('pyproject.toml', 'rb') as manifest:
+              pins = tomllib.load(manifest)['project']['dependencies']
+          expected = next(p for p in pins if p.startswith('finam-sdk')).split('==')[1]
+          installed = version('finam-sdk')
+          assert installed == expected, f'installed {installed}, manifest pins {expected}'
+          package_path = Path(finam_trade_api.__file__).resolve()
+          source_path = Path(os.environ['REPOSITORY_SDK_SOURCE']).resolve()
+          assert not package_path.is_relative_to(source_path), package_path
+          print(f'${{ matrix.example }} uses finam-sdk {installed} from {package_path}')
+          "
+
+      - name: Lint, type-check, and test
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy .
+          uv run pytest
+
+  node:
+    name: Node ${{ matrix.example }} against npm SDK
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [sma_crossover, macd_zero_cross, rsi_threshold]
+    defaults:
+      run:
+        working-directory: examples/strategies/${{ matrix.example }}/node
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # See node-sdk-example above: skipped until @finam/trade-api is published
+      # and the lockfile is committed.
+      - name: Detect committed lockfile
+        id: lockfile
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::${{ matrix.example }}/node has no package-lock.json yet; skipping the published-package check"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.lockfile.outputs.present == 'true'
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: examples/strategies/${{ matrix.example }}/node/package-lock.json
+
+      - name: Install published SDK and test tools
+        if: steps.lockfile.outputs.present == 'true'
+        run: npm ci
+
+      - name: Verify published SDK identity
+        if: steps.lockfile.outputs.present == 'true'
+        run: |
+          expected="$(node -p "require('./package.json').dependencies['@finam/trade-api']")"
+          echo "package.json pins @finam/trade-api@${expected}"
+          npm ls "@finam/trade-api@${expected}" --depth=0
+          node --input-type=module -e '
+            const sdk = await import("@finam/trade-api");
+            if (typeof sdk.withTradeApi !== "function") process.exit(1);
+            const sdkUrl = import.meta.resolve("@finam/trade-api");
+            if (!sdkUrl.includes("/node_modules/")) process.exit(1);
+            console.log(`Node strategy imported the published SDK from ${sdkUrl}`);
+          '
+
+      - name: Lint, type-check, and test
+        if: steps.lockfile.outputs.present == 'true'
+        run: npm run check
