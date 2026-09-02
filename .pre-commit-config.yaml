@@ -1,0 +1,31 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.1
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        files: ^(sdk/python|examples/sdk/python|examples/strategies/[^/]+/python)/
+        exclude: ^sdk/python/finam_trade_api/proto/
+      - id: ruff-format
+        files: ^(sdk/python|examples/sdk/python|examples/strategies/[^/]+/python)/
+        exclude: ^sdk/python/finam_trade_api/proto/
+
+  - repo: local
+    hooks:
+      - id: biome
+        name: biome check
+        entry: biome check --write --no-errors-on-unmatched
+        language: node
+        additional_dependencies:
+          - "@biomejs/biome@2.5.5"
+        files: ^(sdk/node|examples/sdk/node|examples/strategies/[^/]+/node)/.*\.(c?js|mjs|ts|json)$
+        exclude: ^sdk/node/src/generated/
