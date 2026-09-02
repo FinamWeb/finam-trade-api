@@ -16,6 +16,14 @@ hand-written Node.js SDK (`@finam/trade-api`) ships alongside this package,
 examples moved to `examples/sdk/` and `examples/strategies/`, and a root
 `justfile` drives every check. Both SDKs now share one version line.
 
+### Added
+
+- `client.corporate_actions` sub-client for `CorporateActionsService`
+  (`GetFutureSplits`, `GetPastSplits`, `GetFutureDividends`,
+  `GetPastDividends`, `GetFutureBondsEvents`, `GetPastBondsEvents`) on both
+  the sync and asyncio clients, and the `finam_trade_api.corporate_actions`
+  message re-export module.
+
 ### Fixed
 
 - `AuthService` is now reached without an `Authorization` header. `TokenDetails`

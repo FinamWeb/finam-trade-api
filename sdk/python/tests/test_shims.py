@@ -19,6 +19,7 @@ SHIM_MODULES = [
     "finam_trade_api.accounts",
     "finam_trade_api.assets",
     "finam_trade_api.auth_messages",
+    "finam_trade_api.corporate_actions",
     "finam_trade_api.market_data",
     "finam_trade_api.orders",
     "finam_trade_api.reports",

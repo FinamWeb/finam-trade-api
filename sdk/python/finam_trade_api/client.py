@@ -36,6 +36,9 @@ if TYPE_CHECKING:
         AssetsServiceStub,
     )
     from .proto.grpc.tradeapi.v1.auth.auth_service_pb2_grpc import AuthServiceStub
+    from .proto.grpc.tradeapi.v1.corporateactions.corporate_actions_service_pb2_grpc import (
+        CorporateActionsServiceStub,
+    )
     from .proto.grpc.tradeapi.v1.marketdata.marketdata_service_pb2_grpc import (
         MarketDataServiceStub,
     )
@@ -137,6 +140,9 @@ class FinamClient:
             self.auth: AuthServiceStub = stubs["auth"](self._auth_stub_channel)
             self.accounts: AccountsServiceStub = stubs["accounts"](self._channel)
             self.assets: AssetsServiceStub = stubs["assets"](self._channel)
+            self.corporate_actions: CorporateActionsServiceStub = stubs["corporate_actions"](
+                self._channel
+            )
             self.market_data: MarketDataServiceStub = stubs["market_data"](self._channel)
             self.orders: OrdersServiceStub = stubs["orders"](self._channel)
             self.reports: ReportsServiceStub = stubs["reports"](self._channel)

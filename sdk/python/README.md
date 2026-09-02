@@ -146,13 +146,11 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 | `client.auth`        | `AuthService`         | Выпуск токена и его детали (обычно автоматически).   |
 | `client.accounts`    | `AccountsService`     | Счета, позиции, сделки, транзакции.                  |
 | `client.assets`      | `AssetsService`       | Инструменты, биржи, расписания, опционы.             |
+| `client.corporate_actions` | `CorporateActionsService` | Сплиты, дивиденды, события по облигациям.      |
 | `client.market_data` | `MarketDataService`   | Свечи, котировки, стакан, потоки сделок.             |
 | `client.orders`      | `OrdersService`       | Выставление и отмена заявок, потоки заявок и сделок. |
 | `client.reports`     | `ReportsService`      | Отчёты по счёту (только российский контур).          |
 | `client.metrics`     | `UsageMetricsService` | Метрики использования API и квоты.                   |
-
-В protobuf-контрактах есть и `CorporateActionsService`, но текущий Python-клиент
-пока не открывает его как подклиент. Node.js SDK открывает.
 
 ## Справочник API
 
@@ -164,6 +162,7 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 | ------------------------------- | ----------------------------------------------------------- |
 | `finam_trade_api.accounts`      | `client.accounts.*`                                         |
 | `finam_trade_api.assets`        | `client.assets.*`                                           |
+| `finam_trade_api.corporate_actions` | `client.corporate_actions.*`                            |
 | `finam_trade_api.market_data`   | `client.market_data.*`                                      |
 | `finam_trade_api.orders`        | `client.orders.*` (включая `Side`)                          |
 | `finam_trade_api.reports`       | `client.reports.*`                                          |
@@ -211,6 +210,17 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 | `Schedule(ScheduleRequest)`               |  ▶  | Расписание торговых сессий.                       |
 | `Clock(ClockRequest)`                     |  ▶  | Серверное время (для операций, привязанных ко времени). |
 | `GetConstituents(GetConstituentsRequest)` |  ▶  | Состав индекса.                                   |
+
+### `client.corporate_actions` — `CorporateActionsService`
+
+| Метод                                                 | Вид | Назначение                                        |
+| ----------------------------------------------------- | :-: | ------------------------------------------------- |
+| `GetFutureSplits(GetFutureSplitsRequest)`             |  ▶  | Предстоящие сплиты и консолидации.                |
+| `GetPastSplits(GetPastSplitsRequest)`                 |  ▶  | Прошедшие сплиты и консолидации.                  |
+| `GetFutureDividends(GetFutureDividendsRequest)`       |  ▶  | Предстоящие дивиденды.                            |
+| `GetPastDividends(GetPastDividendsRequest)`           |  ▶  | Выплаченные дивиденды.                            |
+| `GetFutureBondsEvents(GetFutureBondsEventsRequest)`   |  ▶  | Предстоящие купоны, амортизации и оферты.         |
+| `GetPastBondsEvents(GetPastBondsEventsRequest)`       |  ▶  | Прошедшие события по облигациям.                  |
 
 ### `client.market_data` — `MarketDataService`
 
@@ -349,6 +359,7 @@ sdk/python/
     ├── accounts.py             # реэкспорт сообщений (по сервисам)
     ├── assets.py
     ├── auth_messages.py
+    ├── corporate_actions.py
     ├── market_data.py
     ├── orders.py
     ├── reports.py
