@@ -5,6 +5,7 @@
 
 # Generated proto stubs — regenerate with ./scripts/generate_proto.sh
 finam_trade_api/proto/
+finam_trade_api/.proto-build.*/
 
 # Python build artifacts
 __pycache__/

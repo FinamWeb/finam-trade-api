@@ -18,7 +18,7 @@ import asyncio
 import logging
 import threading
 import time
-from typing import Optional
+from typing import Any
 
 import grpc
 import grpc.aio
@@ -27,10 +27,11 @@ from .exceptions import AuthError, from_rpc_error
 
 logger = logging.getLogger(__name__)
 
+
 # Imported lazily so that the package is importable even before the proto stubs
 # have been generated. The generation script populates finam_trade_api.proto.
-def _auth_stubs():  # noqa: ANN202
-    from .proto.grpc.tradeapi.v1.auth import (  # type: ignore[import-not-found]
+def _auth_stubs() -> tuple[Any, Any]:
+    from .proto.grpc.tradeapi.v1.auth import (
         auth_service_pb2,
         auth_service_pb2_grpc,
     )
@@ -51,11 +52,11 @@ class TokenManager:
     ) -> None:
         self._channel = channel
         self._secret = secret
-        self._token: Optional[str] = None
+        self._token: str | None = None
         self._lock = threading.Lock()
         self._ready = threading.Event()
         self._stop = threading.Event()
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._reconnect_initial_backoff = reconnect_initial_backoff
         self._reconnect_max_backoff = reconnect_max_backoff
 
@@ -118,10 +119,12 @@ class TokenManager:
             except grpc.RpcError as exc:
                 if self._stop.is_set():  # pragma: no cover - race shortcut
                     return
-                logger.warning("JWT renewal stream dropped: %s; reconnecting in %.1fs", exc, backoff)
+                logger.warning(
+                    "JWT renewal stream dropped: %s; reconnecting in %.1fs", exc, backoff
+                )
                 time.sleep(backoff)
                 backoff = min(backoff * 2, self._reconnect_max_backoff)
-            except Exception:  # noqa: BLE001 — see module docstring
+            except Exception:
                 if self._stop.is_set():  # pragma: no cover - race shortcut
                     return
                 logger.exception(
@@ -144,10 +147,10 @@ class AsyncTokenManager:
     ) -> None:
         self._channel = channel
         self._secret = secret
-        self._token: Optional[str] = None
+        self._token: str | None = None
         self._ready = asyncio.Event()
         self._stop = asyncio.Event()
-        self._task: Optional[asyncio.Task[None]] = None
+        self._task: asyncio.Task[None] | None = None
         self._reconnect_initial_backoff = reconnect_initial_backoff
         self._reconnect_max_backoff = reconnect_max_backoff
 
@@ -216,7 +219,7 @@ class AsyncTokenManager:
                 )
                 await asyncio.sleep(backoff)
                 backoff = min(backoff * 2, self._reconnect_max_backoff)
-            except Exception:  # noqa: BLE001 — see module docstring
+            except Exception:
                 if self._stop.is_set():  # pragma: no cover - race shortcut
                     return
                 logger.exception(
@@ -226,4 +229,4 @@ class AsyncTokenManager:
                 backoff = min(backoff * 2, self._reconnect_max_backoff)
 
 
-__all__ = ["TokenManager", "AsyncTokenManager", "AuthError"]
+__all__ = ["AsyncTokenManager", "AuthError", "TokenManager"]

@@ -15,6 +15,8 @@ Public surface:
 - :func:`from_rpc_error` — convert a raw ``grpc.RpcError`` into a typed :class:`FinamError`.
 """
 
+from importlib.metadata import version
+
 from .aio import AsyncFinamClient
 from .client import DEFAULT_ENDPOINT, FinamClient
 from .exceptions import (
@@ -31,23 +33,23 @@ from .exceptions import (
 )
 from .retry import DEFAULT_POLICY, RetryPolicy
 
-__version__ = "2.19.0"
+__version__ = version("finam-sdk")
 
 __all__ = [
-    "FinamClient",
-    "AsyncFinamClient",
     "DEFAULT_ENDPOINT",
-    "RetryPolicy",
     "DEFAULT_POLICY",
-    "FinamError",
+    "AsyncFinamClient",
     "AuthError",
-    "PermissionDeniedError",
-    "RateLimitError",
+    "DeadlineExceededError",
+    "FinamClient",
+    "FinamError",
+    "InternalError",
     "InvalidArgumentError",
     "NotFoundError",
+    "PermissionDeniedError",
+    "RateLimitError",
+    "RetryPolicy",
     "ServiceUnavailableError",
-    "DeadlineExceededError",
-    "InternalError",
-    "from_rpc_error",
     "__version__",
+    "from_rpc_error",
 ]

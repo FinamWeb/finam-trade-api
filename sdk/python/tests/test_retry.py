@@ -21,7 +21,6 @@ from finam_trade_api.retry import (
     build_sync_interceptor,
 )
 
-
 # ---------------------------------------------------------------------------
 # RetryPolicy.backoff
 # ---------------------------------------------------------------------------
@@ -32,7 +31,7 @@ def test_backoff_grows_exponentially_until_cap() -> None:
     # base delays (without jitter): 1, 2, 4, 8, 8, 8...
     samples = [policy.backoff(n) for n in range(1, 7)]
     # account for up to 25% jitter
-    for actual, base in zip(samples, [1.0, 2.0, 4.0, 8.0, 8.0, 8.0]):
+    for actual, base in zip(samples, [1.0, 2.0, 4.0, 8.0, 8.0, 8.0], strict=True):
         assert base <= actual <= base * 1.25 + 1e-9
 
 
@@ -103,9 +102,7 @@ def test_sync_retry_succeeds_after_transient_unavailable() -> None:
 
 def test_sync_retry_gives_up_after_max_attempts() -> None:
     interceptor = build_sync_interceptor(_fast_policy(max_attempts=3))
-    cont = MagicMock(
-        side_effect=[_make_call(False, grpc.StatusCode.UNAVAILABLE) for _ in range(3)]
-    )
+    cont = MagicMock(side_effect=[_make_call(False, grpc.StatusCode.UNAVAILABLE) for _ in range(3)])
     with pytest.raises(grpc.RpcError) as exc_info:
         interceptor.intercept_unary_unary(cont, MagicMock(), "req")
     assert exc_info.value.code() is grpc.StatusCode.UNAVAILABLE
@@ -213,9 +210,7 @@ def test_sync_interceptor_passes_streams_through_unchanged() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _make_async_call(
-    code: grpc.StatusCode, trailing_metadata: tuple = ()
-) -> Any:
+def _make_async_call(code: grpc.StatusCode, trailing_metadata: tuple = ()) -> Any:
     """Build a fake grpc.aio call. ``code()`` and ``trailing_metadata()`` are
     coroutines on real grpc.aio calls — we model them with AsyncMock so the
     interceptor's ``await`` works unchanged. ``cancel()`` is plain sync."""
@@ -302,9 +297,7 @@ async def test_async_stream_interceptor_passes_through_unchanged() -> None:
     _, stream = build_async_interceptors(_fast_policy())
     sentinel = object()
     cont = AsyncMock(return_value=sentinel)
-    assert (
-        await stream.intercept_unary_stream(cont, MagicMock(), "req") is sentinel
-    )
+    assert await stream.intercept_unary_stream(cont, MagicMock(), "req") is sentinel
 
 
 @pytest.mark.asyncio

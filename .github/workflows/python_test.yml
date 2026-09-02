@@ -1,4 +1,4 @@
-name: Python SDK Tests
+name: Python SDK CI
 
 on:
   push:
@@ -6,12 +6,24 @@ on:
     paths:
       - 'sdk/python/**'
       - 'proto/**'
+      - 'examples/sdk/python/**'
+      - 'examples/strategies/*/python/**'
       - '.github/workflows/python_test.yml'
   pull_request:
     paths:
       - 'sdk/python/**'
       - 'proto/**'
+      - 'examples/sdk/python/**'
+      - 'examples/strategies/*/python/**'
       - '.github/workflows/python_test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-sdk-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -19,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     defaults:
       run:
@@ -29,71 +41,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Setup uv and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+          version: "0.11.32"
+          enable-cache: false
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+        run: uv sync --locked
 
       - name: Regenerate proto stubs
-        run: ./scripts/generate_proto.sh
+        run: uv run ./scripts/generate_proto.sh
 
-      # The proto stubs are committed to the repo so end users don't need
-      # protoc. CI regenerates them on every run and fails if the result
-      # differs from what's committed — catches contributors who edited
-      # a .proto without re-running the generator.
-      - name: Verify committed stubs match regenerated output
+      - name: Lint and check formatting
         run: |
-          if ! git diff --quiet finam_trade_api/proto/; then
-            echo "::error::Committed proto stubs are stale. Run 'cd sdk/python && ./scripts/generate_proto.sh' and commit the result."
-            git diff --stat finam_trade_api/proto/
-            exit 1
-          fi
+          uv run ruff check finam_trade_api tests
+          uv run ruff format --check finam_trade_api tests
 
-      - name: Lint with ruff
-        # Warn-only for the first releases — tighten to `ruff check` once
-        # the pre-existing warnings have been triaged.
-        continue-on-error: true
-        run: ruff check finam_trade_api/ examples/ tests/
-
-      - name: Type-check with pyright
-        # Same rationale as ruff. Run only on the latest matrix version to
-        # avoid noise from version-specific typeshed differences.
+      - name: Type-check with mypy
         if: matrix.python-version == '3.13'
-        continue-on-error: true
-        run: |
-          pip install pyright
-          pyright finam_trade_api/ examples/
+        run: uv run mypy finam_trade_api
 
       - name: Run tests with coverage
         run: |
-          python -m pytest tests/ --cov --cov-report=term-missing --cov-report=xml --cov-fail-under=95
-
-      - name: Smoke-import examples
-        # Catches example bitrot — e.g. an imported message that no longer
-        # exists, or a stale call signature. Examples need env vars at run
-        # time but should import cleanly without them.
-        env:
-          FINAM_SECRET: ''
-          FINAM_ACCOUNT_ID: ''
-        run: |
-          for f in examples/*.py; do
-            python -c "
-          import ast, sys
-          src = open('$f').read()
-          ast.parse(src)  # syntax
-          # Replace the __main__ guard execution by parsing only; importing
-          # the module file would try to read env vars at import time. Some
-          # examples do that (auth_and_account.py uses os.environ['FINAM_SECRET']
-          # inside main()), so the AST parse is the right level of smoke test.
-          print('OK:', '$f')
-          "
-          done
+          uv run pytest tests/ \
+            --cov=finam_trade_api \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=95
 
       - name: Upload coverage artifact
         if: matrix.python-version == '3.12'
@@ -101,6 +77,7 @@ jobs:
         with:
           name: coverage-xml
           path: sdk/python/coverage.xml
+          if-no-files-found: error
 
   build:
     # Verifies the package builds, the wheel/sdist are well-formed, and the
@@ -116,38 +93,179 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           python-version: "3.12"
-          cache: 'pip'
+          version: "0.11.32"
+          enable-cache: false
 
-      - name: Install build tooling
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-
-      # Need the generated stubs in place because they're shipped in the
-      # wheel. We don't verify-no-diff here — the `test` job already did.
-      - name: Install package (for proto generation)
-        run: pip install -e ".[dev]"
+      - name: Install dependencies
+        run: uv sync --locked
 
       - name: Regenerate proto stubs
-        run: ./scripts/generate_proto.sh
+        run: uv run ./scripts/generate_proto.sh
 
       - name: Build sdist + wheel
-        run: python -m build
+        run: uv run python -m build
 
       - name: Validate distribution metadata
         # `twine check` catches issues PyPI would reject — bad README rendering,
         # missing classifiers, malformed license fields, etc.
-        run: twine check --strict dist/*
+        run: uv run twine check --strict dist/*
+
+      - name: Verify distribution contents
+        run: uv run python scripts/verify_distribution.py dist
+
+      - name: Smoke-test the built wheel
+        run: |
+          python -m venv "$RUNNER_TEMP/finam-sdk-smoke"
+          "$RUNNER_TEMP/finam-sdk-smoke/bin/python" -m pip install dist/*.whl
+          "$RUNNER_TEMP/finam-sdk-smoke/bin/python" -c \
+            "from finam_trade_api import FinamClient; from finam_trade_api.market_data import BarsRequest; print('wheel import passed')"
 
       - name: Upload distribution artifacts
         uses: actions/upload-artifact@v4
         with:
           name: python-dist
           path: sdk/python/dist/*
-          # Retained so the publish workflow (Phase 3) can download and
-          # upload exactly what CI tested, instead of rebuilding.
+          if-no-files-found: error
           retention-days: 30
+
+  wheel-test:
+    name: Wheel test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Setup uv and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          version: "0.11.32"
+          enable-cache: false
+
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+
+      - name: Install and import the built wheel
+        run: |
+          python -m pip install dist/*.whl
+          python -c \
+            "from finam_trade_api import FinamClient; from finam_trade_api.market_data import BarsRequest; print('wheel import passed')"
+
+  sdk-example-test:
+    name: Focused examples against installed SDK wheel
+    runs-on: ubuntu-latest
+    needs: build
+
+    defaults:
+      run:
+        working-directory: examples/sdk/python
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.12"
+          version: "0.11.32"
+          enable-cache: false
+
+      - name: Download SDK distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: ${{ runner.temp }}/python-dist
+
+      - name: Install the SDK wheel and example dependencies
+        run: |
+          uv sync --locked --no-install-package finam-sdk
+          uv pip install --python .venv/bin/python "$RUNNER_TEMP"/python-dist/*.whl
+
+      - name: Verify and check the focused examples
+        env:
+          REPOSITORY_SDK_SOURCE: ${{ github.workspace }}/sdk/python
+        run: |
+          .venv/bin/python -c "
+          import os
+          from pathlib import Path
+          import finam_trade_api
+
+          package_path = Path(finam_trade_api.__file__).resolve()
+          source_path = Path(os.environ['REPOSITORY_SDK_SOURCE']).resolve()
+          if package_path.is_relative_to(source_path):
+              raise SystemExit(f'example imported repository SDK source: {package_path}')
+          print(f'example uses installed SDK: {package_path}')
+          "
+          .venv/bin/ruff check .
+          .venv/bin/ruff format --check .
+          .venv/bin/mypy .
+
+  strategy-test:
+    name: ${{ matrix.example }} test against installed SDK wheel
+    runs-on: ubuntu-latest
+    needs: build
+
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [sma_crossover, macd_zero_cross, rsi_threshold]
+
+    defaults:
+      run:
+        working-directory: examples/strategies/${{ matrix.example }}/python
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.12"
+          version: "0.11.32"
+          enable-cache: false
+
+      - name: Download SDK distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: ${{ runner.temp }}/python-dist
+
+      - name: Install the SDK wheel and strategy dependencies
+        run: |
+          uv sync --locked --no-install-package finam-sdk
+          uv pip install --python .venv/bin/python "$RUNNER_TEMP"/python-dist/*.whl
+
+      - name: Verify the strategy is not importing repository SDK source
+        env:
+          REPOSITORY_SDK_SOURCE: ${{ github.workspace }}/sdk/python
+        run: |
+          .venv/bin/python -c "
+          import os
+          from pathlib import Path
+          import finam_trade_api
+
+          package_path = Path(finam_trade_api.__file__).resolve()
+          source_path = Path(os.environ['REPOSITORY_SDK_SOURCE']).resolve()
+          if package_path.is_relative_to(source_path):
+              raise SystemExit(f'strategy imported repository SDK source: {package_path}')
+          print(f'strategy uses installed SDK: {package_path}')
+          "
+
+      - name: Test and lint the strategy
+        run: |
+          .venv/bin/ruff check .
+          .venv/bin/ruff format --check .
+          .venv/bin/mypy .
+          .venv/bin/pytest

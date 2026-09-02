@@ -16,7 +16,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class _SyncAuthPlugin(grpc.AuthMetadataPlugin):
-    def __init__(self, token_manager: "TokenManager") -> None:
+    def __init__(self, token_manager: TokenManager) -> None:
         self._token_manager = token_manager
 
     def __call__(
@@ -32,7 +32,7 @@ class _AsyncAuthPlugin(grpc.AuthMetadataPlugin):
     """Async variant — grpc.aio still drives the plugin synchronously, so we
     rely on the AsyncTokenManager exposing the current token without awaiting."""
 
-    def __init__(self, token_manager: "AsyncTokenManager") -> None:
+    def __init__(self, token_manager: AsyncTokenManager) -> None:
         self._token_manager = token_manager
 
     def __call__(
@@ -40,7 +40,7 @@ class _AsyncAuthPlugin(grpc.AuthMetadataPlugin):
         context: grpc.AuthMetadataContext,
         callback: grpc.AuthMetadataPluginCallback,
     ) -> None:
-        token = self._token_manager._token  # noqa: SLF001 — intentional fast-path read
+        token = self._token_manager._token
         if token is None:
             # AsyncFinamClient.start() awaits the initial Auth before building
             # the application channel, so the token is always set before any
@@ -50,20 +50,19 @@ class _AsyncAuthPlugin(grpc.AuthMetadataPlugin):
             callback(
                 (),
                 RuntimeError(
-                    "AsyncFinamClient JWT is not available — "
-                    "did you call await client.start()?"
+                    "AsyncFinamClient JWT is not available — did you call await client.start()?"
                 ),
             )
             return
         callback((("authorization", token),), None)
 
 
-def sync_call_credentials(token_manager: "TokenManager") -> grpc.CallCredentials:
+def sync_call_credentials(token_manager: TokenManager) -> grpc.CallCredentials:
     return grpc.metadata_call_credentials(_SyncAuthPlugin(token_manager))
 
 
-def async_call_credentials(token_manager: "AsyncTokenManager") -> grpc.CallCredentials:
+def async_call_credentials(token_manager: AsyncTokenManager) -> grpc.CallCredentials:
     return grpc.metadata_call_credentials(_AsyncAuthPlugin(token_manager))
 
 
-__all__ = ["sync_call_credentials", "async_call_credentials"]
+__all__ = ["async_call_credentials", "sync_call_credentials"]

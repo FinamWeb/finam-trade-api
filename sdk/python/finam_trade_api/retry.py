@@ -19,8 +19,9 @@ import asyncio
 import logging
 import random
 import time
+from collections.abc import Iterable
+from contextlib import suppress
 from dataclasses import dataclass
-from typing import Optional
 
 import grpc
 import grpc.aio
@@ -63,7 +64,10 @@ class RetryPolicy:
 DEFAULT_POLICY = RetryPolicy()
 
 
-def _pushback_seconds(trailing_metadata) -> Optional[float]:  # type: ignore[no-untyped-def]
+Metadata = Iterable[tuple[str, str | bytes]] | None
+
+
+def _pushback_seconds(trailing_metadata: Metadata) -> float | None:
     """Parse ``grpc-retry-pushback-ms`` from trailing metadata, if present."""
     if not trailing_metadata:
         return None
@@ -84,10 +88,10 @@ def _pushback_seconds(trailing_metadata) -> Optional[float]:  # type: ignore[no-
 
 def _retry_delay_for(
     code: grpc.StatusCode,
-    trailing_metadata,  # type: ignore[no-untyped-def]
+    trailing_metadata: Metadata,
     policy: RetryPolicy,
     attempt: int,
-) -> Optional[float]:
+) -> float | None:
     """Return the delay (seconds) to wait before retrying, or None to give up."""
     if code in _ALWAYS_RETRYABLE:
         return policy.backoff(attempt)
@@ -163,10 +167,8 @@ class _AsyncRetryUnaryInterceptor(grpc.aio.UnaryUnaryClientInterceptor):
             # are released. Without this, retries leak ``UnaryUnaryCall``
             # objects under load and grpc.aio emits
             # "Task was destroyed but it is pending!" warnings.
-            try:
+            with suppress(Exception):
                 call.cancel()
-            except Exception:  # noqa: BLE001 — best-effort cleanup
-                pass
             await asyncio.sleep(delay)
             call = await continuation(client_call_details, request)
         return call  # pragma: no cover — loop always returns
@@ -197,8 +199,8 @@ def build_async_interceptors(
 
 
 __all__ = [
-    "RetryPolicy",
     "DEFAULT_POLICY",
-    "build_sync_interceptor",
+    "RetryPolicy",
     "build_async_interceptors",
+    "build_sync_interceptor",
 ]

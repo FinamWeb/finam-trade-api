@@ -21,7 +21,7 @@ def test_sync_plugin_injects_authorization_metadata() -> None:
 
     captured: list[tuple[tuple[tuple[str, str], ...], Exception | None]] = []
 
-    def callback(metadata, error):  # noqa: ANN001
+    def callback(metadata, error):
         captured.append((tuple(metadata), error))
 
     plugin(MagicMock(spec=grpc.AuthMetadataContext), callback)
@@ -36,7 +36,9 @@ def test_async_plugin_injects_authorization_when_token_present() -> None:
     plugin = _AsyncAuthPlugin(token_manager)
 
     captured: list[tuple[tuple[tuple[str, str], ...], Exception | None]] = []
-    plugin(MagicMock(spec=grpc.AuthMetadataContext), lambda md, err: captured.append((tuple(md), err)))
+    plugin(
+        MagicMock(spec=grpc.AuthMetadataContext), lambda md, err: captured.append((tuple(md), err))
+    )
 
     assert captured == [((("authorization", "jwt-xyz"),), None)]
 
@@ -51,7 +53,9 @@ def test_async_plugin_surfaces_runtime_error_when_no_token() -> None:
     plugin = _AsyncAuthPlugin(token_manager)
 
     captured: list[tuple[tuple[tuple[str, str], ...], Exception | None]] = []
-    plugin(MagicMock(spec=grpc.AuthMetadataContext), lambda md, err: captured.append((tuple(md), err)))
+    plugin(
+        MagicMock(spec=grpc.AuthMetadataContext), lambda md, err: captured.append((tuple(md), err))
+    )
 
     assert len(captured) == 1
     metadata, err = captured[0]

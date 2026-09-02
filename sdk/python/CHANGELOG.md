@@ -9,6 +9,46 @@ The PyPI distribution is `finam-sdk`; the Python import name is
 
 ## [Unreleased]
 
+## [2.19.1] — 2026-09-02
+
+Repository layout and tooling are aligned with `limeint/tradingapi`: a
+hand-written Node.js SDK (`@finam/trade-api`) ships alongside this package,
+examples moved to `examples/sdk/` and `examples/strategies/`, and a root
+`justfile` drives every check. Both SDKs now share one version line.
+
+### Fixed
+
+- `AuthService` is now reached without an `Authorization` header. `TokenDetails`
+  carries its token in the request body, and the server rejects the call with
+  `INVALID_ARGUMENT` when a header is also present, which made
+  `client.auth.TokenDetails` fail for every caller. The public auth stub now
+  sits on the credential-free channel that already served `Auth` and
+  `SubscribeJwtRenewal`. Every other service is unchanged and still sends the
+  header.
+
+### Changed
+
+- The asynchronous auth channel now carries the retry interceptors, so a
+  transient `UNAVAILABLE` on the initial `Auth` call is retried instead of
+  surfacing immediately. Streaming RPCs, including `SubscribeJwtRenewal`, are
+  unaffected — the stream interceptor is a pass-through.
+- `finam_trade_api.__version__` now reports the installed distribution version
+  instead of a hardcoded string.
+- Python 3.10 is the minimum supported version. The shipped stubs are generated
+  with protobuf 7 gencode, which already required 3.10 at runtime; the metadata
+  now says so. `grpcio>=1.83` and `protobuf>=7.35.1` are the new floors.
+- Development dependencies moved from the `dev` extra to a `uv` dependency
+  group with a committed `uv.lock`; `ruff` and `mypy` run in CI as hard gates.
+- The insecure test-channel interceptors moved to `finam_trade_api._insecure_auth`
+  and the lazy stub registry to `finam_trade_api._services`. Neither is public
+  API.
+
+### Removed
+
+- `sdk/python/examples/` and `sdk/python/.env.example`. The examples live in
+  `examples/sdk/python/` as a standalone consumer project; the single
+  `.env.example` is at the repository root.
+
 ## [2.19.0] — 2026-08-13
 
 ### Added

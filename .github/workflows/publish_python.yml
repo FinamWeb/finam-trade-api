@@ -1,10 +1,10 @@
 name: Publish Python SDK to PyPI
 
-# Triggered when a GitHub Release is published. Tags are bare versions,
-# unified across all SDKs (a legacy v-prefix is also accepted). The marker
-# in the tag determines the target index:
-#   2.16.0          → real PyPI
-#   2.16.0a1, rc1, … → TestPyPI (any tag containing a/b/rc/dev marker)
+# Python and Node share one SDK version and GitHub Release. Tags are bare
+# package versions (a legacy v-prefix is also accepted). The marker in the
+# tag determines the target index:
+#   2.18.1          → real PyPI
+#   2.19.0-rc.1     → TestPyPI
 #
 # Authentication uses PyPI trusted publishing (OIDC) — no API tokens are
 # stored as repo secrets. Both PyPI and TestPyPI need a one-time trusted
@@ -14,10 +14,18 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing SDK version tag to publish (for example 2.18.1)
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
     defaults:
       run:
         working-directory: sdk/python
@@ -26,39 +34,55 @@ jobs:
       is_prerelease: ${{ steps.classify.outputs.is_prerelease }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           python-version: "3.12"
-          cache: 'pip'
+          version: "0.11.32"
+          enable-cache: false
 
       - name: Verify tag matches pyproject version
-        # Catches the common mistake of cutting a v0.1.1 release without
+        # Catches the common mistake of cutting a 2.18.1 release without
         # bumping the version in pyproject.toml — PyPI would reject the
         # upload but only after the publish job ran, wasting minutes and
         # leaving the release in a half-cut state.
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
-          git fetch --tags
-          TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
-          # Release tags are bare versions (e.g. 2.16.0), unified across all
-          # SDKs. A legacy v-prefix is tolerated so v2.16.0 also resolves.
+          TAG="$RELEASE_TAG"
+          # Release tags are bare versions (e.g. 2.18.1). A legacy v-prefix is
+          # tolerated so v2.18.1 also resolves.
           TAG_VERSION="${TAG#v}"
           PYPROJECT_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          NODE_VERSION=$(python -c "import json; print(json.load(open('../node/package.json'))['version'])")
+          NODE_LOCK_VERSION=$(python -c "import json; print(json.load(open('../node/package-lock.json'))['version'])")
           if [ "$TAG_VERSION" != "$PYPROJECT_VERSION" ]; then
             echo "::error::Tag $TAG (version $TAG_VERSION) does not match pyproject.toml version $PYPROJECT_VERSION"
             exit 1
           fi
-          echo "Tag and pyproject version agree: $PYPROJECT_VERSION"
+          if [ "$PYPROJECT_VERSION" != "$NODE_VERSION" ]; then
+            echo "::error::Python version $PYPROJECT_VERSION does not match Node version $NODE_VERSION"
+            exit 1
+          fi
+          if [ "$NODE_VERSION" != "$NODE_LOCK_VERSION" ]; then
+            echo "::error::Node package version $NODE_VERSION does not match lock version $NODE_LOCK_VERSION"
+            exit 1
+          fi
+          echo "Tag, Python, and Node versions agree: $PYPROJECT_VERSION"
 
       - name: Classify release (prerelease → TestPyPI, final → PyPI)
         id: classify
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          # PEP 440 prerelease markers: aN, bN, rcN, devN, .devN (case-insensitive).
-          if echo "$TAG" | grep -Eiq '(a|b|rc|dev)[0-9]+'; then
+          TAG="$RELEASE_TAG"
+          # Accept shared PEP 440/SemVer forms such as 2.19.0-rc.1.
+          if echo "$TAG" | grep -Eiq '(alpha|beta|a|b|rc|dev)[._-]?[0-9]+'; then
             echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
             echo "Tag $TAG is a prerelease — will publish to TestPyPI"
           else
@@ -66,28 +90,61 @@ jobs:
             echo "Tag $TAG is a final release — will publish to real PyPI"
           fi
 
-      - name: Install build tooling
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-
-      - name: Install package (for proto generation)
-        run: pip install -e ".[dev]"
+      - name: Install dependencies
+        run: uv sync --locked
 
       - name: Regenerate proto stubs
-        run: ./scripts/generate_proto.sh
+        run: uv run ./scripts/generate_proto.sh
+
+      - name: Run SDK tests
+        run: uv run pytest tests/
 
       - name: Build sdist + wheel
-        run: python -m build
+        run: uv run python -m build
 
       - name: Validate distribution metadata
-        run: twine check --strict dist/*
+        run: uv run twine check --strict dist/*
+
+      - name: Verify distribution contents
+        run: uv run python scripts/verify_distribution.py dist
+
+      - name: Smoke-test the built wheel
+        run: |
+          python -m venv "$RUNNER_TEMP/finam-sdk-smoke"
+          "$RUNNER_TEMP/finam-sdk-smoke/bin/python" -m pip install dist/*.whl
+          "$RUNNER_TEMP/finam-sdk-smoke/bin/python" -c \
+            "from finam_trade_api import FinamClient; from finam_trade_api.market_data import BarsRequest; print('wheel import passed')"
+
+      - name: Test strategies against the built wheel
+        working-directory: ${{ github.workspace }}
+        env:
+          REPOSITORY_SDK_SOURCE: ${{ github.workspace }}/sdk/python
+        run: |
+          for strategy in examples/strategies/*/python; do
+            echo "Testing $strategy"
+            cd "$GITHUB_WORKSPACE/$strategy"
+            uv sync --locked --no-install-package finam-sdk
+            uv pip install --python .venv/bin/python "$GITHUB_WORKSPACE"/sdk/python/dist/*.whl
+            .venv/bin/python -c "
+          import os
+          from pathlib import Path
+          import finam_trade_api
+
+          package_path = Path(finam_trade_api.__file__).resolve()
+          source_path = Path(os.environ['REPOSITORY_SDK_SOURCE']).resolve()
+          if package_path.is_relative_to(source_path):
+              raise SystemExit(f'strategy imported repository SDK source: {package_path}')
+          print(f'strategy uses installed SDK: {package_path}')
+          "
+            .venv/bin/python -m pytest
+          done
 
       - name: Upload distribution artifacts
         uses: actions/upload-artifact@v4
         with:
           name: python-dist
           path: sdk/python/dist/*
+          if-no-files-found: error
           retention-days: 30
 
   publish-testpypi:

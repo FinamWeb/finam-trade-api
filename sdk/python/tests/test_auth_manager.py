@@ -8,6 +8,7 @@ just mocking method calls.
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 from unittest.mock import patch
 
 import grpc
@@ -18,7 +19,6 @@ from finam_trade_api.auth import AsyncTokenManager, TokenManager
 from finam_trade_api.exceptions import AuthError
 
 from .fakes import FakeAuthService, await_for, fake_server, wait_for
-
 
 # ---------------------------------------------------------------------------
 # Sync TokenManager
@@ -140,7 +140,7 @@ def test_renewal_stream_reconnects_after_rpc_error() -> None:
             channel.close()
 
 
-def test_renewal_loop_recovers_from_unexpected_exception(caplog) -> None:  # noqa: ANN001
+def test_renewal_loop_recovers_from_unexpected_exception(caplog) -> None:
     """A non-gRPC exception in the renewal loop (e.g. a decoder bug) must NOT
     silently kill the daemon thread — that would freeze the JWT until expiry
     and surface as cryptic 401s on every subsequent RPC.
@@ -173,16 +173,17 @@ def test_renewal_loop_recovers_from_unexpected_exception(caplog) -> None:  # noq
                     raise RuntimeError("simulated decoder bug")
                 original(token)
 
-            with caplog.at_level(logging.ERROR, logger="finam_trade_api.auth"):
-                with patch.object(mgr, "_set_token", side_effect=flaky_set):
-                    auth.push_token("triggers-exception")
-                    # Wait until the loop has logged the unexpected exception.
-                    wait_for(
-                        lambda: any(
-                            "Unexpected error in JWT renewal loop" in r.message
-                            for r in caplog.records
-                        )
+            with (
+                caplog.at_level(logging.ERROR, logger="finam_trade_api.auth"),
+                patch.object(mgr, "_set_token", side_effect=flaky_set),
+            ):
+                auth.push_token("triggers-exception")
+                # Wait until the loop has logged the unexpected exception.
+                wait_for(
+                    lambda: any(
+                        "Unexpected error in JWT renewal loop" in r.message for r in caplog.records
                     )
+                )
 
             # Crucial: the daemon thread must still be alive — that's how we
             # know the exception was caught instead of killing the loop.
@@ -324,7 +325,7 @@ async def test_async_stop_logs_but_does_not_propagate_unexpected_failure() -> No
 
 
 @pytest.mark.asyncio
-async def test_async_renewal_loop_recovers_from_unexpected_exception(caplog) -> None:  # noqa: ANN001
+async def test_async_renewal_loop_recovers_from_unexpected_exception(caplog) -> None:
     """Async equivalent of the sync ``test_renewal_loop_recovers_*`` test —
     a non-gRPC exception inside the async loop must be caught, logged, and
     NOT cancel the renewal task."""
@@ -352,15 +353,16 @@ async def test_async_renewal_loop_recovers_from_unexpected_exception(caplog) -> 
                     raise RuntimeError("simulated async decoder bug")
                 original(token)
 
-            with caplog.at_level(logging.ERROR, logger="finam_trade_api.auth"):
-                with patch.object(mgr, "_set_token", side_effect=flaky_set):
-                    auth.push_token("triggers-exception")
-                    await await_for(
-                        lambda: any(
-                            "Unexpected error in JWT renewal loop" in r.message
-                            for r in caplog.records
-                        )
+            with (
+                caplog.at_level(logging.ERROR, logger="finam_trade_api.auth"),
+                patch.object(mgr, "_set_token", side_effect=flaky_set),
+            ):
+                auth.push_token("triggers-exception")
+                await await_for(
+                    lambda: any(
+                        "Unexpected error in JWT renewal loop" in r.message for r in caplog.records
                     )
+                )
 
             # Task is still running — it didn't die from the exception.
             assert mgr._task is not None and not mgr._task.done()
@@ -372,7 +374,7 @@ async def test_async_renewal_loop_recovers_from_unexpected_exception(caplog) -> 
 
 @pytest.mark.asyncio
 async def test_async_stop_logs_unexpected_task_failure_without_propagating(
-    caplog,  # noqa: ANN001
+    caplog,
 ) -> None:
     """The renewal task's unexpected-exception arm should never normally raise,
     but if a future code change introduces a bug, ``stop()`` must still
@@ -401,17 +403,12 @@ async def test_async_stop_logs_unexpected_task_failure_without_propagating(
                 # Must not raise even though the underlying task did.
                 await mgr.stop()
 
-            assert any(
-                "JWT renewal task raised on shutdown" in r.message
-                for r in caplog.records
-            )
+            assert any("JWT renewal task raised on shutdown" in r.message for r in caplog.records)
 
             # Tidy up the real renewal task we displaced so it doesn't leak.
             real_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError, Exception):
                 await real_task
-            except (asyncio.CancelledError, Exception):
-                pass
         finally:
             auth.close_stream()
             await channel.close()

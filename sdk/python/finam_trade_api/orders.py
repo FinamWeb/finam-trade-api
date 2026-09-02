@@ -53,7 +53,7 @@ __all__ = [
     "SubscribeOrdersResponse",
     "SubscribeTradesRequest",
     "SubscribeTradesResponse",
-    "TimeInForce",
     "TPSpreadMeasure",
+    "TimeInForce",
     "ValidBefore",
 ]

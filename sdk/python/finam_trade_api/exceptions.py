@@ -7,8 +7,6 @@ without inspecting raw status codes.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import grpc
 
 
@@ -19,8 +17,8 @@ class FinamError(Exception):
         self,
         message: str,
         *,
-        code: Optional[grpc.StatusCode] = None,
-        details: Optional[str] = None,
+        code: grpc.StatusCode | None = None,
+        details: str | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
@@ -86,14 +84,14 @@ def from_rpc_error(err: grpc.RpcError) -> FinamError:
 
 
 __all__ = [
-    "FinamError",
     "AuthError",
-    "PermissionDeniedError",
-    "RateLimitError",
+    "DeadlineExceededError",
+    "FinamError",
+    "InternalError",
     "InvalidArgumentError",
     "NotFoundError",
+    "PermissionDeniedError",
+    "RateLimitError",
     "ServiceUnavailableError",
-    "DeadlineExceededError",
-    "InternalError",
     "from_rpc_error",
 ]

@@ -12,10 +12,11 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from queue import Queue
-from typing import Any, Iterator, Optional
+from typing import Any
 
 import grpc
 
@@ -59,9 +60,12 @@ class FakeAuthService(auth_service_pb2_grpc.AuthServiceServicer):
     def __init__(self, initial_token: str = "jwt-1") -> None:
         self._initial_token = initial_token
         self.auth_calls = 0
+        # Metadata seen by the most recent TokenDetails call, so tests can
+        # assert that no Authorization header reaches AuthService.
+        self.token_details_metadata: tuple[tuple[str, Any], ...] | None = None
         self._subscribe_calls = 0
         self._fail_subscribes = 0
-        self._queue: Queue[Optional[str]] = Queue()
+        self._queue: Queue[str | None] = Queue()
         self._lock = threading.Lock()
 
     # --- gRPC handlers ----------------------------------------------------
@@ -76,6 +80,9 @@ class FakeAuthService(auth_service_pb2_grpc.AuthServiceServicer):
         request: auth_service_pb2.TokenDetailsRequest,
         context: grpc.ServicerContext,
     ) -> Any:
+        self.token_details_metadata = tuple(
+            (key, value) for key, value in context.invocation_metadata()
+        )
         return auth_service_pb2.TokenDetailsResponse(account_ids=["A12345"], readonly=False)
 
     def SubscribeJwtRenewal(
@@ -152,7 +159,7 @@ class FakeOrdersService(orders_service_pb2_grpc.OrdersServiceServicer):
     def __init__(self) -> None:
         self.placed: list[orders_service_pb2.Order] = []
         self.cancelled: list[str] = []
-        self.fail_with: Optional[grpc.StatusCode] = None
+        self.fail_with: grpc.StatusCode | None = None
         self.fail_remaining = 0
 
     def fail_next(self, code: grpc.StatusCode, times: int = 1) -> None:
@@ -229,11 +236,11 @@ class FakeAssetsService(assets_service_pb2_grpc.AssetsServiceServicer):
 @contextmanager
 def fake_server(
     *,
-    auth: Optional[FakeAuthService] = None,
-    accounts: Optional[FakeAccountsService] = None,
-    orders: Optional[FakeOrdersService] = None,
-    market_data: Optional[FakeMarketDataService] = None,
-    assets: Optional[FakeAssetsService] = None,
+    auth: FakeAuthService | None = None,
+    accounts: FakeAccountsService | None = None,
+    orders: FakeOrdersService | None = None,
+    market_data: FakeMarketDataService | None = None,
+    assets: FakeAssetsService | None = None,
 ) -> Iterator[tuple[str, dict[str, Any]]]:
     """Spin up a real gRPC server on localhost:<random> with the requested
     servicers attached. Yields (endpoint, registry-of-installed-services)."""
@@ -265,7 +272,7 @@ def fake_server(
         server.stop(grace=0).wait()
 
 
-def wait_for(predicate, timeout: float = 5.0, interval: float = 0.01) -> None:  # noqa: ANN001
+def wait_for(predicate, timeout: float = 5.0, interval: float = 0.01) -> None:
     """Spin-wait helper for tests that need to observe a background thread's effect.
 
     Default timeout is 5s — cold GitHub-hosted runners under load routinely take
@@ -279,7 +286,7 @@ def wait_for(predicate, timeout: float = 5.0, interval: float = 0.01) -> None:  
     raise AssertionError("timed out waiting for predicate")
 
 
-async def await_for(  # noqa: ANN001
+async def await_for(
     predicate,
     timeout: float = 5.0,
     interval: float = 0.01,
