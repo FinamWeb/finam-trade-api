@@ -281,6 +281,10 @@ message Position {
   google.type.Decimal daily_pnl = 6;
   // Суммарная нереализованная прибыль или убыток (PnL) текущей позиции
   google.type.Decimal unrealized_pnl = 7;
+  // Код валюты текущей цены. Только для общего типа счетов Московской Биржи
+  string current_price_currency = 8;
+  // Код валюты средней цены. Только для общего типа счетов Московской Биржи
+  string average_price_currency = 9;
 }
 
 // Информация о транзакции
@@ -329,7 +333,7 @@ message Transaction {
   google.protobuf.Timestamp timestamp = 4;
   // Символ инструмента
   string symbol = 5;
-  // Изменение в деньгах
+  // Изменение в деньгах, в рублях
   google.type.Money change = 6;
   // Информация о сделке
   Trade trade = 7;
@@ -339,5 +343,9 @@ message Transaction {
   string transaction_name = 9;
   // Изменение в штуках, только для трансфера бумаг (для TransactionCategory = TRANSFER)
   google.type.Decimal change_qty = 10;
+  // Изменение в деньгах, в валюте инструмента
+  google.type.Money change_original = 11;
+  // Полный список тикеров, входящих в транзакцию. Поле symbol сохраняется и заполняется первым элементом для обратной совместимости.
+  repeated string symbols = 12;
 }
 

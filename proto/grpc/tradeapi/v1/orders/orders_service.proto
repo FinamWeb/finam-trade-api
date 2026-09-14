@@ -8,6 +8,7 @@ import "google/type/decimal.proto";
 import "grpc/tradeapi/v1/side.proto";
 import "grpc/tradeapi/v1/trade.proto";
 import "grpc/gateway/protoc_gen_openapiv2/options/annotations.proto";
+import "google/protobuf/wrappers.proto";
 
 option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/orders";
 option java_multiple_files = true;
@@ -530,6 +531,8 @@ message OrderState {
   SLTPOrder sltp_order = 11;
   // Идентификатор биржевой заявки, порожденной в результате срабатывания условия или достижения стоп-цены.
   string triggered_order_id = 12;
+  // Описание статуса заявки
+  google.protobuf.StringValue status_description = 13;
 }
 
 // Запрос получения списка торговых заявок
@@ -594,6 +597,12 @@ message SLTPOrder {
   google.protobuf.Timestamp valid_expiry_time = 22;
   // Метка заявки. (максимум 128 символов)
   string comment = 23;
+  // Единица измерения объёма для Stop Loss части.
+  // Если SLTP_QTY_MEASURE_PERCENT — quantity_sl трактуется как процент (0–100) от позиции на момент исполнения.
+  SLTPQtyMeasure sl_qty_measure = 24;
+  // Единица измерения объёма для Take Profit части.
+  // Если SLTP_QTY_MEASURE_PERCENT — quantity_tp трактуется как процент (0–100) от позиции на момент исполнения.
+  SLTPQtyMeasure tp_qty_measure = 25;
 }
 
 // Единица измерения величины защитного спреда для цены исполнения TP
@@ -604,5 +613,15 @@ enum TPSpreadMeasure {
   TP_SPREAD_MEASURE_VALUE = 1;
   // в процентах, с максимальной точностью до сотых процента
   TP_SPREAD_MEASURE_PERCENT = 2;
+}
+
+// Единица измерения объёма для SL/TP заявки
+enum SLTPQtyMeasure {
+  // Не определено
+  SLTP_QTY_MEASURE_UNDEFINED = 0;
+  // Количество в единицах (штуках). Значение по умолчанию.
+  SLTP_QTY_MEASURE_VALUE = 1;
+  // Процент от позиции на момент исполнения, точность до сотых процента
+  SLTP_QTY_MEASURE_PERCENT = 2;
 }
 
