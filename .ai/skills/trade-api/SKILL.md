@@ -498,6 +498,8 @@ Fetch only the docs you actually need for the current task.
 
 Use the Finam SDK (`pip install finam-sdk`) for any Python scripts that interact with the API — both for one-off queries and streaming/trading bots. It handles JWT issuance and refresh automatically, provides typed exceptions, and exposes the full gRPC surface via a single `FinamClient` / `AsyncFinamClient` entry point.
 
+Before running any script that imports `finam_trade_api`, make sure the package is installed — run `python3 -c "import finam_trade_api"` and, if it fails, install with `pip install finam-sdk` before executing the script.
+
 Full reference: fetch live from `https://raw.githubusercontent.com/FinamWeb/finam-trade-api/main/sdk/python/README.md` (source: https://github.com/FinamWeb/finam-trade-api/tree/main/sdk/python)
 
 ### Resolve the account ID

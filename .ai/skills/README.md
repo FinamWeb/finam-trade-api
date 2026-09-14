@@ -1,20 +1,42 @@
 <div align="center">
 
-# finam-skill — Claude Code, Qwen Code, Codex & Cursor Plugin
+# finam-skill — плагин для Claude Code, Qwen Code, Codex и Cursor
 
-Finam Trade API skills for Claude Code, Qwen Code, Codex and Cursor.
+Скилл Finam Trade API для Claude Code, Qwen Code, Codex и Cursor.
 
-This repository also serves as the Claude, Codex, and Cursor marketplace (`finam-trade-api`).
+Этот репозиторий также служит маркетплейсом для Claude, Codex и Cursor (`finam-trade-api`).
 
 </div>
 
-## Available Skills
+## Содержание
 
-| Skill | Command | Description |
+- [Доступные скиллы](#доступные-скиллы)
+- [Требования](#требования)
+- [Установка](#установка)
+- [Настройка](#настройка)
+- [Возможности](#возможности)
+- [Примеры использования](#примеры-использования)
+- [Безопасность и подтверждение заявок](#безопасность-и-подтверждение-заявок)
+- [Структура проекта](#структура-проекта)
+- [Устранение неполадок](#устранение-неполадок)
+- [Поддержка](#поддержка)
+- [Лицензия](#лицензия)
+
+## Доступные скиллы
+
+| Скилл | Команда | Описание |
 |-------|---------|-------------|
-| trade-api | `/finam:trade-api` | Real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; instrument search and volatility scanning; place and cancel orders; develop algorithmic trading scripts |
+| trade-api | `/finam:trade-api` | Котировки в реальном времени, стакан заявок, OHLCV-свечи, портфель и заявки через REST, gRPC и WebSocket; поиск инструментов и сканер волатильности; размещение и отмена заявок; разработка скриптов для алгоритмической торговли |
 
-## Installation
+## Требования
+
+- AI-ассистент с поддержкой плагинов/скиллов: Claude Code, Qwen Code, Codex или Cursor
+- `python3` — для скриптов поиска инструментов и сканера рынка (`asset_search.py`, `scanner.py`)
+- Токен Finam Trade API — см. раздел [Настройка](#настройка)
+
+`python3` уже входит в системный набор большинства сред, где работают эти ассистенты; отдельно устанавливать обычно не требуется. Пакет `finam-sdk` (`pip install finam-sdk`) нужен только если вы пишете или запускаете собственные Python-стратегии — сами скрипты скилла его не требуют.
+
+## Установка
 
 ### Claude Code
 
@@ -38,96 +60,124 @@ codex plugin add finam@finam-trade-api
 
 ### Cursor
 
-In Cursor, open an Agent chat and run:
+В Cursor откройте чат с агентом и выполните:
 
 ```
 /add-plugin https://github.com/FinamWeb/finam-trade-api
 ```
 
-## Setup
+## Настройка
 
-After installation, configure one environment variable:
+После установки настройте одну переменную окружения:
 
-- `TRADE_API_SECRET` — API token from [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens)
+- `TRADE_API_SECRET` — токен API, получить на [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens)
 
-The account to act on is resolved automatically from the token. Optionally set `ACCOUNT_ID` to pin a specific account if the token exposes several.
+Счёт, с которым будет работать скилл, определяется автоматически по токену. При необходимости можно задать `ACCOUNT_ID`, чтобы зафиксировать конкретный счёт, если токен даёт доступ к нескольким.
 
-**Claude Code** — add to `.claude/settings.local.json`:
+**Claude Code** — добавьте в `.claude/settings.local.json`:
 ```json
 { "env": { "TRADE_API_SECRET": "..." } }
 ```
 
-**Qwen Code** — prompted automatically during installation, or set manually:
+**Qwen Code** — запрашивается автоматически при установке, либо задайте вручную:
 ```bash
 qwen extensions settings set finam "Trade API Secret"
 ```
-To pin a specific account, export `ACCOUNT_ID` yourself — it's not part of the installer prompts.
+Чтобы зафиксировать конкретный счёт, экспортируйте `ACCOUNT_ID` самостоятельно — этот параметр не запрашивается при установке.
 
-**Codex / Cursor** — set in the dashboard under **Plugins → Configure** after installation.
+**Codex / Cursor** — задаётся в панели управления, в разделе **Plugins → Configure** после установки.
 
-A **demo account** can be opened at the [tokens page](https://api.finam.ru/docs/tokens). Valid for 2 weeks and works identically to a real account.
+**Демо-счёт** можно открыть на [странице токенов](https://api.finam.ru/docs/tokens). Действует 2 недели и работает точно так же, как реальный счёт.
 
-## Usage Examples
+## Возможности
 
-**Portfolio analysis:**
+- **Рыночные данные** — котировки, стакан заявок, последние сделки и исторические свечи (OHLCV) через REST, gRPC и WebSocket.
+- **Портфель и заявки** — просмотр позиций и баланса, размещение и отмена ордеров с обязательным подтверждением параметров у пользователя.
+- **Поиск инструментов** — по маске тикера или части названия, с фильтром по типу и площадке, включая архивные/экспирировавшие инструменты.
+- **Сканер рынка** — топ-100 акций РФ и США, сортировка по волатильности, росту или объёму торгов, с настраиваемыми порогами.
+- **Разработка стратегий** — генерация Python-скриптов на официальном SDK (`finam-sdk`): моментум, пересечение скользящих средних, произвольные правила.
+- **Бэктестинг** — прогон стратегии на исторических данных прямо в диалоге с ассистентом, без внешних фреймворков.
+- **Новости рынка** — заголовки последних новостей по российскому и американскому рынку без токена.
+
+## Примеры использования
+
+**Анализ портфеля:**
 ```
 Проведи глубокий анализ моего портфеля. Покажи структуру, динамику и предложи балансировку.
 ```
 
-**Market scanner:**
+**Сканер рынка:**
 ```
 Найди все акции на Мосбирже из финансового сектора, которые выросли более чем на 5%
 за неделю при объёме торгов выше 500 млн рублей.
 ```
 
-**Momentum strategy:**
+**Моментум-стратегия:**
 ```
 Реализуй моментум-стратегию: покупаем 10 акций с наибольшей инерцией за месяц,
 ребалансировка раз в неделю.
 ```
 
-**Volatility scan:**
+**Сканер волатильности:**
 ```
 Выбери 10 самых волатильных бумаг на Мосбирже и раздели портфель поровну между ними.
 ```
 
-**Order management:**
+**Управление заявками:**
 ```
 Покажи мои открытые заявки и отмени все лимитные ордера по SBER@MISX.
 ```
 
-**Algo script:**
+**Алгоскрипт:**
 ```
 Напиши скрипт на Python: если акция за последние 30 дней выросла — покупаем,
 иначе продаём. Использовать Finam gRPC API.
 ```
 
-## Project Structure
+## Безопасность и подтверждение заявок
+
+Скилл никогда не размещает и не отменяет заявку без явного согласия пользователя: ассистент обязан озвучить все параметры ордера (инструмент, сторону, объём, тип и цену) и дождаться подтверждения перед отправкой запроса. Работать со скиллом без токена тоже можно — для изучения документации, проектирования стратегий и генерации скриптов токен не требуется.
+
+## Структура проекта
 
 ```
 finam-trade-api/
-├── .agents/plugins/marketplace.json   # Codex marketplace registry
+├── .agents/plugins/marketplace.json   # реестр маркетплейса Codex
 ├── .claude-plugin/
-│   ├── marketplace.json               # Claude Code marketplace registry
-│   └── plugin.json                    # Claude Code manifest (sync source of truth)
-├── .codex-plugin/plugin.json          # Codex manifest
+│   ├── marketplace.json               # реестр маркетплейса Claude Code
+│   └── plugin.json                    # манифест Claude Code (источник истины для синхронизации)
+├── .codex-plugin/plugin.json          # манифест Codex
 ├── .cursor-plugin/
-│   ├── marketplace.json               # Cursor marketplace registry
-│   └── plugin.json                    # Cursor manifest
-├── qwen-extension.json                # Qwen Code manifest
-├── CLAUDE.md                          # Claude Code context
-├── QWEN.md                            # Qwen Code context
+│   ├── marketplace.json               # реестр маркетплейса Cursor
+│   └── plugin.json                    # манифест Cursor
+├── qwen-extension.json                # манифест Qwen Code
+├── CLAUDE.md                          # контекст для Claude Code
+├── QWEN.md                            # контекст для Qwen Code
 └── .ai/skills/
-    ├── README.md                      # This file
+    ├── README.md                      # этот файл
     └── trade-api/
-        ├── SKILL.md                   # Skill definition
-        ├── assets/                    # Exchanges and top-100 equity lists
-        ├── references/docs/           # Official API docs (REST, gRPC, WebSocket)
+        ├── SKILL.md                   # определение скилла
+        ├── assets/                    # списки бирж и топ-100 акций
+        ├── references/docs/           # официальная документация API (REST, gRPC, WebSocket)
         └── scripts/
-            ├── asset_search.py        # Search instruments by ticker glob / name
-            └── scanner.py             # Scan top-100 stocks by volatility, growth, or volume
+            ├── asset_search.py        # поиск инструментов по маске тикера / названию
+            └── scanner.py             # сканер топ-100 акций по волатильности, росту или объёму
 ```
 
-## License
+## Устранение неполадок
+
+- **Токен не задан / ошибка авторизации** — убедитесь, что `TRADE_API_SECRET` задан в текущей сессии (см. [Настройка](#настройка)); JWT-токен получается заново перед каждым запросом и не хранится между вызовами.
+- **Токен даёт доступ к нескольким счетам** — `ACCOUNT_ID` не определяется автоматически; ассистент спросит, какой счёт использовать, либо задайте `ACCOUNT_ID` вручную.
+- **Превышен лимит запросов** — действует ограничение 200 запросов в минуту на метод; подождите и повторите запрос.
+- **API недоступен** — ежедневное технологическое окно 05:00–06:15 МСК, в это время сервис может быть недоступен.
+- **Ассистент не видит новую команду/скилл после установки** — перезапустите ассистента или начните новую сессию, чтобы он подхватил обновлённый список плагинов.
+
+## Поддержка
+
+О проблемах и предложениях сообщайте через issue или pull request в [репозитории на GitHub](https://github.com/FinamWeb/finam-trade-api).
+
+Информация, которую предоставляет скилл, носит образовательный и информационный характер и не является индивидуальной инвестиционной рекомендацией. Перед принятием торговых решений проводите собственный анализ.
+
+## Лицензия
 
 MIT
