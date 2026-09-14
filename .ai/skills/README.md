@@ -46,21 +46,22 @@ In Cursor, open an Agent chat and run:
 
 ## Setup
 
-After installation, configure two environment variables:
+After installation, configure one environment variable:
 
 - `TRADE_API_SECRET` — API token from [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens)
-- `FINAM_ACCOUNT_ID` — account number from [lk.finam.ru](https://lk.finam.ru/) (digits only, without the `КлФ-` prefix)
+
+The account to act on is resolved automatically from the token. Optionally set `ACCOUNT_ID` to pin a specific account if the token exposes several.
 
 **Claude Code** — add to `.claude/settings.local.json`:
 ```json
-{ "env": { "TRADE_API_SECRET": "...", "FINAM_ACCOUNT_ID": "..." } }
+{ "env": { "TRADE_API_SECRET": "..." } }
 ```
 
 **Qwen Code** — prompted automatically during installation, or set manually:
 ```bash
-qwen extensions settings set finam "Finam API Key"
-qwen extensions settings set finam "Finam Account ID"
+qwen extensions settings set finam "Trade API Secret"
 ```
+To pin a specific account, export `ACCOUNT_ID` yourself — it's not part of the installer prompts.
 
 **Codex / Cursor** — set in the dashboard under **Plugins → Configure** after installation.
 
