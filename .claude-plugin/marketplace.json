@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "finam-trade-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Finam Trade API — algorithmic trading, market data, and order management through Finam broker.",
   "owner": {
     "name": "Finam",
@@ -11,7 +11,7 @@
     {
       "name": "finam",
       "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": {
         "name": "Finam",
         "url": "https://github.com/FinamWeb"

@@ -1,41 +1,35 @@
 ---
 name: trade-api
 description: "Use this skill for any work with Finam / Финам broker and Trade API: questions about the API, developing algorithmic trading strategies and scripts, and interacting with the broker programmatically. Trigger on: Finam/Финам mentions, api.finam.ru URLs, ticker@mic symbol format, finam-sdk. Also trigger for Russian-market trading workflows even without explicit Finam mention — portfolio analysis, scanning Moscow Exchange stocks (MISX/RTSX), volatility/momentum/arbitrage strategies, order placement and cancellation, real-time quotes via gRPC or WebSocket, OHLCV candles, backtesting on Russian equities, risk management for algo trading."
-metadata: '{"openclaw": {"emoji": "📈", "homepage": "https://api.finam.ru/", "requires": {"bins": ["curl", "jq", "python3"], "env": ["TRADE_API_SECRET", "FINAM_ACCOUNT_ID"]}}}'
+metadata: '{"openclaw": {"emoji": "📈", "homepage": "https://api.finam.ru/", "requires": {"bins": ["curl", "jq", "python3"], "env": ["TRADE_API_SECRET"]}, "primaryEnv": "TRADE_API_SECRET"}}'
 ---
 
 # Finam Trade API Skill
 
 ## Setup
 
-To execute Trade API requests, configure two credentials:
+To execute Trade API requests, configure one credential:
 
 - `TRADE_API_SECRET` — API token. Get it at [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens)
-- `FINAM_ACCOUNT_ID` — your account number from [lk.finam.ru](https://lk.finam.ru/). Digits only, without the `КлФ-` prefix.
 
-You can use this skill without them — to design strategies, explore docs, or write scripts.
+You can use this skill without it — to design strategies, explore docs, or write scripts.
 
-**Before sending any request, run this check via Bash tool:**
+**Before sending any request to api, run this check via Bash tool:**
 
 ```shell
 [ ${#TRADE_API_SECRET} -gt 0 ] && echo "✅ TRADE_API_SECRET is set" || echo "❌ TRADE_API_SECRET is not set"
-echo "FINAM_ACCOUNT_ID=${FINAM_ACCOUNT_ID:-❌ not set}"
 ```
 
-If either is missing — stop and ask the user to configure credentials using one of the options below.
-
-If missing, set them in any of these ways:
+If missing — stop and ask the user to configure it using one of the options below.
 
 **Option 1 — export directly:**
 ```shell
 export TRADE_API_SECRET="your_token"
-export FINAM_ACCOUNT_ID="your_account_number"
 ```
 
 **Option 2 — `.env` file** (create it, fill in values, then load):
 ```
 TRADE_API_SECRET=your_token_here
-FINAM_ACCOUNT_ID=your_account_number_here
 ```
 Linux/macOS: `source .env` · Windows PowerShell:
 ```powershell
@@ -48,10 +42,10 @@ Get-Content .env | ForEach-Object {
 
 **Option 3 — Claude Code** (`.claude/settings.local.json`):
 ```json
-{ "env": { "TRADE_API_SECRET": "...", "FINAM_ACCOUNT_ID": "..." } }
+{ "env": { "TRADE_API_SECRET": "..." } }
 ```
 
-Using the API Key, obtain a **JWT token** — it expires after 15 minutes and does not persist between shell calls. Always fetch it inline before each request:
+Using the API secret, obtain a **JWT token** — it expires after 15 minutes and does not persist between shell calls. Always fetch it inline before each request:
 
 ```shell
 TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
@@ -59,6 +53,23 @@ TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
   --data '{"secret": "'"$TRADE_API_SECRET"'"}' | jq -r '.token') && \
 curl -sL "https://api.finam.ru/v1/..." --header "Authorization: $TOKEN" | jq
 ```
+
+### Resolving the account ID
+
+Account-scoped requests (portfolio, orders, account-specific asset fields) need an `ACCOUNT_ID`. Resolve it once per session, right after fetching the token — the token itself knows which accounts it can access:
+
+```shell
+DETAILS=$(curl -sL "https://api.finam.ru/v1/sessions/details" \
+  --header "Content-Type: application/json" \
+  --data '{"token": "'"$TOKEN"'"}')
+ACCOUNT_ID="${ACCOUNT_ID:-$(echo "$DETAILS" | jq -r 'if (.account_ids | length) == 1 then .account_ids[0] else empty end')}"
+echo "ACCOUNT_ID=${ACCOUNT_ID:-❌ could not resolve automatically}"
+```
+
+- If `ACCOUNT_ID` is already set in the environment, it wins — treat it as an explicit override (useful when the token exposes several accounts and the user always wants the same one). Most users never need to set it.
+- Otherwise, if the token exposes exactly one account, `ACCOUNT_ID` resolves automatically from `/v1/sessions/details` — no setup step required.
+- If the token exposes **multiple** accounts and none is pre-set, the command above resolves to empty. In that case, print `$DETAILS | jq -r '.account_ids'` and ask the user which account to use for this session before making any account-scoped request — don't guess which one.
+- Use `$ACCOUNT_ID` in every request below.
 
 **Demo account:** Can be opened at the [tokens page](https://api.finam.ru/docs/tokens). Valid for 2 weeks; works identically to a real account.
 
@@ -97,7 +108,7 @@ Fetch detailed specification for a specific instrument (lot size, price step, de
 
 ```shell
 SYMBOL="SBER@MISX"
-curl -sL "https://api.finam.ru/v1/assets/$SYMBOL?account_id=$FINAM_ACCOUNT_ID" \
+curl -sL "https://api.finam.ru/v1/assets/$SYMBOL?account_id=$ACCOUNT_ID" \
   --header "Authorization: $TOKEN" | jq
 ```
 
@@ -151,7 +162,7 @@ python3 scripts/top_stocks.py ru --json
 Retrieve portfolio information including positions, balances, and P&L:
 
 ```shell
-curl -sL "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID" \
+curl -sL "https://api.finam.ru/v1/accounts/$ACCOUNT_ID" \
   --header "Authorization: $TOKEN" | jq
 ```
 
@@ -273,7 +284,7 @@ for item in reversed(root.findall('.//item')):
 - `ORDER_TYPE_LIMIT` - Limit order (requires `limit_price`)
 
 ```shell
-curl -sL "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID/orders" \
+curl -sL "https://api.finam.ru/v1/accounts/$ACCOUNT_ID/orders" \
   --header "Authorization: $TOKEN" \
   --header "Content-Type: application/json" \
   --data "$(jq -n \
@@ -300,7 +311,7 @@ Check the status of a specific order:
 
 ```shell
 ORDER_ID="12345678"
-curl -sL "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID/orders/$ORDER_ID" \
+curl -sL "https://api.finam.ru/v1/accounts/$ACCOUNT_ID/orders/$ORDER_ID" \
   --header "Authorization: $TOKEN" | jq
 ```
 
@@ -310,7 +321,7 @@ Cancel a pending order:
 
 ```shell
 ORDER_ID="12345678"
-curl -sL --request DELETE "https://api.finam.ru/v1/accounts/$FINAM_ACCOUNT_ID/orders/$ORDER_ID" \
+curl -sL --request DELETE "https://api.finam.ru/v1/accounts/$ACCOUNT_ID/orders/$ORDER_ID" \
   --header "Authorization: $TOKEN" | jq
 ```
 
@@ -334,6 +345,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from google.type.decimal_pb2 import Decimal
 from finam_trade_api import FinamClient
+from finam_trade_api.auth_messages import TokenDetailsRequest
 from finam_trade_api.market_data import BarsRequest, TimeFrame
 from finam_trade_api.orders import Order, OrderType, Side, TimeInForce
 
@@ -353,9 +365,20 @@ def get_growth(client, symbol, days):
     first, last = float(bars[0].close.value), float(bars[-1].close.value)
     return (last - first) / first * 100
 
-account_id = os.environ["FINAM_ACCOUNT_ID"]
+def resolve_account_id(client) -> str:
+    if account_id := os.environ.get("ACCOUNT_ID"):
+        return account_id
+    details = client.auth.TokenDetails(TokenDetailsRequest(token=client.get_token()))
+    if len(details.account_ids) == 1:
+        return details.account_ids[0]
+    raise RuntimeError(
+        f"Token exposes {len(details.account_ids)} accounts {list(details.account_ids)}; "
+        "ask the user which one to use, or set ACCOUNT_ID to pin one"
+    )
 
 with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
+    account_id = resolve_account_id(client)
+
     for symbol in SYMBOLS:
         growth = get_growth(client, symbol, LOOKBACK_DAYS)
         if growth is None:
@@ -477,6 +500,28 @@ Use the Finam SDK (`pip install finam-sdk`) for any Python scripts that interact
 
 Full reference: fetch live from `https://raw.githubusercontent.com/FinamWeb/finam-trade-api/main/sdk/python/README.md` (source: https://github.com/FinamWeb/finam-trade-api/tree/main/sdk/python)
 
+### Resolve the account ID
+
+Most account-scoped calls need an `account_id`. The JWT token itself knows which accounts it can access — fetch that via `TokenDetails` instead of hardcoding an account. Reuse this helper in every example below:
+
+```python
+import os
+from finam_trade_api.auth_messages import TokenDetailsRequest
+
+def resolve_account_id(client) -> str:
+    if account_id := os.environ.get("ACCOUNT_ID"):
+        return account_id  # explicit override — pins a specific account
+    details = client.auth.TokenDetails(TokenDetailsRequest(token=client.get_token()))
+    if len(details.account_ids) == 1:
+        return details.account_ids[0]
+    raise RuntimeError(
+        f"Token exposes {len(details.account_ids)} accounts {list(details.account_ids)}; "
+        "ask the user which one to use, or set ACCOUNT_ID to pin one"
+    )
+```
+
+If `resolve_account_id` raises because of multiple accounts, don't guess — ask the user which account to use, or have them set `ACCOUNT_ID` (or pass it directly).
+
 ### Authenticate and fetch account info
 
 ```python
@@ -486,7 +531,7 @@ from finam_trade_api.accounts import GetAccountRequest
 
 with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
     account = client.accounts.GetAccount(
-        GetAccountRequest(account_id=os.environ["FINAM_ACCOUNT_ID"])
+        GetAccountRequest(account_id=resolve_account_id(client))
     )
     print(account)
 ```
@@ -502,7 +547,7 @@ from finam_trade_api.orders import (
 )
 
 with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
-    account_id = os.environ["FINAM_ACCOUNT_ID"]
+    account_id = resolve_account_id(client)
 
     state = client.orders.PlaceOrder(Order(
         account_id=account_id,
