@@ -521,7 +521,7 @@
           },
           {
             "name": "interval.end_time",
-            "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend.",
+            "description": "Exclusive end of the interval.\n\nA Timestamp matching this interval will have to be before the\nend.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -611,7 +611,7 @@
           },
           {
             "name": "interval.end_time",
-            "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend.",
+            "description": "Exclusive end of the interval.\n\nA Timestamp matching this interval will have to be before the\nend.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1691,7 +1691,7 @@
           },
           {
             "name": "interval.end_time",
-            "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend.",
+            "description": "Exclusive end of the interval.\n\nA Timestamp matching this interval will have to be before the\nend.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -4936,7 +4936,7 @@
         "end_time": {
           "type": "string",
           "format": "date-time",
-          "description": "Optional. Exclusive end of the interval.\n\nIf specified, a Timestamp matching this interval will have to be before the\nend."
+          "description": "Exclusive end of the interval.\n\nA Timestamp matching this interval will have to be before the\nend."
         }
       },
       "description": "Represents a time interval, encoded as a Timestamp start (inclusive) and a\nTimestamp end (exclusive).\n\nThe start must be less than or equal to the end.\nWhen the start equals the end, the interval is empty (matches no time).\nWhen both start and end are unspecified, the interval matches any time."

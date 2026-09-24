@@ -1,6 +1,6 @@
 {
   "name": "finam",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Finam Trade API skill. Skills: finam:trade-api — access real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; search and scan market instruments; place and cancel orders through Finam broker; develop and run algorithmic trading scripts.",
   "author": {
     "name": "Finam",
@@ -50,15 +50,12 @@
         "title": "Trade API Secret",
         "description": "API token from api.finam.ru/docs/tokens"
       },
-      "FINAM_ACCOUNT_ID": {
+      "ACCOUNT_ID": {
         "type": "string",
         "title": "Finam Account ID",
-        "description": "Account number from lk.finam.ru (digits only, without КлФ- prefix)"
+        "description": "Optional override — pins a specific account when the token exposes several. Account number from lk.finam.ru (digits only, without КлФ- prefix)."
       }
     },
-    "required": [
-      "TRADE_API_SECRET",
-      "FINAM_ACCOUNT_ID"
-    ]
+    "required": ["TRADE_API_SECRET"]
   }
 }

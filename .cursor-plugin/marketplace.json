@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Finam Trade API plugin collection for algorithmic trading and market data workflows.",
-    "version": "1.0.2"
+    "version": "1.0.3"
   },
   "plugins": [
     {
