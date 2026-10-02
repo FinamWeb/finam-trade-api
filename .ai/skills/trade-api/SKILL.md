@@ -56,19 +56,22 @@ curl -sL "https://api.finam.ru/v1/..." --header "Authorization: $TOKEN" | jq
 
 ### Resolving the account ID
 
-Account-scoped requests (portfolio, orders, account-specific asset fields) need an `ACCOUNT_ID`. Resolve it once per session, right after fetching the token — the token itself knows which accounts it can access:
+Account-scoped requests (portfolio, orders, account-specific asset fields) need an `ACCOUNT_ID`. Resolve it once per session, right after fetching the token — the token itself knows which accounts it can access. Run this as a single shell call together with the `TOKEN=` step above, since `$TOKEN` (a local shell variable) does not persist across separate tool calls:
 
 ```shell
+TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
+  --header "Content-Type: application/json" \
+  --data '{"secret": "'"$TRADE_API_SECRET"'"}' | jq -r '.token') && \
 DETAILS=$(curl -sL "https://api.finam.ru/v1/sessions/details" \
   --header "Content-Type: application/json" \
-  --data '{"token": "'"$TOKEN"'"}')
-ACCOUNT_ID="${ACCOUNT_ID:-$(echo "$DETAILS" | jq -r 'if (.account_ids | length) == 1 then .account_ids[0] else empty end')}"
+  --data '{"token": "'"$TOKEN"'"}') && \
+ACCOUNT_ID="${ACCOUNT_ID:-$(echo "$DETAILS" | jq -r 'if (.account_ids | length) == 1 then .account_ids[0] else empty end')}" && \
 echo "ACCOUNT_ID=${ACCOUNT_ID:-❌ could not resolve automatically}"
 ```
 
 - If `ACCOUNT_ID` is already set in the environment, it wins — treat it as an explicit override (useful when the token exposes several accounts and the user always wants the same one). Most users never need to set it.
 - Otherwise, if the token exposes exactly one account, `ACCOUNT_ID` resolves automatically from `/v1/sessions/details` — no setup step required.
-- If the token exposes **multiple** accounts and none is pre-set, the command above resolves to empty. In that case, print `$DETAILS | jq -r '.account_ids'` and ask the user which account to use for this session before making any account-scoped request — don't guess which one.
+- If the token exposes **multiple** accounts and none is pre-set, the command above resolves to empty. In that case, run `printf '%s\n' "$DETAILS" | jq -r '.account_ids'` and ask the user which account to use for this session before making any account-scoped request — don't guess which one.
 - Use `$ACCOUNT_ID` in every request below.
 
 **Demo account:** Can be opened at the [tokens page](https://api.finam.ru/docs/tokens). Valid for 2 weeks; works identically to a real account.
