@@ -50,7 +50,7 @@ GitHub source: `FinamWeb/finam-skill`.
 
 **Symbol format:** `ticker@mic` (e.g. `SBER@MISX`). All API calls and scripts use this format.
 
-**Authentication:** Scripts use `finam-sdk` (`from finam_trade_api import FinamClient`) which handles JWT automatically from `TRADE_API_SECRET`. Required env vars: `TRADE_API_SECRET`, `FINAM_ACCOUNT_ID`.
+**Authentication:** Scripts use `finam-sdk` (`from finam_trade_api import FinamClient`) which handles JWT automatically from `TRADE_API_SECRET`. Required env var: `TRADE_API_SECRET` (`ACCOUNT_ID` is an optional override; the account is otherwise resolved from the token).
 
 **REST vs gRPC:** REST (`curl`) for one-off queries. gRPC (`finam-sdk`) for all scripted access — bars, asset search, real-time subscriptions.
 
