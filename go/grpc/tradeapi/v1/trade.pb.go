@@ -49,7 +49,9 @@ type AccountTrade struct {
 	// Валюта цены (например, RUB, USD, EUR)
 	// Примечание: поле заполняется только при использовании метода Trades
 	// Для SubscribeTrades данное поле может быть пустым в связи с различиями в источниках данных. При обработке сделок из подписки рекомендуется учитывать возможность пустого значения.
-	Currency      string `protobuf:"bytes,11,opt,name=currency,proto3" json:"currency,omitempty"`
+	Currency string `protobuf:"bytes,11,opt,name=currency,proto3" json:"currency,omitempty"`
+	// Комиссия. Заполняется для исторических сделок
+	Commission    *AccountTrade_Commission `protobuf:"bytes,12,opt,name=commission,proto3" json:"commission,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -161,11 +163,73 @@ func (x *AccountTrade) GetCurrency() string {
 	return ""
 }
 
+func (x *AccountTrade) GetCommission() *AccountTrade_Commission {
+	if x != nil {
+		return x.Commission
+	}
+	return nil
+}
+
+// Комиссия по сделке
+type AccountTrade_Commission struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Значение комиссии
+	Value *decimal.Decimal `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	// Валюта комиссии
+	Currency      string `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AccountTrade_Commission) Reset() {
+	*x = AccountTrade_Commission{}
+	mi := &file_grpc_tradeapi_v1_trade_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AccountTrade_Commission) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AccountTrade_Commission) ProtoMessage() {}
+
+func (x *AccountTrade_Commission) ProtoReflect() protoreflect.Message {
+	mi := &file_grpc_tradeapi_v1_trade_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AccountTrade_Commission.ProtoReflect.Descriptor instead.
+func (*AccountTrade_Commission) Descriptor() ([]byte, []int) {
+	return file_grpc_tradeapi_v1_trade_proto_rawDescGZIP(), []int{0, 0}
+}
+
+func (x *AccountTrade_Commission) GetValue() *decimal.Decimal {
+	if x != nil {
+		return x.Value
+	}
+	return nil
+}
+
+func (x *AccountTrade_Commission) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
 var File_grpc_tradeapi_v1_trade_proto protoreflect.FileDescriptor
 
 const file_grpc_tradeapi_v1_trade_proto_rawDesc = "" +
 	"\n" +
-	"\x1cgrpc/tradeapi/v1/trade.proto\x12\x10grpc.tradeapi.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\"\xae\x03\n" +
+	"\x1cgrpc/tradeapi/v1/trade.proto\x12\x10grpc.tradeapi.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/type/decimal.proto\x1a\x1bgrpc/tradeapi/v1/side.proto\"\xcf\x04\n" +
 	"\fAccountTrade\x12\x19\n" +
 	"\btrade_id\x18\x01 \x01(\tR\atradeId\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12*\n" +
@@ -179,7 +243,14 @@ const file_grpc_tradeapi_v1_trade_proto_rawDesc = "" +
 	"\acomment\x18\t \x01(\tR\acomment\x12?\n" +
 	"\x10accrued_interest\x18\n" +
 	" \x01(\v2\x14.google.type.DecimalR\x0faccruedInterest\x12\x1a\n" +
-	"\bcurrency\x18\v \x01(\tR\bcurrencyB;P\x01Z7github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1b\x06proto3"
+	"\bcurrency\x18\v \x01(\tR\bcurrency\x12I\n" +
+	"\n" +
+	"commission\x18\f \x01(\v2).grpc.tradeapi.v1.AccountTrade.CommissionR\n" +
+	"commission\x1aT\n" +
+	"\n" +
+	"Commission\x12*\n" +
+	"\x05value\x18\x01 \x01(\v2\x14.google.type.DecimalR\x05value\x12\x1a\n" +
+	"\bcurrency\x18\x02 \x01(\tR\bcurrencyB;P\x01Z7github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1b\x06proto3"
 
 var (
 	file_grpc_tradeapi_v1_trade_proto_rawDescOnce sync.Once
@@ -193,24 +264,27 @@ func file_grpc_tradeapi_v1_trade_proto_rawDescGZIP() []byte {
 	return file_grpc_tradeapi_v1_trade_proto_rawDescData
 }
 
-var file_grpc_tradeapi_v1_trade_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_grpc_tradeapi_v1_trade_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_grpc_tradeapi_v1_trade_proto_goTypes = []any{
-	(*AccountTrade)(nil),          // 0: grpc.tradeapi.v1.AccountTrade
-	(*decimal.Decimal)(nil),       // 1: google.type.Decimal
-	(Side)(0),                     // 2: grpc.tradeapi.v1.Side
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*AccountTrade)(nil),            // 0: grpc.tradeapi.v1.AccountTrade
+	(*AccountTrade_Commission)(nil), // 1: grpc.tradeapi.v1.AccountTrade.Commission
+	(*decimal.Decimal)(nil),         // 2: google.type.Decimal
+	(Side)(0),                       // 3: grpc.tradeapi.v1.Side
+	(*timestamppb.Timestamp)(nil),   // 4: google.protobuf.Timestamp
 }
 var file_grpc_tradeapi_v1_trade_proto_depIdxs = []int32{
-	1, // 0: grpc.tradeapi.v1.AccountTrade.price:type_name -> google.type.Decimal
-	1, // 1: grpc.tradeapi.v1.AccountTrade.size:type_name -> google.type.Decimal
-	2, // 2: grpc.tradeapi.v1.AccountTrade.side:type_name -> grpc.tradeapi.v1.Side
-	3, // 3: grpc.tradeapi.v1.AccountTrade.timestamp:type_name -> google.protobuf.Timestamp
-	1, // 4: grpc.tradeapi.v1.AccountTrade.accrued_interest:type_name -> google.type.Decimal
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	2, // 0: grpc.tradeapi.v1.AccountTrade.price:type_name -> google.type.Decimal
+	2, // 1: grpc.tradeapi.v1.AccountTrade.size:type_name -> google.type.Decimal
+	3, // 2: grpc.tradeapi.v1.AccountTrade.side:type_name -> grpc.tradeapi.v1.Side
+	4, // 3: grpc.tradeapi.v1.AccountTrade.timestamp:type_name -> google.protobuf.Timestamp
+	2, // 4: grpc.tradeapi.v1.AccountTrade.accrued_interest:type_name -> google.type.Decimal
+	1, // 5: grpc.tradeapi.v1.AccountTrade.commission:type_name -> grpc.tradeapi.v1.AccountTrade.Commission
+	2, // 6: grpc.tradeapi.v1.AccountTrade.Commission.value:type_name -> google.type.Decimal
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_grpc_tradeapi_v1_trade_proto_init() }
@@ -225,7 +299,7 @@ func file_grpc_tradeapi_v1_trade_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_grpc_tradeapi_v1_trade_proto_rawDesc), len(file_grpc_tradeapi_v1_trade_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

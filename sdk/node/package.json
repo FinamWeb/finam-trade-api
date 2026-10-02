@@ -1,6 +1,6 @@
 {
   "name": "@finam/trade-api",
-  "version": "2.22.0",
+  "version": "2.23.0",
   "description": "Official TypeScript SDK for the Finam Trade API (gRPC)",
   "type": "module",
   "main": "./dist/index.js",

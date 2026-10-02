@@ -11,6 +11,13 @@ option java_multiple_files = true;
 
 // Информация о сделке
 message AccountTrade {
+  // Комиссия по сделке
+  message Commission {
+    // Значение комиссии
+    google.type.Decimal value = 1;
+    // Валюта комиссии
+    string currency = 2;
+  }
   // Идентификатор сделки
   string trade_id = 1;
   // Символ инструмента
@@ -35,5 +42,7 @@ message AccountTrade {
   // Примечание: поле заполняется только при использовании метода Trades
   // Для SubscribeTrades данное поле может быть пустым в связи с различиями в источниках данных. При обработке сделок из подписки рекомендуется учитывать возможность пустого значения.
   string currency = 11;
+  // Комиссия. Заполняется для исторических сделок
+  Commission commission = 12;
 }
 

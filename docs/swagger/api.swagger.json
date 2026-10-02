@@ -2551,6 +2551,20 @@
     }
   },
   "definitions": {
+    "AccountTradeCommission": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Значение комиссии"
+        },
+        "currency": {
+          "type": "string",
+          "title": "Валюта комиссии"
+        }
+      },
+      "title": "Комиссия по сделке"
+    },
     "GetAssetResponseBondDetails": {
       "type": "object",
       "properties": {
@@ -2770,6 +2784,16 @@
         "tp_qty_measure": {
           "$ref": "#/definitions/ordersSLTPQtyMeasure",
           "description": "Единица измерения объёма для Take Profit части.\nЕсли SLTP_QTY_MEASURE_PERCENT — quantity_tp трактуется как процент (0–100) от позиции на момент исполнения."
+        },
+        "sl_guard_time": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Защитное время StopLoss, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю."
+        },
+        "tp_guard_time": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Защитное время TakeProfit, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю."
         }
       },
       "title": "Информация о SL/TP заявке"
@@ -4670,6 +4694,16 @@
         "tp_qty_measure": {
           "$ref": "#/definitions/ordersSLTPQtyMeasure",
           "description": "Единица измерения объёма для Take Profit части.\nЕсли SLTP_QTY_MEASURE_PERCENT — quantity_tp трактуется как процент (0–100) от позиции на момент исполнения."
+        },
+        "sl_guard_time": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Защитное время StopLoss, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю."
+        },
+        "tp_guard_time": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Защитное время TakeProfit, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю."
         }
       },
       "title": "Информация о SL/TP заявке"
@@ -5008,6 +5042,10 @@
         "currency": {
           "type": "string",
           "description": "Валюта цены (например, RUB, USD, EUR)\nПримечание: поле заполняется только при использовании метода Trades\nДля SubscribeTrades данное поле может быть пустым в связи с различиями в источниках данных. При обработке сделок из подписки рекомендуется учитывать возможность пустого значения."
+        },
+        "commission": {
+          "$ref": "#/definitions/AccountTradeCommission",
+          "title": "Комиссия. Заполняется для исторических сделок"
         }
       },
       "title": "Информация о сделке"

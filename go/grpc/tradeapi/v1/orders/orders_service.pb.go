@@ -1561,7 +1561,11 @@ type SLTPOrder struct {
 	SlQtyMeasure SLTPQtyMeasure `protobuf:"varint,24,opt,name=sl_qty_measure,json=slQtyMeasure,proto3,enum=grpc.tradeapi.v1.orders.SLTPQtyMeasure" json:"sl_qty_measure,omitempty"`
 	// Единица измерения объёма для Take Profit части.
 	// Если SLTP_QTY_MEASURE_PERCENT — quantity_tp трактуется как процент (0–100) от позиции на момент исполнения.
-	TpQtyMeasure  SLTPQtyMeasure `protobuf:"varint,25,opt,name=tp_qty_measure,json=tpQtyMeasure,proto3,enum=grpc.tradeapi.v1.orders.SLTPQtyMeasure" json:"tp_qty_measure,omitempty"`
+	TpQtyMeasure SLTPQtyMeasure `protobuf:"varint,25,opt,name=tp_qty_measure,json=tpQtyMeasure,proto3,enum=grpc.tradeapi.v1.orders.SLTPQtyMeasure" json:"tp_qty_measure,omitempty"`
+	// Защитное время StopLoss, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю.
+	SlGuardTime *wrapperspb.Int32Value `protobuf:"bytes,26,opt,name=sl_guard_time,json=slGuardTime,proto3" json:"sl_guard_time,omitempty"`
+	// Защитное время TakeProfit, в секундах. Допустимы только неотрицательные целочисленные значения. Если поле не указано, значение принимается равным нулю.
+	TpGuardTime   *wrapperspb.Int32Value `protobuf:"bytes,27,opt,name=tp_guard_time,json=tpGuardTime,proto3" json:"tp_guard_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1708,6 +1712,20 @@ func (x *SLTPOrder) GetTpQtyMeasure() SLTPQtyMeasure {
 	return SLTPQtyMeasure_SLTP_QTY_MEASURE_UNDEFINED
 }
 
+func (x *SLTPOrder) GetSlGuardTime() *wrapperspb.Int32Value {
+	if x != nil {
+		return x.SlGuardTime
+	}
+	return nil
+}
+
+func (x *SLTPOrder) GetTpGuardTime() *wrapperspb.Int32Value {
+	if x != nil {
+		return x.TpGuardTime
+	}
+	return nil
+}
+
 var File_grpc_tradeapi_v1_orders_orders_service_proto protoreflect.FileDescriptor
 
 const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
@@ -1791,7 +1809,7 @@ const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
 	"\x12CancelOrderRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x19\n" +
-	"\border_id\x18\x02 \x01(\tR\aorderId\"\xfa\x06\n" +
+	"\border_id\x18\x02 \x01(\tR\aorderId\"\xfc\a\n" +
 	"\tSLTPOrder\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
@@ -1813,7 +1831,9 @@ const file_grpc_tradeapi_v1_orders_orders_service_proto_rawDesc = "" +
 	"\x11valid_expiry_time\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampR\x0fvalidExpiryTime\x12\x18\n" +
 	"\acomment\x18\x17 \x01(\tR\acomment\x12M\n" +
 	"\x0esl_qty_measure\x18\x18 \x01(\x0e2'.grpc.tradeapi.v1.orders.SLTPQtyMeasureR\fslQtyMeasure\x12M\n" +
-	"\x0etp_qty_measure\x18\x19 \x01(\x0e2'.grpc.tradeapi.v1.orders.SLTPQtyMeasureR\ftpQtyMeasure*\x9e\x01\n" +
+	"\x0etp_qty_measure\x18\x19 \x01(\x0e2'.grpc.tradeapi.v1.orders.SLTPQtyMeasureR\ftpQtyMeasure\x12?\n" +
+	"\rsl_guard_time\x18\x1a \x01(\v2\x1b.google.protobuf.Int32ValueR\vslGuardTime\x12?\n" +
+	"\rtp_guard_time\x18\x1b \x01(\v2\x1b.google.protobuf.Int32ValueR\vtpGuardTime*\x9e\x01\n" +
 	"\tOrderType\x12\x1a\n" +
 	"\x16ORDER_TYPE_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11ORDER_TYPE_MARKET\x10\x01\x12\x14\n" +
@@ -1974,6 +1994,7 @@ var file_grpc_tradeapi_v1_orders_orders_service_proto_goTypes = []any{
 	(v1.Side)(0),                    // 25: grpc.tradeapi.v1.Side
 	(*timestamppb.Timestamp)(nil),   // 26: google.protobuf.Timestamp
 	(*wrapperspb.StringValue)(nil),  // 27: google.protobuf.StringValue
+	(*wrapperspb.Int32Value)(nil),   // 28: google.protobuf.Int32Value
 }
 var file_grpc_tradeapi_v1_orders_orders_service_proto_depIdxs = []int32{
 	7,  // 0: grpc.tradeapi.v1.orders.OrderTradeRequest.action:type_name -> grpc.tradeapi.v1.orders.OrderTradeRequest.Action
@@ -2016,27 +2037,29 @@ var file_grpc_tradeapi_v1_orders_orders_service_proto_depIdxs = []int32{
 	26, // 37: grpc.tradeapi.v1.orders.SLTPOrder.valid_expiry_time:type_name -> google.protobuf.Timestamp
 	6,  // 38: grpc.tradeapi.v1.orders.SLTPOrder.sl_qty_measure:type_name -> grpc.tradeapi.v1.orders.SLTPQtyMeasure
 	6,  // 39: grpc.tradeapi.v1.orders.SLTPOrder.tp_qty_measure:type_name -> grpc.tradeapi.v1.orders.SLTPQtyMeasure
-	16, // 40: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:input_type -> grpc.tradeapi.v1.orders.Order
-	21, // 41: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:input_type -> grpc.tradeapi.v1.orders.CancelOrderRequest
-	19, // 42: grpc.tradeapi.v1.orders.OrdersService.GetOrders:input_type -> grpc.tradeapi.v1.orders.OrdersRequest
-	15, // 43: grpc.tradeapi.v1.orders.OrdersService.GetOrder:input_type -> grpc.tradeapi.v1.orders.GetOrderRequest
-	9,  // 44: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:input_type -> grpc.tradeapi.v1.orders.OrderTradeRequest
-	11, // 45: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:input_type -> grpc.tradeapi.v1.orders.SubscribeOrdersRequest
-	13, // 46: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:input_type -> grpc.tradeapi.v1.orders.SubscribeTradesRequest
-	22, // 47: grpc.tradeapi.v1.orders.OrdersService.PlaceSLTPOrder:input_type -> grpc.tradeapi.v1.orders.SLTPOrder
-	18, // 48: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
-	18, // 49: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
-	20, // 50: grpc.tradeapi.v1.orders.OrdersService.GetOrders:output_type -> grpc.tradeapi.v1.orders.OrdersResponse
-	18, // 51: grpc.tradeapi.v1.orders.OrdersService.GetOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
-	10, // 52: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:output_type -> grpc.tradeapi.v1.orders.OrderTradeResponse
-	12, // 53: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:output_type -> grpc.tradeapi.v1.orders.SubscribeOrdersResponse
-	14, // 54: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:output_type -> grpc.tradeapi.v1.orders.SubscribeTradesResponse
-	18, // 55: grpc.tradeapi.v1.orders.OrdersService.PlaceSLTPOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
-	48, // [48:56] is the sub-list for method output_type
-	40, // [40:48] is the sub-list for method input_type
-	40, // [40:40] is the sub-list for extension type_name
-	40, // [40:40] is the sub-list for extension extendee
-	0,  // [0:40] is the sub-list for field type_name
+	28, // 40: grpc.tradeapi.v1.orders.SLTPOrder.sl_guard_time:type_name -> google.protobuf.Int32Value
+	28, // 41: grpc.tradeapi.v1.orders.SLTPOrder.tp_guard_time:type_name -> google.protobuf.Int32Value
+	16, // 42: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:input_type -> grpc.tradeapi.v1.orders.Order
+	21, // 43: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:input_type -> grpc.tradeapi.v1.orders.CancelOrderRequest
+	19, // 44: grpc.tradeapi.v1.orders.OrdersService.GetOrders:input_type -> grpc.tradeapi.v1.orders.OrdersRequest
+	15, // 45: grpc.tradeapi.v1.orders.OrdersService.GetOrder:input_type -> grpc.tradeapi.v1.orders.GetOrderRequest
+	9,  // 46: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:input_type -> grpc.tradeapi.v1.orders.OrderTradeRequest
+	11, // 47: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:input_type -> grpc.tradeapi.v1.orders.SubscribeOrdersRequest
+	13, // 48: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:input_type -> grpc.tradeapi.v1.orders.SubscribeTradesRequest
+	22, // 49: grpc.tradeapi.v1.orders.OrdersService.PlaceSLTPOrder:input_type -> grpc.tradeapi.v1.orders.SLTPOrder
+	18, // 50: grpc.tradeapi.v1.orders.OrdersService.PlaceOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
+	18, // 51: grpc.tradeapi.v1.orders.OrdersService.CancelOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
+	20, // 52: grpc.tradeapi.v1.orders.OrdersService.GetOrders:output_type -> grpc.tradeapi.v1.orders.OrdersResponse
+	18, // 53: grpc.tradeapi.v1.orders.OrdersService.GetOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
+	10, // 54: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrderTrade:output_type -> grpc.tradeapi.v1.orders.OrderTradeResponse
+	12, // 55: grpc.tradeapi.v1.orders.OrdersService.SubscribeOrders:output_type -> grpc.tradeapi.v1.orders.SubscribeOrdersResponse
+	14, // 56: grpc.tradeapi.v1.orders.OrdersService.SubscribeTrades:output_type -> grpc.tradeapi.v1.orders.SubscribeTradesResponse
+	18, // 57: grpc.tradeapi.v1.orders.OrdersService.PlaceSLTPOrder:output_type -> grpc.tradeapi.v1.orders.OrderState
+	50, // [50:58] is the sub-list for method output_type
+	42, // [42:50] is the sub-list for method input_type
+	42, // [42:42] is the sub-list for extension type_name
+	42, // [42:42] is the sub-list for extension extendee
+	0,  // [0:42] is the sub-list for field type_name
 }
 
 func init() { file_grpc_tradeapi_v1_orders_orders_service_proto_init() }
