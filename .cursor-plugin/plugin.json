@@ -31,6 +31,11 @@
         "type": "string",
         "title": "Trade API Secret",
         "description": "API token from api.finam.ru/docs/tokens"
+      },
+      "ACCOUNT_ID": {
+        "type": "string",
+        "title": "Finam Account ID",
+        "description": "Optional override — pins a specific account when the token exposes several. Account number from lk.finam.ru (digits only, without КлФ- prefix)."
       }
     },
     "required": ["TRADE_API_SECRET"]

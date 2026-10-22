@@ -1,67 +1,73 @@
 ---
 name: trade-api
 description: "Use this skill for any work with Finam / Финам broker and Trade API: questions about the API, developing algorithmic trading strategies and scripts, and interacting with the broker programmatically. Trigger on: Finam/Финам mentions, api.finam.ru URLs, ticker@mic symbol format, finam-sdk. Also trigger for Russian-market trading workflows even without explicit Finam mention — portfolio analysis, scanning Moscow Exchange stocks (MISX/RTSX), volatility/momentum/arbitrage strategies, order placement and cancellation, real-time quotes via gRPC or WebSocket, OHLCV candles, backtesting on Russian equities, risk management for algo trading."
-metadata: '{"openclaw": {"emoji": "📈", "homepage": "https://api.finam.ru/", "requires": {"bins": ["curl", "jq", "python3"], "env": ["TRADE_API_SECRET"]}, "primaryEnv": "TRADE_API_SECRET"}}'
+metadata: '{"openclaw": {"emoji": "📈", "homepage": "https://api.finam.ru/", "requires": {"bins": ["curl", "jq", "python3"]}, "primaryEnv": "TRADE_API_SECRET"}}'
 ---
 
 # Finam Trade API Skill
 
 ## Setup
 
-To execute Trade API requests, configure one credential:
+To execute Trade API requests, the skill needs one credential:
 
 - `TRADE_API_SECRET` — API token. Get it at [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens)
 
 You can use this skill without it — to design strategies, explore docs, or write scripts.
 
-**Before sending any request to api, run this check via Bash tool:**
+The secret comes from the environment if the user exported it, otherwise from a `.env` file in the project root (your working directory). Most users only paste the token into `.env` — they don't need to know any shell.
+
+### Auth prefix
+
+Every shell call starts a fresh shell, and the JWT expires after 15 minutes, so start **every** shell call that talks to the API with this auth prefix and append your command after the last `&& \`:
 
 ```shell
-[ ${#TRADE_API_SECRET} -gt 0 ] && echo "✅ TRADE_API_SECRET is set" || echo "❌ TRADE_API_SECRET is not set"
-```
-
-If missing — stop and ask the user to configure it using one of the options below.
-
-**Option 1 — export directly:**
-```shell
-export TRADE_API_SECRET="your_token"
-```
-
-**Option 2 — `.env` file** (create it, fill in values, then load):
-```
-TRADE_API_SECRET=your_token_here
-```
-Linux/macOS: `source .env` · Windows PowerShell:
-```powershell
-Get-Content .env | ForEach-Object {
-    if ($_ -match '^([^#][^=]*)=(.*)$') {
-        [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
-    }
-}
-```
-
-**Option 3 — Claude Code** (`.claude/settings.local.json`):
-```json
-{ "env": { "TRADE_API_SECRET": "..." } }
-```
-
-Using the API secret, obtain a **JWT token** — it expires after 15 minutes and does not persist between shell calls. Always fetch it inline before each request:
-
-```shell
+export TRADE_API_SECRET="${TRADE_API_SECRET:-$(sed -n 's/^TRADE_API_SECRET=//p' .env 2>/dev/null | tr -d "\r\"' ")}" ACCOUNT_ID="${ACCOUNT_ID:-$(sed -n 's/^ACCOUNT_ID=//p' .env 2>/dev/null | tr -d "\r\"' ")}" && \
+{ [ -n "$TRADE_API_SECRET" ] || { echo "❌ TRADE_API_SECRET is not set"; false; }; } && \
 TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
   --header "Content-Type: application/json" \
   --data '{"secret": "'"$TRADE_API_SECRET"'"}' | jq -r '.token') && \
 curl -sL "https://api.finam.ru/v1/..." --header "Authorization: $TOKEN" | jq
 ```
 
+What it does:
+- **Loads the secret** — keeps an already exported value, otherwise extracts just `TRADE_API_SECRET` and `ACCOUNT_ID` from `./.env`. The file is parsed, not executed (unlike `source`), and nothing is printed, so the value never shows up in the conversation. `export` lets Python scripts and SDK snippets started in the same call see it.
+- **Checks it** — if the secret is missing, prints ❌ and stops the chain; go to [If the secret is missing](#if-the-secret-is-missing).
+- **Exchanges it for a JWT** in `$TOKEN`.
+
+Shell examples in this skill are POSIX (bash/zsh). On Windows, run them via Git Bash or WSL; if your shell is PowerShell, call `bash -c '...'` or translate the command — a PowerShell error here doesn't mean the secret is missing.
+
+The examples below show only the part that goes after the prefix.
+
+Scripts and SDK code — bundled `scripts/*.py`, code you write, official strategies — read `TRADE_API_SECRET` only from the environment. Run them after the first two lines of the prefix (load and check); the SDK gets the JWT on its own. The `scripts/...` paths in the examples are relative to the skill directory (where this `SKILL.md` lives) — run them from the project root by full path, e.g. `python3 "<skill dir>/scripts/scanner.py" ru 10`, so the prefix finds the project's `./.env`. Don't `cd` into the skill directory.
+
+When you hand the user a command to run a script themselves, include loading `.env` in it: `uv run --env-file .env python main.py ...` for uv projects (all official strategies), otherwise `set -a && source .env && set +a && python3 script.py`. Don't ask them to `export` the token by hand.
+
+### If the secret is missing
+
+Set up `.env` for the user rather than asking them to type shell commands:
+
+1. If `./.env` doesn't exist, copy the template that ships with this skill (`.env.example` next to this `SKILL.md`): `cp "<skill dir>/.env.example" .env`. If you can't locate the skill directory, create `.env` with the same content yourself — a comment with the tokens page link, an empty `TRADE_API_SECRET=` line and a commented-out `# ACCOUNT_ID=`. Never write a real token into it.
+2. If the project is a git repo, make sure `.env` is ignored so the token never gets committed:
+   ```shell
+   git rev-parse --is-inside-work-tree >/dev/null 2>&1 && { grep -qxF '.env' .gitignore 2>/dev/null || echo '.env' >> .gitignore; }
+   ```
+3. Tell the user the full path to `.env`, ask them to open it in any text editor, paste the token right after `TRADE_API_SECRET=` (no quotes or spaces), save, and let you know. Mention where to get a token ([tokens page](https://api.finam.ru/docs/tokens)) and that a 2-week demo account is available there.
+4. When they confirm, retry the request with the auth prefix.
+
+If `.env` already exists but the prefix still reports ❌, skip to step 3 — the key is probably empty or misspelled.
+
+Users who prefer not to keep a file can export the variable in their own terminal before launching the agent (`export TRADE_API_SECRET=...`), or in Claude Code put it into `.claude/settings.local.json` as `{ "env": { "TRADE_API_SECRET": "..." } }`. An exported value takes priority over `.env`.
+
+**Handling the secret** — the token gives full trading access to the user's account, and anything that appears in the conversation is stored in the session history:
+- Don't ask the user to paste the token into the chat, and don't run `export TRADE_API_SECRET=...` with the value on their behalf.
+- Don't display the value or the contents of files that hold it: no `echo $TRADE_API_SECRET`, `env`, `printenv`, no `cat`/Read of `.env` or `.claude/settings.local.json`. Get the value only through the auth prefix.
+- If the user pastes the token into the chat anyway, warn them that it is now exposed and recommend revoking it and issuing a new one on the [tokens page](https://api.finam.ru/docs/tokens).
+
 ### Resolving the account ID
 
-Account-scoped requests (portfolio, orders, account-specific asset fields) need an `ACCOUNT_ID`. Resolve it once per session, right after fetching the token — the token itself knows which accounts it can access. Run this as a single shell call together with the `TOKEN=` step above, since `$TOKEN` (a local shell variable) does not persist across separate tool calls:
+Account-scoped requests (portfolio, orders, account-specific asset fields) need an `ACCOUNT_ID`. Resolve it once per session — the token itself knows which accounts it can access. After the auth prefix:
 
 ```shell
-TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
-  --header "Content-Type: application/json" \
-  --data '{"secret": "'"$TRADE_API_SECRET"'"}' | jq -r '.token') && \
 DETAILS=$(curl -sL "https://api.finam.ru/v1/sessions/details" \
   --header "Content-Type: application/json" \
   --data '{"token": "'"$TOKEN"'"}') && \
@@ -69,10 +75,10 @@ ACCOUNT_ID="${ACCOUNT_ID:-$(echo "$DETAILS" | jq -r 'if (.account_ids | length) 
 echo "ACCOUNT_ID=${ACCOUNT_ID:-❌ could not resolve automatically}"
 ```
 
-- If `ACCOUNT_ID` is already set in the environment, it wins — treat it as an explicit override (useful when the token exposes several accounts and the user always wants the same one). Most users never need to set it.
+- If `ACCOUNT_ID` is already set in the environment or in `.env` (picked up by the auth prefix), it wins — treat it as an explicit override (useful when the token exposes several accounts and the user always wants the same one). Most users never need to set it.
 - Otherwise, if the token exposes exactly one account, `ACCOUNT_ID` resolves automatically from `/v1/sessions/details` — no setup step required.
 - If the token exposes **multiple** accounts and none is pre-set, the command above resolves to empty. In that case, run `printf '%s\n' "$DETAILS" | jq -r '.account_ids'` and ask the user which account to use for this session before making any account-scoped request — don't guess which one.
-- Use `$ACCOUNT_ID` in every request below.
+- Use `$ACCOUNT_ID` in every request below. Like `$TOKEN`, it lives only within one shell call — once resolved, put the value into later calls yourself (`ACCOUNT_ID=... && ...` after the prefix).
 
 **Demo account:** Can be opened at the [tokens page](https://api.finam.ru/docs/tokens). Valid for 2 weeks; works identically to a real account.
 
@@ -94,9 +100,6 @@ Defaults can change and may be raised for a specific user — the live numbers c
 ### Check current quotas
 
 ```shell
-TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
-  --header "Content-Type: application/json" \
-  --data '{"secret": "'"$TRADE_API_SECRET"'"}' | jq -r '.token') && \
 curl -sL "https://api.finam.ru/v1/usage" --header "Authorization: $TOKEN" \
   | jq -r '.quotas | sort_by(.name)[] | [.name, .limit, .remaining, (.reset_time // "-")] | @tsv' | column -t
 ```
@@ -105,7 +108,8 @@ Each entry in `quotas`:
 - `name` — `Service.method`, e.g. `MarketDataService.bars`, `OrdersService.placeOrder`
 - `limit` — quota size for the window (int64, serialized as a string in REST JSON)
 - `remaining` — requests left in the current window
-- 
+- `reset_time` — when the current window resets (RFC 3339, UTC). Present only for methods already called in the current window; absent means the full `limit` is available.
+
 Python SDK: `client.metrics.GetUsageMetrics(GetUsageMetricsRequest())` (`from finam_trade_api.metrics import GetUsageMetricsRequest`).
 
 ### Staying within limits
@@ -118,7 +122,7 @@ Python SDK: `client.metrics.GetUsageMetrics(GetUsageMetricsRequest())` (`from fi
 
 Limits can't be changed through the API. If the user needs more (e.g. a bot regularly hits 429), point them to the request form: open [api.finam.ru/docs/rest/#introduction](https://api.finam.ru/docs/rest/#introduction), click **«Увеличить лимиты API»** and fill in the form. The user submits it themselves — don't fill it in on their behalf.
 
-Raised limits are bound to an application ID, not to the secret alone. The ID (`source_app_id`) is issued to the user once the request is approved — the user can't make one up, so if they don't have it yet, the request is still pending. Every token request must carry `source_app_id`, otherwise the session gets the default quotas. Keep the ID in an env var (e.g. `SOURCE_APP_ID`) and pass it when exchanging the secret for a JWT:
+Raised limits are bound to an application ID, not to the secret alone. The ID (`source_app_id`) is issued to the user once the request is approved — the user can't make one up, so if they don't have it yet, the request is still pending. Every token request must carry `source_app_id`, otherwise the session gets the default quotas. Keep the ID in an env var (e.g. `SOURCE_APP_ID`) and pass it when exchanging the secret for a JWT — use this instead of the `TOKEN=` step of the auth prefix:
 
 ```shell
 TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
@@ -149,9 +153,6 @@ After approval, fetch a token with `source_app_id` and verify the new numbers wi
 View all supported exchanges with their MIC codes:
 
 ```shell
-TOKEN=$(curl -sL "https://api.finam.ru/v1/sessions" \
-  --header "Content-Type: application/json" \
-  --data '{"secret": "'"$TRADE_API_SECRET"'"}' | jq -r '.token')
 curl -sL "https://api.finam.ru/v1/exchanges" --header "Authorization: $TOKEN" | \
   jq -r '.exchanges[] | "\(.mic) - \(.name)"'
 ```
@@ -459,6 +460,7 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 To backtest a strategy on historical data, shift the `start`/`end` window in `BarsRequest` to a past period and replay your signal logic bar by bar. No external framework needed:
 
 ```python
+# Continues the momentum example above (same imports and `client`)
 # Simulate momentum over 2024
 backtest_end = datetime(2025, 1, 1, tzinfo=timezone.utc)
 backtest_start = datetime(2024, 1, 1, tzinfo=timezone.utc)
@@ -670,7 +672,7 @@ Ready-to-run strategy implementations built with the Finam SDK.
 When the user asks about strategies or wants to copy one:
 
 1. Fetch the index above to discover available strategies and their language implementations.
-2. Follow the links in the index to fetch the specific strategy README (`strategies/<name>/README.md`) — it describes the rule, candle handling, safety guards, and configuration.
+2. Follow the links in the index to fetch the specific strategy README (`examples/strategies/<name>/README.md`) — it describes the rule, candle handling, safety guards, and configuration.
 3. To **copy** a strategy locally:
    - Ask which language (if multiple are available) and which target directory (default: `./<strategy_name>`).
    - Use the GitHub Contents API to list files — it returns filenames and download URLs. Fetch the top-level strategy directory first, then the language subdirectory:
