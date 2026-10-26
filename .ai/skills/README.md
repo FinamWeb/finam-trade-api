@@ -43,7 +43,7 @@
 Одна команда для Claude Code, Codex, Cursor, Qwen Code и других агентов, поддерживающих открытый формат скиллов. Нужен Node.js (`npx`):
 
 ```bash
-npx skills add https://github.com/finamweb/finam-skill --skill trade-api
+npx skills add https://github.com/finamweb/finam-trade-api --skill trade-api
 ```
 
 CLI [skills](https://skills.sh) скачает репозиторий, найдёт скилл `trade-api` и по шагам спросит:
@@ -57,7 +57,7 @@ CLI [skills](https://skills.sh) скачает репозиторий, найд�
 Установка без вопросов, сразу глобально и в нужные агенты:
 
 ```bash
-npx skills add https://github.com/finamweb/finam-skill --skill trade-api -g -y \
+npx skills add https://github.com/finamweb/finam-trade-api --skill trade-api -g -y \
   -a claude-code -a codex -a cursor -a qwen-code
 ```
 
@@ -70,7 +70,7 @@ npx skills remove trade-api
 
 Скилл, установленный через `npx skills`, вызывается как `/trade-api` (а не `/finam:trade-api`, как в плагине). Как подключить токен — см. [Настройка](#настройка).
 
-Установки через `npx skills` учитываются на странице скилла: <https://skills.sh/finamweb/finam-skill>.
+Установки через `npx skills` учитываются на странице скилла: <https://skills.sh/finamweb/finam-trade-api>.
 
 ### Установка как плагин
 

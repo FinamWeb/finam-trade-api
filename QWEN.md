@@ -6,7 +6,7 @@ This file provides guidance to Qwen Code when working with code in this reposito
 
 This repository contains skills for the Finam Trade API — a broker API for trading Russian and US equities, futures, and other instruments on Moscow Exchange and other markets.
 
-This repository also serves as the Claude marketplace (`finam-skill`), Codex marketplace (`finam-skill-marketplace`), and Cursor marketplace (`finam-cursor-marketplace`). GitHub source: `FinamWeb/finam-skill`.
+This repository also serves as the Claude marketplace (`finam-skill`), Codex marketplace (`finam-skill-marketplace`), and Cursor marketplace (`finam-cursor-marketplace`). GitHub source: `FinamWeb/finam-trade-api`.
 
 ## Language
 
@@ -29,7 +29,7 @@ Official language: **Russian**. User-facing content, usage examples, and skill p
 
 Extension name: `finam`. Skills appear as `finam:{skill-name}`.
 
-GitHub source: `FinamWeb/finam-skill`.
+GitHub source: `FinamWeb/finam-trade-api`.
 
 ## Adding New Skills
 
