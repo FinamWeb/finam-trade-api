@@ -6,7 +6,7 @@ This file provides guidance to Qwen Code when working with code in this reposito
 
 This repository contains skills for the Finam Trade API — a broker API for trading Russian and US equities, futures, and other instruments on Moscow Exchange and other markets.
 
-This repository also serves as the Claude marketplace (`finam-skill`), Codex marketplace (`finam-skill-marketplace`), and Cursor marketplace (`finam-cursor-marketplace`). GitHub source: `FinamWeb/finam-skill`.
+This repository also serves as the Claude marketplace (`finam-skill`), Codex marketplace (`finam-skill-marketplace`), and Cursor marketplace (`finam-cursor-marketplace`). GitHub source: `FinamWeb/finam-trade-api`.
 
 ## Language
 
@@ -29,7 +29,7 @@ Official language: **Russian**. User-facing content, usage examples, and skill p
 
 Extension name: `finam`. Skills appear as `finam:{skill-name}`.
 
-GitHub source: `FinamWeb/finam-skill`.
+GitHub source: `FinamWeb/finam-trade-api`.
 
 ## Adding New Skills
 
@@ -50,7 +50,7 @@ GitHub source: `FinamWeb/finam-skill`.
 
 **Symbol format:** `ticker@mic` (e.g. `SBER@MISX`). All API calls and scripts use this format.
 
-**Authentication:** Scripts use `finam-sdk` (`from finam_trade_api import FinamClient`) which handles JWT automatically from `TRADE_API_SECRET`. Required env vars: `TRADE_API_SECRET`, `FINAM_ACCOUNT_ID`.
+**Authentication:** Scripts use `finam-sdk` (`from finam_trade_api import FinamClient`) which handles JWT automatically from `TRADE_API_SECRET`. Required env var: `TRADE_API_SECRET` (`ACCOUNT_ID` is an optional override; the account is otherwise resolved from the token).
 
 **REST vs gRPC:** REST (`curl`) for one-off queries. gRPC (`finam-sdk`) for all scripted access — bars, asset search, real-time subscriptions.
 

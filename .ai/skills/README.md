@@ -1,132 +1,241 @@
 <div align="center">
 
-# finam-skill — Claude Code, Qwen Code, Codex & Cursor Plugin
+# finam-skill — плагин для Claude Code, Qwen Code, Codex и Cursor
 
-Finam Trade API skills for Claude Code, Qwen Code, Codex and Cursor.
+Скилл Finam Trade API для Claude Code, Qwen Code, Codex и Cursor.
 
-This repository also serves as the Claude, Codex, and Cursor marketplace (`finam-trade-api`).
+Этот репозиторий также служит маркетплейсом для Claude, Codex и Cursor (`finam-trade-api`).
 
 </div>
 
-## Available Skills
+## Содержание
 
-| Skill | Command | Description |
+- [Доступные скиллы](#доступные-скиллы)
+- [Требования](#требования)
+- [Установка](#установка)
+- [Настройка](#настройка)
+- [Возможности](#возможности)
+- [Примеры использования](#примеры-использования)
+- [Безопасность и подтверждение заявок](#безопасность-и-подтверждение-заявок)
+- [Структура проекта](#структура-проекта)
+- [Устранение неполадок](#устранение-неполадок)
+- [Поддержка](#поддержка)
+- [Лицензия](#лицензия)
+
+## Доступные скиллы
+
+| Скилл | Команда | Описание |
 |-------|---------|-------------|
-| trade-api | `/finam:trade-api` | Real-time quotes, order book, OHLCV candles, portfolio and orders via REST, gRPC, and WebSocket; instrument search and volatility scanning; place and cancel orders; develop algorithmic trading scripts |
+| trade-api | `/finam:trade-api` | Котировки в реальном времени, стакан заявок, OHLCV-свечи, портфель и заявки через REST, gRPC и WebSocket; поиск инструментов и сканер волатильности; размещение и отмена заявок; разработка скриптов для алгоритмической торговли |
 
-## Installation
+## Требования
 
-### Claude Code
+- AI-ассистент с поддержкой плагинов/скиллов: Claude Code, Qwen Code, Codex или Cursor
+- `python3` и пакет `finam-sdk` — для скриптов скилла (`asset_search.py`, `scanner.py`, `top_stocks.py`) и Python-стратегий
+- Токен Finam Trade API — см. раздел [Настройка](#настройка)
+
+`python3` уже входит в системный набор большинства сред, где работают эти ассистенты; отдельно устанавливать обычно не требуется. Скриптам скилла и Python-стратегиям нужен пакет `finam-sdk` — ассистент сам проверит его наличие и при необходимости установит (`pip install finam-sdk`).
+
+## Установка
+
+### Универсальная установка (рекомендуется)
+
+Одна команда для Claude Code, Codex, Cursor, Qwen Code и других агентов, поддерживающих открытый формат скиллов. Нужен Node.js (`npx`):
+
+```bash
+npx skills add https://github.com/finamweb/finam-trade-api --skill trade-api
+```
+
+CLI [skills](https://skills.sh) скачает репозиторий, найдёт скилл `trade-api` и по шагам спросит:
+
+1. **В какие агенты установить** — Codex, Cursor и другие агенты с общей папкой `.agents/skills` выбраны всегда, а **Claude Code и Qwen Code по умолчанию не отмечены**: отметьте их пробелом, если пользуетесь ими.
+2. **Область установки** — текущий проект (`./.agents/skills/`, `./.claude/skills/` и т. п.) или глобально для пользователя (`-g`: `~/.claude/skills/`, `~/.agents/skills/`, `~/.cursor/skills/`, `~/.qwen/skills/`).
+3. **Способ установки** — symlink на одну общую копию (по умолчанию) или отдельная копия для каждого агента (`--copy`).
+
+Перед завершением CLI покажет сводку и отчёт проверок безопасности, а в каталоге проекта появится `skills-lock.json` с источником и хешем установленной версии.
+
+Установка без вопросов, сразу глобально и в нужные агенты:
+
+```bash
+npx skills add https://github.com/finamweb/finam-trade-api --skill trade-api -g -y \
+  -a claude-code -a codex -a cursor -a qwen-code
+```
+
+Обновление и удаление:
+
+```bash
+npx skills update trade-api
+npx skills remove trade-api
+```
+
+Скилл, установленный через `npx skills`, вызывается как `/trade-api` (а не `/finam:trade-api`, как в плагине). Как подключить токен — см. [Настройка](#настройка).
+
+Установки через `npx skills` учитываются на странице скилла: <https://skills.sh/finamweb/finam-trade-api>.
+
+### Установка как плагин
+
+Альтернатива — нативные плагины/расширения каждого ассистента.
+
+#### Claude Code
 
 ```bash
 claude plugin marketplace add FinamWeb/finam-trade-api
 claude plugin install finam@finam-trade-api --scope user
 ```
 
-### Qwen Code
+#### Qwen Code
 
 ```bash
 qwen extensions install FinamWeb/finam-trade-api
 ```
 
-### Codex
+#### Codex
 
 ```bash
 codex plugin marketplace add FinamWeb/finam-trade-api
 codex plugin add finam@finam-trade-api
 ```
 
-### Cursor
+#### Cursor
 
-In Cursor, open an Agent chat and run:
+В Cursor откройте чат с агентом и выполните:
 
 ```
 /add-plugin https://github.com/FinamWeb/finam-trade-api
 ```
 
-## Setup
+## Настройка
 
-After installation, configure two environment variables:
+Скиллу нужен один секрет — `TRADE_API_SECRET`, токен API. Получить его можно на [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens).
 
-- `TRADE_API_SECRET` — API token from [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens)
-- `FINAM_ACCOUNT_ID` — account number from [lk.finam.ru](https://lk.finam.ru/) (digits only, without the `КлФ-` prefix)
+Счёт, с которым будет работать скилл, определяется автоматически по токену. При необходимости можно задать `ACCOUNT_ID`, чтобы зафиксировать конкретный счёт, если токен даёт доступ к нескольким.
 
-**Claude Code** — add to `.claude/settings.local.json`:
-```json
-{ "env": { "TRADE_API_SECRET": "...", "FINAM_ACCOUNT_ID": "..." } }
+### Файл `.env` (рекомендуется)
+
+Скилл сам читает токен из файла `.env` в корне проекта, то есть в папке, где открыт агент. Ничего загружать в терминал и перезапускать агента не нужно.
+
+Проще всего попросить агента: «Подключи токен Finam». Агент скопирует шаблон [`.env.example`](trade-api/.env.example) в `.env` проекта, добавит `.env` в `.gitignore` и попросит вставить токен в файл:
+
+```dotenv
+TRADE_API_SECRET=your_token_here
+# ACCOUNT_ID=
 ```
 
-**Qwen Code** — prompted automatically during installation, or set manually:
+Агент получает значение через подстановку в shell (`sed` по нужному ключу) и не выводит его в чат. Не вставляйте токен в чат с ассистентом.
+
+### Частные случаи
+
+Переменная окружения имеет приоритет над `.env`.
+
+**Переменная окружения** — экспортируйте её в терминале перед запуском агента:
 ```bash
-qwen extensions settings set finam "Finam API Key"
-qwen extensions settings set finam "Finam Account ID"
+export TRADE_API_SECRET=your_token_here
+claude   # или codex / qwen / cursor .
 ```
 
-**Codex / Cursor** — set in the dashboard under **Plugins → Configure** after installation.
+**Claude Code** — добавьте токен в `.claude/settings.local.json` проекта:
+```json
+{ "env": { "TRADE_API_SECRET": "..." } }
+```
 
-A **demo account** can be opened at the [tokens page](https://api.finam.ru/docs/tokens). Valid for 2 weeks and works identically to a real account.
+**Codex / Cursor** (при установке как плагин) — задаётся в панели управления, в разделе **Plugins → Configure** после установки.
 
-## Usage Examples
+**Qwen Code** (при установке как расширение) — токен запрашивается при установке; изменить его можно командой:
+```bash
+qwen extensions settings set finam "Trade API Secret"
+```
 
-**Portfolio analysis:**
+**Демо-счёт** можно открыть на [странице токенов](https://api.finam.ru/docs/tokens). Действует 2 недели и работает точно так же, как реальный счёт.
+
+## Возможности
+
+- **Рыночные данные** — котировки, стакан заявок, последние сделки и исторические свечи (OHLCV) через REST, gRPC и WebSocket.
+- **Портфель и заявки** — просмотр позиций и баланса, размещение и отмена ордеров с обязательным подтверждением параметров у пользователя.
+- **Поиск инструментов** — по маске тикера или части названия, с фильтром по типу и площадке, включая архивные/экспирировавшие инструменты.
+- **Сканер рынка** — топ-100 акций РФ и США, сортировка по волатильности, росту или объёму торгов, с настраиваемыми порогами.
+- **Разработка стратегий** — генерация Python-скриптов на официальном SDK (`finam-sdk`): моментум, пересечение скользящих средних, произвольные правила.
+- **Бэктестинг** — прогон стратегии на исторических данных прямо в диалоге с ассистентом, без внешних фреймворков.
+- **Новости рынка** — заголовки последних новостей по российскому и американскому рынку без токена.
+
+## Примеры использования
+
+**Анализ портфеля:**
 ```
 Проведи глубокий анализ моего портфеля. Покажи структуру, динамику и предложи балансировку.
 ```
 
-**Market scanner:**
+**Сканер рынка:**
 ```
 Найди все акции на Мосбирже из финансового сектора, которые выросли более чем на 5%
 за неделю при объёме торгов выше 500 млн рублей.
 ```
 
-**Momentum strategy:**
+**Моментум-стратегия:**
 ```
 Реализуй моментум-стратегию: покупаем 10 акций с наибольшей инерцией за месяц,
 ребалансировка раз в неделю.
 ```
 
-**Volatility scan:**
+**Сканер волатильности:**
 ```
 Выбери 10 самых волатильных бумаг на Мосбирже и раздели портфель поровну между ними.
 ```
 
-**Order management:**
+**Управление заявками:**
 ```
 Покажи мои открытые заявки и отмени все лимитные ордера по SBER@MISX.
 ```
 
-**Algo script:**
+**Алгоскрипт:**
 ```
 Напиши скрипт на Python: если акция за последние 30 дней выросла — покупаем,
 иначе продаём. Использовать Finam gRPC API.
 ```
 
-## Project Structure
+## Безопасность и подтверждение заявок
+
+Скилл никогда не размещает и не отменяет заявку без явного согласия пользователя: ассистент обязан озвучить все параметры ордера (инструмент, сторону, объём, тип и цену) и дождаться подтверждения перед отправкой запроса. Работать со скиллом без токена тоже можно — для изучения документации, проектирования стратегий и генерации скриптов токен не требуется.
+
+## Структура проекта
 
 ```
 finam-trade-api/
-├── .agents/plugins/marketplace.json   # Codex marketplace registry
+├── .agents/plugins/marketplace.json   # реестр маркетплейса Codex
 ├── .claude-plugin/
-│   ├── marketplace.json               # Claude Code marketplace registry
-│   └── plugin.json                    # Claude Code manifest (sync source of truth)
-├── .codex-plugin/plugin.json          # Codex manifest
+│   ├── marketplace.json               # реестр маркетплейса Claude Code
+│   └── plugin.json                    # манифест Claude Code (источник истины для синхронизации)
+├── .codex-plugin/plugin.json          # манифест Codex
 ├── .cursor-plugin/
-│   ├── marketplace.json               # Cursor marketplace registry
-│   └── plugin.json                    # Cursor manifest
-├── qwen-extension.json                # Qwen Code manifest
-├── CLAUDE.md                          # Claude Code context
-├── QWEN.md                            # Qwen Code context
+│   ├── marketplace.json               # реестр маркетплейса Cursor
+│   └── plugin.json                    # манифест Cursor
+├── qwen-extension.json                # манифест Qwen Code
+├── CLAUDE.md                          # контекст для Claude Code
+├── QWEN.md                            # контекст для Qwen Code
 └── .ai/skills/
-    ├── README.md                      # This file
+    ├── README.md                      # этот файл
     └── trade-api/
-        ├── SKILL.md                   # Skill definition
-        ├── assets/                    # Exchanges and top-100 equity lists
-        ├── references/docs/           # Official API docs (REST, gRPC, WebSocket)
+        ├── SKILL.md                   # определение скилла
+        ├── .env.example               # шаблон .env, агент копирует его в проект
         └── scripts/
-            ├── asset_search.py        # Search instruments by ticker glob / name
-            └── scanner.py             # Scan top-100 stocks by volatility, growth, or volume
+            ├── asset_search.py        # поиск инструментов по маске тикера / названию
+            ├── scanner.py             # сканер топ-100 акций по волатильности, росту или объёму
+            └── top_stocks.py          # состав индексов IMOEX / NDX
 ```
 
-## License
+## Устранение неполадок
+
+- **Токен не задан / ошибка авторизации** — проверьте, что токен подключён по инструкции из раздела Настройка.
+- **Токен даёт доступ к нескольким счетам** — `ACCOUNT_ID` не определяется автоматически; ассистент спросит, какой счёт использовать, либо задайте `ACCOUNT_ID` вручную.
+- **Превышен лимит запросов** — действует ограничение 200 запросов в минуту на метод; подождите и повторите запрос.
+- **API недоступен** — ежедневное технологическое окно 05:00–06:15 МСК, в это время сервис может быть недоступен.
+- **Ассистент не видит новую команду/скилл после установки** — перезапустите ассистента или начните новую сессию, чтобы он подхватил обновлённый список плагинов.
+
+## Поддержка
+
+О проблемах и предложениях сообщайте через issue или pull request в [репозитории на GitHub](https://github.com/FinamWeb/finam-trade-api).
+
+Информация, которую предоставляет скилл, носит образовательный и информационный характер и не является индивидуальной инвестиционной рекомендацией. Перед принятием торговых решений проводите собственный анализ.
+
+## Лицензия
 
 MIT

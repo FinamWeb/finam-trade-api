@@ -1,6 +1,6 @@
 {
   "name": "finam",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "contextFileName": "QWEN.md",
   "skills": ".ai/skills",
   "settings": [
@@ -9,12 +9,6 @@
       "description": "API token from api.finam.ru/docs/tokens",
       "envVar": "TRADE_API_SECRET",
       "sensitive": true
-    },
-    {
-      "name": "Finam Account ID",
-      "description": "Account number from lk.finam.ru (digits only, without КлФ- prefix)",
-      "envVar": "FINAM_ACCOUNT_ID",
-      "sensitive": false
     }
   ]
 }
