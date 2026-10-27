@@ -56,6 +56,8 @@
         "description": "Optional override — pins a specific account when the token exposes several. Account number from lk.finam.ru (digits only, without КлФ- prefix)."
       }
     },
-    "required": ["TRADE_API_SECRET"]
+    "required": [
+      "TRADE_API_SECRET"
+    ]
   }
 }
