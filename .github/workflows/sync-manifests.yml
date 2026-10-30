@@ -8,6 +8,7 @@ on:
       - .cursor-plugin/plugin.json
       - .cursor-plugin/marketplace.json
       - .codex-plugin/plugin.json
+      - .kimi-plugin/plugin.json
       - qwen-extension.json
   push:
     branches: [main]
@@ -52,6 +53,7 @@ jobs:
           check_v .cursor-plugin/plugin.json      '.version'
           check_v .cursor-plugin/marketplace.json '.metadata.version'
           check_v .codex-plugin/plugin.json       '.version'
+          check_v .kimi-plugin/plugin.json        '.version'
           check_v qwen-extension.json             '.version'
           check_d .claude-plugin/marketplace.json '.plugins[0].description'
           check_d .cursor-plugin/plugin.json      '.description'
@@ -59,6 +61,9 @@ jobs:
           check_d .codex-plugin/plugin.json       '.description'
           check_d .codex-plugin/plugin.json       '.interface.longDescription'
           check_ds .codex-plugin/plugin.json      '.interface.shortDescription'
+          check_d .kimi-plugin/plugin.json        '.description'
+          check_d .kimi-plugin/plugin.json        '.interface.longDescription'
+          check_ds .kimi-plugin/plugin.json       '.interface.shortDescription'
           check_mn .cursor-plugin/marketplace.json
           check_mn .agents/plugins/marketplace.json
           [ $fail -eq 0 ] && echo "OK: version=$V, descriptions in sync" || exit 1
@@ -96,6 +101,10 @@ jobs:
             --arg v "$V" --arg d "$D" --arg ds "$DS" \
             '.version = $v | .description = $d | .interface.longDescription = $d | .interface.shortDescription = $ds'
 
+          patch .kimi-plugin/plugin.json \
+            --arg v "$V" --arg d "$D" --arg ds "$DS" \
+            '.version = $v | .description = $d | .interface.longDescription = $d | .interface.shortDescription = $ds'
+
           patch qwen-extension.json \
             --arg v "$V" \
             '.version = $v'
@@ -107,6 +116,6 @@ jobs:
           git diff --quiet && echo "Nothing to commit" && exit 0
           git add .claude-plugin/marketplace.json \
                   .cursor-plugin/plugin.json .cursor-plugin/marketplace.json \
-                  .codex-plugin/plugin.json qwen-extension.json
+                  .codex-plugin/plugin.json .kimi-plugin/plugin.json qwen-extension.json
           git commit -m "chore: sync manifests from .claude-plugin/plugin.json [skip ci]"
           git push
