@@ -365,6 +365,15 @@ message GetAssetResponse {
     // Символьный код валюты номинала облигации (например, RUB, USD).
     string currency = 2;
   }
+  // Шаг цены, зависящий от цены заявки (например, у американских опционов). Все три поля заполнены всегда, когда заполнен объект
+  message PriceStep {
+    // Шаг цены, если цена заявки ниже threshold_price
+    google.type.Decimal step = 1;
+    // Порог цены заявки, начиная с которого действует step_from_threshold
+    google.type.Decimal threshold_price = 2;
+    // Шаг цены, если цена заявки равна threshold_price или выше
+    google.type.Decimal step_from_threshold = 3;
+  }
   // Код режима торгов
   string board = 1;
   // Идентификатор инструмента
@@ -381,7 +390,7 @@ message GetAssetResponse {
   string name = 7;
   // Кол-во десятичных знаков в цене
   int32 decimals = 10;
-  // Минимальный шаг цены. Для расчета финального ценового шага: min_step/(10ˆdecimals)
+  // Минимальный шаг цены. Для расчета финального ценового шага: min_step/(10ˆdecimals). 0 при заполненном price_step означает, что шаг цены не постоянный — смотрите price_step
   int64 min_step = 11;
   // Кол-во штук в лоте
   google.type.Decimal lot_size = 9;
@@ -389,6 +398,8 @@ message GetAssetResponse {
   google.type.Date expiration_date = 12 [deprecated = true];
   // Валюта котировки, может не совпадать с валютой режима торгов инструмента
   string quote_currency = 13;
+  // Шаг цены, зависящий от цены заявки. Заполняется только когда min_step = 0: используйте step, если цена заявки ниже threshold_price, и step_from_threshold, если равна или выше
+  PriceStep price_step = 17;
 
   oneof asset_details {
     // Специфичные параметры для инструмента типа "Фьючерс"
