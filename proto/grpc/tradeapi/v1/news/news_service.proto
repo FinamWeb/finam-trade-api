@@ -1,0 +1,318 @@
+syntax = "proto3";
+
+package grpc.tradeapi.v1.news;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "grpc/gateway/protoc_gen_openapiv2/options/annotations.proto";
+
+option go_package = "github.com/FinamWeb/finam-trade-api/go/grpc/tradeapi/v1/news";
+option java_multiple_files = true;
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  schemes: [
+    HTTP,
+    HTTPS
+  ]
+  info: {
+    title: "Finam Trade-API"
+    description: "API новостей"
+  }
+  security_definitions: {
+    security: {
+      key: "Authorization"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "JWT токен авторизации"
+      }
+    }
+  }
+  responses: [
+    {
+      key: "default"
+      value: {
+        schema: {
+          json_schema: {
+            ref: "googletypeStatus"
+          }
+        }
+      }
+    },
+    {
+      key: "500"
+      value: {
+        description: "Внутренняя ошибка сервиса. Попробуйте позже"
+      }
+    },
+    {
+      key: "503"
+      value: {
+        description: "Сервис на данный момент не доступен. Попробуйте позже"
+      }
+    },
+    {
+      key: "429"
+      value: {
+        description: "Слишком много запросов. Доступный лимит ограничен настройками API"
+      }
+    },
+    {
+      key: "401"
+      value: {
+        description: "Срок действия токена истек или токен недействителен"
+      }
+    },
+    {
+      key: "504"
+      value: {
+        description: "Крайний срок истек до завершения операции"
+      }
+    },
+    {
+      key: "404"
+      value: {
+        description: "Новость не найдена"
+      }
+    },
+    {
+      key: "400"
+      value: {
+        description: "Неверно сформирован запрос"
+      }
+    }
+  ]
+};
+
+// Сервис новостей
+// Подписка на события новостей, запрос сохранённых новостей за интервал публикации, получение состояния новости и справочника источников
+// Токен авторизации передаётся в metadata authorization
+service NewsService {
+  // Подписка на события новостей: новые публикации, исправления и удаления. Стрим метод
+  // Фильтр задаётся при подключении и неизменен на протяжении RPC
+  // Если задан from, сначала выдаются новости, опубликованные от from до момента подключения (бэкфилл), затем события с момента подключения; from может отставать от текущего момента не более чем на 24 часа
+  // Без from выдаются только события с момента подключения
+  // Пустая порция [] - heartbeat, а не конец потока
+  // Пример запроса: {"filter":{"symbols":["SBER@MISX"]},"from":"2026-10-01T07:00:00Z"}
+  // Ошибки завершают RPC стандартным gRPC status, а не сообщением в items
+  rpc SubscribeNews(SubscribeNewsRequest) returns (stream SubscribeNewsResponse);
+
+  // Получение сохранённых новостей за интервал публикации
+  // Пример HTTP запроса:
+  // GET /v1/news/history?time_range.from=2026-10-01T00:00:00Z&time_range.to=2026-10-02T00:00:00Z&page_size=50
+  // Authorization: <token>
+  //
+  // Порядок выдачи: по времени публикации по убыванию, при равенстве - по значению id по возрастанию
+  // Следующая страница: повторить запрос с прежними фильтром и диапазоном, передав next_cursor из ответа в поле cursor запроса
+  // Дубликаты одного события (id, version) исключаются клиентом
+  rpc GetNewsHistory(GetNewsHistoryRequest) returns (GetNewsHistoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/news/history"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+        {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+      ]
+      responses: {
+        key: "400"
+        value: {
+          description: "Неверно передан интервал времени или размер страницы. Интервал time_range обязателен; page_size допускает значения 0 и 1..100, где 0 - значение по умолчанию 50"
+        }
+      }
+    };
+  };
+
+  // Получение последнего сохранённого состояния новости по её идентификатору и источнику
+  // Пример HTTP запроса:
+  // GET /v1/news/123?source=finam
+  // Authorization: <token>
+  //
+  // Идентификатор и источник берутся из событий подписки или истории; запрос по произвольному URL не выполняется
+  rpc GetNews(GetNewsRequest) returns (GetNewsResponse) {
+    option (google.api.http) = {
+      get: "/v1/news/{news_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+        {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+      ]
+      responses: [
+        {
+          key: "400"
+          value: {
+            description: "Неверно передан идентификатор новости. Публичный идентификатор берётся из событий новостного сервиса"
+          }
+        },
+        {
+          key: "404"
+          value: {
+            description: "Новость не найдена или недоступна. Публичный идентификатор не соответствует сохранённой новости"
+          }
+        }
+      ]
+    };
+  };
+
+  // Получение справочника источников новостей, доступных клиенту
+  // Пример HTTP запроса:
+  // GET /v1/news/sources
+  // Authorization: <token>
+  //
+  // Пример ответа: {"sources":[{"id":"finam","name":"Финам"}]}
+  rpc GetNewsSources(GetNewsSourcesRequest) returns (GetNewsSourcesResponse) {
+    option (google.api.http) = {
+      get: "/v1/news/sources"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: [
+        {
+          security_requirement: {
+            key: "Authorization"
+          }
+        }
+      ]
+    };
+  };
+
+}
+
+// Фильтр новостей. Задаётся при подключении и неизменен на протяжении RPC
+// Между группами условий логическое И, внутри группы - ИЛИ
+message NewsFilter {
+  // Символы инструментов для фильтрации в виде ticker@mic, например SBER@MISX
+  // Пустой список - вся доступная лента, дубликаты удаляются сервером
+  repeated string symbols = 1;
+  // Коды источников из GetNewsSources, например finam
+  // Пустой список - все доступные источники
+  repeated string sources = 2;
+}
+
+// Запрос подписки на события новостей (стрим)
+message SubscribeNewsRequest {
+  // Фильтр публикаций и удалений; отсутствие эквивалентно пустому фильтру
+  NewsFilter filter = 1;
+  // Время, с которого отдаётся новостной поток; может отставать от текущего момента не более чем на 24 часа
+  // Отсутствие эквивалентно отсутствию нижней границы
+  google.protobuf.Timestamp from = 2;
+}
+
+// Диапазон времени публикации в UTC
+// Пустая граница не ограничивает соответствующую сторону
+// Если обе границы заданы, from должно быть строго раньше to
+message NewsTimeRange {
+  // Время публикации от, включительно. Пример: 2026-10-01T07:00:00Z
+  google.protobuf.Timestamp from = 1;
+  // Время публикации до, исключительно. Пример: 2026-10-02T07:00:00Z
+  google.protobuf.Timestamp to = 2;
+}
+
+// Порция событий подписки
+message SubscribeNewsResponse {
+  // Упорядоченная порция событий; [] - heartbeat, а не конец потока
+  repeated NewsItem items = 1;
+}
+
+// Запрос сохранённых новостей за интервал публикации
+message GetNewsHistoryRequest {
+  // Символы и источники; пустое значение группы означает всю доступную ленту
+  NewsFilter filter = 1;
+  // Закрытый диапазон времени публикации в UTC: from включительно, to исключительно. Обязателен
+  NewsTimeRange time_range = 2;
+  // Размер страницы: 1..100; 0 - значение по умолчанию 50
+  int32 page_size = 3;
+  // Курсор истории: пустая строка для первой страницы, далее next_cursor из ответа
+  // Строка непрозрачна и не соответствует PageRange источника
+  string cursor = 4;
+}
+
+// Страница сохранённых новостей
+message GetNewsHistoryResponse {
+  // На первой странице - последние известные на её момент неудалённые версии новостей
+  // Порядок: по времени публикации по убыванию, при равенстве - по значению id по возрастанию
+  repeated NewsItem items = 1;
+  // Курсор следующей страницы; пустая строка означает конец результата
+  string next_cursor = 2;
+}
+
+// Запрос новости по идентификатору и источнику
+message GetNewsRequest {
+  // Идентификатор новости из событий подписки или истории. Пример: 123
+  int64 news_id = 1;
+  // Источник новости из событий подписки или истории. Пример: finam
+  string source = 2;
+}
+
+// Состояние новости
+message GetNewsResponse {
+  // Последняя версия новости, а не обязательно версия из ранее полученного события
+  NewsItem item = 1;
+}
+
+// Параметры отсутствуют
+message GetNewsSourcesRequest {
+}
+
+// Справочник источников новостей
+message GetNewsSourcesResponse {
+  // Доступные источники
+  repeated NewsSource sources = 1;
+}
+
+// Источник новостей
+message NewsSource {
+  // Стабильный публичный код источника. Пример: finam
+  string id = 1;
+  // Публичное название источника. Пример: Финам
+  // Локализованные варианты и диагностические поля в MVP не экспортируются
+  string name = 2;
+}
+
+// Полный снимок версии новости
+// При deleted=true заголовок и текст очищены
+message NewsItem {
+  // Идентификатор новости в источнике. Пример: 123
+  int64 id = 1;
+  // Монотонная версия новости в источнике, начиная с 1
+  // Изменение связанных инструментов (symbols) версию не меняет. Пример JSON: "2"
+  int64 version = 2;
+  // Код источника из GetNewsSources. Пример: finam
+  string source = 3;
+  // Заголовок исходной новости
+  string title = 4;
+  // Полный текст в UTF-8 без HTML-разметки, без сокращений и пересказа
+  // Для удалённой или скрытой новости - пустая строка
+  string text = 5;
+  // Исходное время публикации UTC
+  // У удаления может отсутствовать, если исходная публикация неизвестна
+  google.protobuf.Timestamp published_at = 6;
+  // Время изменения в источнике, если известно
+  // При отсутствии не подменяется временем приёма
+  google.protobuf.Timestamp updated_at = 7;
+  // Время приёма события сервисом
+  // Для live-событий подписки - момент получения новости сервисом, одинаковый для всех подписчиков; для бэкфилла подписки, истории и GetNews - момент формирования ответа
+  google.protobuf.Timestamp received_at = 8;
+  // Исходная ссылка, если есть, иначе пустая строка
+  string url = 9;
+  // Язык текста по BCP 47, например ru; пустая строка, если неизвестен
+  string language = 10;
+  // Символы всех связанных с новостью инструментов в виде ticker@mic, например SBER@MISX, без дубликатов
+  // Пустой список, если новость не связана с инструментами или они не найдены в справочнике
+  // Фильтр filter.symbols совпадает с новостью по любому из символов
+  repeated string symbols = 11;
+  // true - отзыв или модерационное скрытие: текст и заголовок не выдавать, производные результаты инвалидировать
+  // После скрытия новость может вернуться: deleted=false, тот же id, новая большая version
+  // Для удаления сохраняются последние известные связи
+  bool deleted = 12;
+  // Версия источника для диагностики; 0 - версия неизвестна
+  // Не является публичным порядком событий
+  int64 source_version = 13;
+}
+
