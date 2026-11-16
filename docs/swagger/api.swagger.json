@@ -25,6 +25,9 @@
       "name": "UsageMetricsService"
     },
     {
+      "name": "NewsService"
+    },
+    {
       "name": "OrdersService"
     },
     {
@@ -1891,6 +1894,245 @@
         ]
       }
     },
+    "/v1/news/history": {
+      "get": {
+        "summary": "Получение сохранённых новостей за интервал публикации\nПример HTTP запроса:\nGET /v1/news/history?time_range.from=2026-10-01T00:00:00Z\u0026time_range.to=2026-10-02T00:00:00Z\u0026page_size=50\nAuthorization: \u003ctoken\u003e",
+        "description": "Порядок выдачи: по времени публикации по убыванию, при равенстве - по значению id по возрастанию\nСледующая страница: повторить запрос с прежними фильтром и диапазоном, передав next_cursor из ответа в поле cursor запроса\nДубликаты одного события (id, version) исключаются клиентом",
+        "operationId": "NewsService_GetNewsHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/newsGetNewsHistoryResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан интервал времени или размер страницы. Интервал time_range обязателен; page_size допускает значения 0 и 1..100, где 0 - значение по умолчанию 50",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "filter.symbols",
+            "description": "Символы инструментов для фильтрации в виде ticker@mic, например SBER@MISX\nПустой список - вся доступная лента, дубликаты удаляются сервером",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "filter.sources",
+            "description": "Коды источников из GetNewsSources, например finam\nПустой список - все доступные источники",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "time_range.from",
+            "description": "Время публикации от, включительно. Пример: 2026-10-01T07:00:00Z",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "time_range.to",
+            "description": "Время публикации до, исключительно. Пример: 2026-10-02T07:00:00Z",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "page_size",
+            "description": "Размер страницы: 1..100; 0 - значение по умолчанию 50",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "cursor",
+            "description": "Курсор истории: пустая строка для первой страницы, далее next_cursor из ответа\nСтрока непрозрачна и не соответствует PageRange источника",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "NewsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
+        ]
+      }
+    },
+    "/v1/news/sources": {
+      "get": {
+        "summary": "Получение справочника источников новостей, доступных клиенту\nПример HTTP запроса:\nGET /v1/news/sources\nAuthorization: \u003ctoken\u003e",
+        "description": "Пример ответа: {\"sources\":[{\"id\":\"finam\",\"name\":\"Финам\"}]}",
+        "operationId": "NewsService_GetNewsSources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/newsGetNewsSourcesResponse"
+            }
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Счёт не был найден в токене",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "NewsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
+        ]
+      }
+    },
+    "/v1/news/{news_id}": {
+      "get": {
+        "summary": "Получение последнего сохранённого состояния новости по её идентификатору и источнику\nПример HTTP запроса:\nGET /v1/news/123?source=finam\nAuthorization: \u003ctoken\u003e",
+        "description": "Идентификатор и источник берутся из событий подписки или истории; запрос по произвольному URL не выполняется",
+        "operationId": "NewsService_GetNews",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/newsGetNewsResponse"
+            }
+          },
+          "400": {
+            "description": "Неверно передан идентификатор новости. Публичный идентификатор берётся из событий новостного сервиса",
+            "schema": {}
+          },
+          "401": {
+            "description": "Срок действия токена истек или токен недействителен",
+            "schema": {}
+          },
+          "404": {
+            "description": "Новость не найдена или недоступна. Публичный идентификатор не соответствует сохранённой новости",
+            "schema": {}
+          },
+          "429": {
+            "description": "Слишком много запросов. Доступный лимит - 200 запросов в минуту",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Попробуйте позже",
+            "schema": {}
+          },
+          "503": {
+            "description": "Сервис на данный момент не доступен. Попробуйте позже",
+            "schema": {}
+          },
+          "504": {
+            "description": "Крайний срок истек до завершения операции",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "news_id",
+            "description": "Идентификатор новости из событий подписки или истории. Пример: 123",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "source",
+            "description": "Источник новости из событий подписки или истории. Пример: finam",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "NewsService"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
+        ]
+      }
+    },
     "/v1/past-dividends": {
       "get": {
         "summary": "Получить исторические данные по выплаченным дивидендам инструмента",
@@ -2613,6 +2855,24 @@
       },
       "title": "Специфичные параметры для инструмента типа \"Опцион\""
     },
+    "GetAssetResponsePriceStep": {
+      "type": "object",
+      "properties": {
+        "step": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Шаг цены, если цена заявки ниже threshold_price"
+        },
+        "threshold_price": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Порог цены заявки, начиная с которого действует step_from_threshold"
+        },
+        "step_from_threshold": {
+          "$ref": "#/definitions/typeDecimal",
+          "title": "Шаг цены, если цена заявки равна threshold_price или выше"
+        }
+      },
+      "title": "Шаг цены, зависящий от цены заявки (например, у американских опционов). Все три поля заполнены всегда, когда заполнен объект"
+    },
     "GetUsageMetricsResponseQuotaUsage": {
       "type": "object",
       "properties": {
@@ -3324,7 +3584,7 @@
         "min_step": {
           "type": "string",
           "format": "int64",
-          "title": "Минимальный шаг цены. Для расчета финального ценового шага: min_step/(10ˆdecimals)"
+          "title": "Минимальный шаг цены. Для расчета финального ценового шага: min_step/(10ˆdecimals). 0 при заполненном price_step означает, что шаг цены не постоянный — смотрите price_step"
         },
         "lot_size": {
           "$ref": "#/definitions/typeDecimal",
@@ -3337,6 +3597,10 @@
         "quote_currency": {
           "type": "string",
           "title": "Валюта котировки, может не совпадать с валютой режима торгов инструмента"
+        },
+        "price_step": {
+          "$ref": "#/definitions/GetAssetResponsePriceStep",
+          "title": "Шаг цены, зависящий от цены заявки. Заполняется только когда min_step = 0: используйте step, если цена заявки ниже threshold_price, и step_from_threshold, если равна или выше"
         },
         "future_details": {
           "$ref": "#/definitions/GetAssetResponseFutureDetails",
@@ -4388,6 +4652,179 @@
         }
       },
       "title": "Информация о текущих метриках использования"
+    },
+    "newsGetNewsHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/newsNewsItem"
+          },
+          "title": "На первой странице - последние известные на её момент неудалённые версии новостей\nПорядок: по времени публикации по убыванию, при равенстве - по значению id по возрастанию"
+        },
+        "next_cursor": {
+          "type": "string",
+          "title": "Курсор следующей страницы; пустая строка означает конец результата"
+        }
+      },
+      "title": "Страница сохранённых новостей"
+    },
+    "newsGetNewsResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/newsNewsItem",
+          "title": "Последняя версия новости, а не обязательно версия из ранее полученного события"
+        }
+      },
+      "title": "Состояние новости"
+    },
+    "newsGetNewsSourcesResponse": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/newsNewsSource"
+          },
+          "title": "Доступные источники"
+        }
+      },
+      "title": "Справочник источников новостей"
+    },
+    "newsNewsFilter": {
+      "type": "object",
+      "properties": {
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Символы инструментов для фильтрации в виде ticker@mic, например SBER@MISX\nПустой список - вся доступная лента, дубликаты удаляются сервером"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Коды источников из GetNewsSources, например finam\nПустой список - все доступные источники"
+        }
+      },
+      "title": "Фильтр новостей. Задаётся при подключении и неизменен на протяжении RPC\nМежду группами условий логическое И, внутри группы - ИЛИ"
+    },
+    "newsNewsItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "Идентификатор новости в источнике. Пример: 123"
+        },
+        "version": {
+          "type": "string",
+          "format": "int64",
+          "title": "Монотонная версия новости в источнике, начиная с 1\nИзменение связанных инструментов (symbols) версию не меняет. Пример JSON: \"2\""
+        },
+        "source": {
+          "type": "string",
+          "title": "Код источника из GetNewsSources. Пример: finam"
+        },
+        "title": {
+          "type": "string",
+          "title": "Заголовок исходной новости"
+        },
+        "text": {
+          "type": "string",
+          "title": "Полный текст в UTF-8 без HTML-разметки, без сокращений и пересказа\nДля удалённой или скрытой новости - пустая строка"
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Исходное время публикации UTC\nУ удаления может отсутствовать, если исходная публикация неизвестна"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Время изменения в источнике, если известно\nПри отсутствии не подменяется временем приёма"
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Время приёма события сервисом\nДля live-событий подписки - момент получения новости сервисом, одинаковый для всех подписчиков; для бэкфилла подписки, истории и GetNews - момент формирования ответа"
+        },
+        "url": {
+          "type": "string",
+          "title": "Исходная ссылка, если есть, иначе пустая строка"
+        },
+        "language": {
+          "type": "string",
+          "title": "Язык текста по BCP 47, например ru; пустая строка, если неизвестен"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Символы всех связанных с новостью инструментов в виде ticker@mic, например SBER@MISX, без дубликатов\nПустой список, если новость не связана с инструментами или они не найдены в справочнике\nФильтр filter.symbols совпадает с новостью по любому из символов"
+        },
+        "deleted": {
+          "type": "boolean",
+          "title": "true - отзыв или модерационное скрытие: текст и заголовок не выдавать, производные результаты инвалидировать\nПосле скрытия новость может вернуться: deleted=false, тот же id, новая большая version\nДля удаления сохраняются последние известные связи"
+        },
+        "source_version": {
+          "type": "string",
+          "format": "int64",
+          "title": "Версия источника для диагностики; 0 - версия неизвестна\nНе является публичным порядком событий"
+        }
+      },
+      "title": "Полный снимок версии новости\nПри deleted=true заголовок и текст очищены"
+    },
+    "newsNewsSource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Стабильный публичный код источника. Пример: finam"
+        },
+        "name": {
+          "type": "string",
+          "title": "Публичное название источника. Пример: Финам\nЛокализованные варианты и диагностические поля в MVP не экспортируются"
+        }
+      },
+      "title": "Источник новостей"
+    },
+    "newsNewsTimeRange": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Время публикации от, включительно. Пример: 2026-10-01T07:00:00Z"
+        },
+        "to": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Время публикации до, исключительно. Пример: 2026-10-02T07:00:00Z"
+        }
+      },
+      "title": "Диапазон времени публикации в UTC\nПустая граница не ограничивает соответствующую сторону\nЕсли обе границы заданы, from должно быть строго раньше to"
+    },
+    "newsSubscribeNewsResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/newsNewsItem"
+          },
+          "title": "Упорядоченная порция событий; [] - heartbeat, а не конец потока"
+        }
+      },
+      "title": "Порция событий подписки"
     },
     "ordersLeg": {
       "type": "object",
