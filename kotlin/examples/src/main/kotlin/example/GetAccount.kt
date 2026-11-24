@@ -4,7 +4,14 @@ import grpc.tradeapi.v1.accounts.GetAccountRequest
 import kotlinx.coroutines.runBlocking
 import ru.finam.tradeapi.tradeAPIClient
 
-const val FINAM_SECRET_KEY = "FINAM_SECRET_KEY"
+const val SECRET_ENV = "TRADE_API_SECRET"
+
+/** Deprecated name kept as a fallback for existing setups. */
+const val LEGACY_SECRET_ENV = "FINAM_SECRET_KEY"
+
+/** Reads the API secret from [SECRET_ENV], falling back to [LEGACY_SECRET_ENV]. */
+fun secretFromEnv(): String? =
+    System.getenv(SECRET_ENV)?.takeIf { it.isNotEmpty() } ?: System.getenv(LEGACY_SECRET_ENV)
 
 object GetAccount {
     @JvmStatic
@@ -12,9 +19,9 @@ object GetAccount {
         System.setProperty("logback.configurationFile", "/logback.xml")
 
         val client = tradeAPIClient {
-            secret = System.getenv(FINAM_SECRET_KEY)
+            secret = secretFromEnv()
             if (secret.isNullOrEmpty()) {
-                "нужно создать переменную окружения '$FINAM_SECRET_KEY'".also {
+                "нужно создать переменную окружения '$SECRET_ENV'".also {
                     throw RuntimeException(it)
                 }
             }

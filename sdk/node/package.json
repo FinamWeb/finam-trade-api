@@ -39,6 +39,10 @@
       "types": "./dist/metrics.d.ts",
       "import": "./dist/metrics.js"
     },
+    "./news": {
+      "types": "./dist/news.d.ts",
+      "import": "./dist/news.js"
+    },
     "./orders": {
       "types": "./dist/orders.d.ts",
       "import": "./dist/orders.js"

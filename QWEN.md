@@ -6,7 +6,7 @@ This file provides guidance to Qwen Code when working with code in this reposito
 
 This repository contains skills for the Finam Trade API — a broker API for trading Russian and US equities, futures, and other instruments on Moscow Exchange and other markets.
 
-This repository also serves as the Claude marketplace (`finam-skill`), Codex marketplace (`finam-skill-marketplace`), and Cursor marketplace (`finam-cursor-marketplace`). GitHub source: `FinamWeb/finam-trade-api`.
+This repository also serves as the Claude, Codex, and Cursor marketplace `finam-trade-api` (plugin `finam`). GitHub source: `FinamWeb/finam-trade-api`.
 
 ## Language
 
@@ -21,8 +21,9 @@ Official language: **Russian**. User-facing content, usage examples, and skill p
 - `.agents/plugins/marketplace.json` — Codex marketplace registry
 - `.cursor-plugin/plugin.json` — Cursor plugin manifest
 - `.cursor-plugin/marketplace.json` — Cursor marketplace registry
-- `skills/{skill-name}/SKILL.md` — skill definitions
-- `skills/{skill-name}/scripts/` — runnable Python scripts bundled with the skill
+- `.ai/skills/README.md` — skills index
+- `.ai/skills/{skill-name}/SKILL.md` — skill definitions (currently `.ai/skills/trade-api/SKILL.md`)
+- `.ai/skills/{skill-name}/scripts/` — runnable Python scripts bundled with the skill
 - Each skill = one directory with a `SKILL.md` file
 
 ## Namespace
@@ -33,18 +34,18 @@ GitHub source: `FinamWeb/finam-trade-api`.
 
 ## Adding New Skills
 
-1. Create `skills/{skill-name}/SKILL.md`
+1. Create `.ai/skills/{skill-name}/SKILL.md`
 2. Include YAML frontmatter: `name`, `description`
-3. Update README.md skills table
+3. Update the skills table in `.ai/skills/README.md`
 4. Bump version in `qwen-extension.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `.cursor-plugin/marketplace.json`, and `.claude-plugin/marketplace.json` (both top-level and plugin entry)
 5. Update marketplace plugin entry in `.claude-plugin/marketplace.json` if skill name or description changed
 
 ## Updating Skills
 
-1. Edit `skills/{skill-name}/SKILL.md`
+1. Edit `.ai/skills/{skill-name}/SKILL.md`
 2. Preserve YAML frontmatter structure
 3. Bump patch version in `qwen-extension.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `.cursor-plugin/marketplace.json`, and `.claude-plugin/marketplace.json` (both top-level and plugin entry)
-4. If skill name or description changed — update README.md skills table and marketplace plugin entry in `.claude-plugin/marketplace.json`
+4. If skill name or description changed — update the skills table in `.ai/skills/README.md` and marketplace plugin entry in `.claude-plugin/marketplace.json`
 
 ## Key Conventions
 

@@ -51,6 +51,9 @@ if TYPE_CHECKING:
     from .proto.grpc.tradeapi.v1.metrics.usage_metrics_service_pb2_grpc import (
         UsageMetricsServiceAsyncStub,
     )
+    from .proto.grpc.tradeapi.v1.news.news_service_pb2_grpc import (
+        NewsServiceAsyncStub,
+    )
     from .proto.grpc.tradeapi.v1.orders.orders_service_pb2_grpc import (
         OrdersServiceAsyncStub,
     )
@@ -141,6 +144,7 @@ class AsyncFinamClient:
                 self._channel
             )
             self.market_data: MarketDataServiceAsyncStub = stubs["market_data"](self._channel)
+            self.news: NewsServiceAsyncStub = stubs["news"](self._channel)
             self.orders: OrdersServiceAsyncStub = stubs["orders"](self._channel)
             self.reports: ReportsServiceAsyncStub = stubs["reports"](self._channel)
             self.metrics: UsageMetricsServiceAsyncStub = stubs["metrics"](self._channel)

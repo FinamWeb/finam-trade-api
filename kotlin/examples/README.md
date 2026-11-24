@@ -2,11 +2,28 @@
 
 ## Обзор
 
-Этот репозиторий содержит примеры использования Finam Trade API на языке Kotlin.
+Gradle-модуль `examples` содержит примеры использования Kotlin SDK Finam Trade API
+(модуль `sdk`, артефакт `ru.finam.tradeapi:finam-trade-api-kotlin`).
+
+## Подключение SDK в свой проект
+
+SDK публикуется в Maven Central. Версия совпадает с версией остальных SDK
+репозитория (`kotlin/gradle.properties`):
+
+```kotlin
+// build.gradle.kts
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("ru.finam.tradeapi:finam-trade-api-kotlin:2.24.0")
+}
+```
 
 ## Получение секретного ключа
 
-Для аутентификации в API и запуска тестов вам потребуется секретный ключ. 
+Для аутентификации в API и запуска примеров вам потребуется секретный ключ. 
 
 1.  Перейдите на портал [Finam Trade API](https://tradeapi.finam.ru/docs/tokens/).
 2.  Следуйте инструкциям для создания нового ключа API (secret key).
@@ -20,35 +37,37 @@
 
 Этот тест выполняет следующие шаги:
 
-1.  **Аутентификация:** Используя предоставленный секретный ключ (`secret`), тест отправляет запрос на эндпоинт `/v1/auth` для получения JWT-токена.
-2.  **Запрос данных:** Полученный токен используется для аутентификации запроса на эндпоинт `/v1/accounts/{account_id}` для получения информации о счете.
+1.  **Аутентификация:** клиент SDK (`tradeAPIClient`) обменивает секретный ключ (`secret`) на JWT через gRPC-метод `AuthService.Auth` и затем продлевает его через `SubscribeJwtRenewal`; REST-эндпоинт `/v1/auth` не используется.
+2.  **Запрос данных:** для каждого счёта из `TokenDetails` вызывается gRPC-метод `AccountsService.GetAccount` с JWT в заголовке `Authorization`.
 3.  **Проверка:** Тест проверяет, что ответ успешен и содержит ожидаемые данные.
 
 ### Запуск
 
-Для запуска вам необходимо:
+Команды ниже выполняются из каталога `kotlin/`. Для запуска вам необходимо:
 1. выбрать пример для запуска.
-2. передать ваш секретный ключ, созданный ранее, в качестве переменной окружения.
+2. передать ваш секретный ключ, созданный ранее, в переменной окружения `TRADE_API_SECRET` —
+   как и во всех остальных SDK репозитория. Старое имя `FINAM_SECRET_KEY` пока
+   поддерживается как запасной вариант.
 
 **macOS/Linux:**
 ```bash
-export FINAM_SECRET_KEY="your-secret-key"
+export TRADE_API_SECRET="your-secret-key"
 export APP_MAIN_CLASS=example.GetAccount
-./gradlew :example:run
+./gradlew :examples:run
 ```
 
 **Windows (Command Prompt):**
 ```cmd
-set FINAM_SECRET_KEY="your-secret-key"
+set TRADE_API_SECRET="your-secret-key"
 set APP_MAIN_CLASS="example.GetAccount"
-gradlew.bat :example:run
+gradlew.bat :examples:run
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:FINAM_SECRET_KEY="your-secret-key"
+$env:TRADE_API_SECRET="your-secret-key"
 $env:APP_MAIN_CLASS="example.GetAccount"
-./gradlew :example:run
+./gradlew :examples:run
 ```
 
 Замените `"your-secret-key"` на ваш реальный ключ API.
@@ -65,7 +84,7 @@ $env:APP_MAIN_CLASS="example.GetAccount"
 - [SubscribeBarsWithoutAuthorizationHeader.kt](src/main/kotlin/example/ws/SubscribeBarsWithoutAuthorizationHeader.kt) - пример подписки без передачи токена в Authorization header
 
 Сценарий каждого примера состоит из следующих шагов:
-1. Получение jwt токена на основании секретного ключа из переменной окружения `FINAM_SECRET_KEY`
+1. Получение jwt токена на основании секретного ключа из переменной окружения `TRADE_API_SECRET`
 2. Создание вебсокет соединения
 3. Ожидание хэндшейка
 4. Оформление подписки
@@ -80,13 +99,13 @@ $env:APP_MAIN_CLASS="example.GetAccount"
 
 #### IntelliJ IDEA
 1. Выберите класс [SubscribeBars.kt](src/main/kotlin/example/ws/SubscribeBars.kt)
-2. Перед запуском метода `main` нажмите `Modify run configuration..`, в поле `Environment variables` добавить переменную окружения `FINAM_SECRET_KEY="your-secret-key"`
+2. Перед запуском метода `main` нажмите `Modify run configuration..`, в поле `Environment variables` добавить переменную окружения `TRADE_API_SECRET="your-secret-key"`
 3. Запустите метод `main`
 
 #### Терминал
-Аналогично примеру выше для `GetAccount` (с учетом OS) задайте переменные окружения `FINAM_SECRET_KEY`, `APP_MAIN_CLASS` и запустите пример
+Аналогично примеру выше для `GetAccount` (с учетом OS) задайте переменные окружения `TRADE_API_SECRET`, `APP_MAIN_CLASS` и запустите пример
 ```bash
-export FINAM_SECRET_KEY="your-secret-key"
+export TRADE_API_SECRET="your-secret-key"
 export APP_MAIN_CLASS="example.ws.SubscribeBars"
-./gradlew run
+./gradlew :examples:run
 ```

@@ -12,6 +12,8 @@ import type { MarketDataServiceClient } from "../generated/grpc/tradeapi/v1/mark
 import { MarketDataServiceDefinition } from "../generated/grpc/tradeapi/v1/marketdata/marketdata_service.js";
 import type { UsageMetricsServiceClient } from "../generated/grpc/tradeapi/v1/metrics/usage_metrics_service.js";
 import { UsageMetricsServiceDefinition } from "../generated/grpc/tradeapi/v1/metrics/usage_metrics_service.js";
+import type { NewsServiceClient } from "../generated/grpc/tradeapi/v1/news/news_service.js";
+import { NewsServiceDefinition } from "../generated/grpc/tradeapi/v1/news/news_service.js";
 import type { OrdersServiceClient } from "../generated/grpc/tradeapi/v1/orders/orders_service.js";
 import { OrdersServiceDefinition } from "../generated/grpc/tradeapi/v1/orders/orders_service.js";
 import type { ReportsServiceClient } from "../generated/grpc/tradeapi/v1/reports/reports_service.js";
@@ -34,6 +36,7 @@ export type ServiceClients = Readonly<{
   assets: AssetsServiceClient<RetryOptions>;
   corporateActions: CorporateActionsServiceClient<RetryOptions>;
   marketData: MarketDataServiceClient<RetryOptions>;
+  news: NewsServiceClient<RetryOptions>;
   orders: OrdersServiceClient<RetryOptions>;
   reports: ReportsServiceClient<RetryOptions>;
   metrics: UsageMetricsServiceClient<RetryOptions>;
@@ -45,6 +48,15 @@ export const createServiceClients = (
   retry: RetryOptions,
 ): ServiceClients => {
   const defaults = { "*": retry } as const;
+  // Order mutations are not idempotent: an UNAVAILABLE status can arrive after
+  // the exchange already accepted the request, and a blind retry could place a
+  // duplicate order. Callers opt back in per call with `{ retry: true }`.
+  const orderDefaults = {
+    "*": retry,
+    placeOrder: { ...retry, retry: false },
+    placeSLTPOrder: { ...retry, retry: false },
+    cancelOrder: { ...retry, retry: false },
+  } as const;
   const { authorized, unauthenticated } = factories;
 
   return {
@@ -56,7 +68,8 @@ export const createServiceClients = (
     assets: authorized.create(AssetsServiceDefinition, channel, defaults),
     corporateActions: authorized.create(CorporateActionsServiceDefinition, channel, defaults),
     marketData: authorized.create(MarketDataServiceDefinition, channel, defaults),
-    orders: authorized.create(OrdersServiceDefinition, channel, defaults),
+    news: authorized.create(NewsServiceDefinition, channel, defaults),
+    orders: authorized.create(OrdersServiceDefinition, channel, orderDefaults),
     reports: authorized.create(ReportsServiceDefinition, channel, defaults),
     metrics: authorized.create(UsageMetricsServiceDefinition, channel, defaults),
   };

@@ -9,6 +9,57 @@ The PyPI distribution is `finam-sdk`; the Python import name is
 
 ## [Unreleased]
 
+### Added
+
+- `client.news` sub-client for `NewsService` (`SubscribeNews`,
+  `GetNewsHistory`, `GetNews`, `GetNewsSources`) on both the sync and asyncio
+  clients, and the `finam_trade_api.news` message re-export module.
+
+### Changed
+
+- `PlaceOrder`, `PlaceSLTPOrder` and `CancelOrder` are no longer retried on
+  `UNAVAILABLE`. These order mutations are not idempotent: the error can
+  arrive after the exchange accepted the request, so a blind retry could
+  duplicate an order. Other unary calls keep the configured retry policy.
+  `finam_trade_api.retry.NON_RETRYABLE_METHODS` lists the excluded methods.
+
+## [2.24.0] — 2026-11-11
+
+### Added
+
+- Contract: `GetAssetResponse.price_step` (`PriceStep` with `step`,
+  `threshold_price`, `step_from_threshold`) for instruments whose price step
+  depends on the order price; `min_step` is `0` when it is set.
+- Contract: `NewsService` (`proto/grpc/tradeapi/v1/news/`). Generated
+  bindings only in this release; it was not wired into the client.
+
+## [2.23.0] — 2026-09-23
+
+### Added
+
+- Contract: `SLTPOrder.sl_guard_time` and `SLTPOrder.tp_guard_time`
+  (protective time in seconds).
+- Contract: `AccountTrade.commission` (`value`, `currency`), filled for
+  historical trades.
+
+## [2.22.0] — 2026-09-16
+
+### Added
+
+- Contract: `Transaction.change_original` (change in the instrument's
+  currency; `change` is documented as rubles) and `Transaction.symbols` (full
+  list of tickers; `symbol` keeps the first one for compatibility).
+
+## [2.21.0] — 2026-09-08
+
+### Added
+
+- Contract: `Position.current_price_currency` and
+  `Position.average_price_currency` (Moscow Exchange unified accounts only).
+- Contract: `OrderState.status_description`.
+- Contract: `SLTPQtyMeasure` and `SLTPOrder.sl_qty_measure` /
+  `SLTPOrder.tp_qty_measure` (quantity as a percent of the position).
+
 ## [2.19.1] — 2026-09-02
 
 Repository layout and tooling are aligned with `limeint/tradingapi`: a
@@ -132,7 +183,11 @@ Initial public release.
   `finam-trade-api` name is held by an unrelated third-party REST client.
   Import name stays `finam_trade_api`.
 
-[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.19.0...HEAD
+[Unreleased]: https://github.com/FinamWeb/finam-trade-api/compare/2.24.0...HEAD
+[2.24.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.24.0
+[2.23.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.23.0
+[2.22.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.22.0
+[2.21.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.21.0
 [2.19.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.19.0
 [2.18.1]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.18.1
 [2.18.0]: https://github.com/FinamWeb/finam-trade-api/releases/tag/2.18.0

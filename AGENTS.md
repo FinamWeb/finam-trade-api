@@ -27,6 +27,11 @@
 - `docs/swagger/` и `specs/asyncapi/` — REST- и WebSocket-спецификации.
   Swagger генерируется CI из `proto/`.
 - `MIGRATION_GUIDE.md` — переход со старого Trade API.
+- `.ai/skills/` — скилл для ИИ-агентов (`.ai/skills/trade-api/SKILL.md`, его
+  `scripts/` и `.env.example`); манифесты плагинов — `.claude-plugin/`,
+  `.codex-plugin/`, `.cursor-plugin/`, `.agents/plugins/`, `qwen-extension.json`,
+  инструкции для Qwen — `QWEN.md`. Примеры кода в скилле должны совпадать с
+  поведением SDK и `examples/`.
 - `.env.example` — единственный шаблон для игнорируемого git корневого `.env`,
   который загружает каждый рецепт `just`.
 - `justfile` — общая для репозитория командная поверхность контрибьютора.
@@ -81,6 +86,10 @@
 - `ReportsService` (отчёты по счёту) есть только в российском контуре: он
   входит в `proto/`, в `client.reports` Python SDK и в `api.reports` Node.js SDK.
   Это намеренное отличие от репозитория `limeint/tradingapi`, не ошибка.
+- `NewsService` (новости) подключён как `client.news` в Python SDK
+  (`finam_trade_api.news`) и `api.news` в Node.js SDK (`@finam/trade-api/news`).
+- `PlaceOrder`, `PlaceSLTPOrder` и `CancelOrder` не повторяются автоматически
+  ни в одном SDK: они не идемпотентны. Не возвращайте их в политику повторов.
 
 ## Требования к документации
 

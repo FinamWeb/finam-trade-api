@@ -31,8 +31,8 @@
 | `Stops` | `CancelStop` | `OrdersService` | `CancelOrder` | Отмена стоп-заявки теперь выполняется стандартным методом отмены. |
 | `Stops` | `GetStops` | `OrdersService` | `GetOrders` | Метод `GetOrders` возвращает все типы заявок, включая стоп-заявки. |
 | `Portfolios` | `GetPortfolio` | `AccountsService` | `GetAccount` | Запрашивает информацию по конкретному счету, включая позиции и доступные средства. |
-| `Securities` | `GetSecurities` | `AssetsService` | `Assets` | Возвращает полный список доступных для торговли инструментов. |
-| `Events` | `GetEvents` | `MarketDataService` / `OrdersService` | `SubscribeQuote`, `SubscribeOrderBook`, `SubscribeLatestTrades`, `SubscribeBars`, `SubscribeOrderTrade` | Единый поток событий разделен на несколько специализированных стриминг-методов. Выберите тот, который соответствует нужным вам данным. |
+| `Securities` | `GetSecurities` | `AssetsService` | `AllAssets` | `AllAssets` возвращает полный каталог инструментов, включая индикативные и архивные, постранично (`cursor`, фильтры `only_active` / `only_disabled`). `Assets` (только доступные для торговли) помечен в контракте как устаревший. |
+| `Events` | `GetEvents` | `MarketDataService` / `OrdersService` | `SubscribeQuote`, `SubscribeOrderBook`, `SubscribeLatestTrades`, `SubscribeBars`, `SubscribeOrders`, `SubscribeTrades` | Единый поток событий разделен на несколько специализированных стриминг-методов. Выберите тот, который соответствует нужным вам данным. `SubscribeOrderTrade` помечен в контракте как устаревший (`deprecated`): для заявок и сделок используйте `SubscribeOrders` и `SubscribeTrades`. |
 
 ---
 
@@ -67,7 +67,7 @@ message BarsRequest {
 
 ## Заключение
 
-Миграция на новый API требует внимательного изучения новой структуры сервисов и моделей данных. Рекомендуем вам ознакомиться с proto-файлами в директории `finam-trade-api-main/proto`, чтобы понять все возможности нового API. Этот переход позволит вам использовать более гибкий и мощный инструмент для создания ваших торговых приложений.
+Миграция на новый API требует внимательного изучения новой структуры сервисов и моделей данных. Рекомендуем вам ознакомиться с proto-файлами в директории `proto/` этого репозитория, чтобы понять все возможности нового API. Этот переход позволит вам использовать более гибкий и мощный инструмент для создания ваших торговых приложений.
 
 ## Контакты
 Официальный сайт TradeAPI https://tradeapi.finam.ru/.

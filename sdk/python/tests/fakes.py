@@ -36,6 +36,10 @@ from finam_trade_api.proto.grpc.tradeapi.v1.marketdata import (
     marketdata_service_pb2,
     marketdata_service_pb2_grpc,
 )
+from finam_trade_api.proto.grpc.tradeapi.v1.news import (
+    news_service_pb2,
+    news_service_pb2_grpc,
+)
 from finam_trade_api.proto.grpc.tradeapi.v1.orders import (
     orders_service_pb2,
     orders_service_pb2_grpc,
@@ -159,6 +163,8 @@ class FakeOrdersService(orders_service_pb2_grpc.OrdersServiceServicer):
     def __init__(self) -> None:
         self.placed: list[orders_service_pb2.Order] = []
         self.cancelled: list[str] = []
+        self.get_order_calls = 0
+        self.place_calls = 0
         self.fail_with: grpc.StatusCode | None = None
         self.fail_remaining = 0
 
@@ -175,6 +181,7 @@ class FakeOrdersService(orders_service_pb2_grpc.OrdersServiceServicer):
             context.abort(code, f"fake {code.name}")
 
     def PlaceOrder(self, request: orders_service_pb2.Order, context: grpc.ServicerContext) -> Any:
+        self.place_calls += 1
         self._maybe_fail(context)
         self.placed.append(request)
         return orders_service_pb2.OrderState(
@@ -189,6 +196,32 @@ class FakeOrdersService(orders_service_pb2_grpc.OrdersServiceServicer):
     ) -> Any:
         self.cancelled.append(request.order_id)
         return orders_service_pb2.OrderState(order_id=request.order_id)
+
+    def GetOrder(
+        self,
+        request: orders_service_pb2.GetOrderRequest,
+        context: grpc.ServicerContext,
+    ) -> Any:
+        self.get_order_calls += 1
+        self._maybe_fail(context)
+        return orders_service_pb2.OrderState(order_id=request.order_id)
+
+
+class FakeNewsService(news_service_pb2_grpc.NewsServiceServicer):
+    """Returns a canned news-source list and records the call metadata."""
+
+    def __init__(self) -> None:
+        self.last_metadata: tuple[tuple[str, str], ...] = ()
+
+    def GetNewsSources(
+        self,
+        request: news_service_pb2.GetNewsSourcesRequest,
+        context: grpc.ServicerContext,
+    ) -> Any:
+        self.last_metadata = tuple(context.invocation_metadata())
+        return news_service_pb2.GetNewsSourcesResponse(
+            sources=[news_service_pb2.NewsSource(id="src-1", name="Source")]
+        )
 
 
 class FakeMarketDataService(marketdata_service_pb2_grpc.MarketDataServiceServicer):
@@ -241,6 +274,7 @@ def fake_server(
     orders: FakeOrdersService | None = None,
     market_data: FakeMarketDataService | None = None,
     assets: FakeAssetsService | None = None,
+    news: FakeNewsService | None = None,
 ) -> Iterator[tuple[str, dict[str, Any]]]:
     """Spin up a real gRPC server on localhost:<random> with the requested
     servicers attached. Yields (endpoint, registry-of-installed-services)."""
@@ -262,6 +296,9 @@ def fake_server(
     if assets is not None:
         assets_service_pb2_grpc.add_AssetsServiceServicer_to_server(assets, server)
         installed["assets"] = assets
+    if news is not None:
+        news_service_pb2_grpc.add_NewsServiceServicer_to_server(news, server)
+        installed["news"] = news
 
     port = server.add_insecure_port("localhost:0")
     server.start()

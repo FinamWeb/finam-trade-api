@@ -7,7 +7,7 @@ takes care of channel setup, authentication, retries, and error mapping.
 
     with FinamClient(secret="...") as client:
         accounts = client.accounts.GetAccount(GetAccountRequest(account_id="A12345"))
-        for tick in client.market_data.SubscribeQuote(SubscribeQuoteRequest(symbol="SBER@MISX")):
+        for tick in client.market_data.SubscribeQuote(SubscribeQuoteRequest(symbols=["SBER@MISX"])):
             ...
 """
 
@@ -44,6 +44,9 @@ if TYPE_CHECKING:
     )
     from .proto.grpc.tradeapi.v1.metrics.usage_metrics_service_pb2_grpc import (
         UsageMetricsServiceStub,
+    )
+    from .proto.grpc.tradeapi.v1.news.news_service_pb2_grpc import (
+        NewsServiceStub,
     )
     from .proto.grpc.tradeapi.v1.orders.orders_service_pb2_grpc import (
         OrdersServiceStub,
@@ -144,6 +147,7 @@ class FinamClient:
                 self._channel
             )
             self.market_data: MarketDataServiceStub = stubs["market_data"](self._channel)
+            self.news: NewsServiceStub = stubs["news"](self._channel)
             self.orders: OrdersServiceStub = stubs["orders"](self._channel)
             self.reports: ReportsServiceStub = stubs["reports"](self._channel)
             self.metrics: UsageMetricsServiceStub = stubs["metrics"](self._channel)

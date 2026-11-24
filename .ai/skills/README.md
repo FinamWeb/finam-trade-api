@@ -106,7 +106,7 @@ codex plugin add finam@finam-trade-api
 
 ## Настройка
 
-Скиллу нужен один секрет — `TRADE_API_SECRET`, токен API. Получить его можно на [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens).
+Скиллу нужен один секрет — `TRADE_API_SECRET`, токен API. Получить его можно на [tradeapi.finam.ru/docs/tokens](https://tradeapi.finam.ru/docs/tokens/).
 
 Счёт, с которым будет работать скилл, определяется автоматически по токену. При необходимости можно задать `ACCOUNT_ID`, чтобы зафиксировать конкретный счёт, если токен даёт доступ к нескольким.
 
@@ -145,7 +145,7 @@ claude   # или codex / qwen / cursor .
 qwen extensions settings set finam "Trade API Secret"
 ```
 
-**Демо-счёт** можно открыть на [странице токенов](https://api.finam.ru/docs/tokens). Действует 2 недели и работает точно так же, как реальный счёт.
+**Демо-счёт** можно открыть на [странице токенов](https://tradeapi.finam.ru/docs/tokens/). Действует 2 недели и работает точно так же, как реальный счёт.
 
 ## Возможности
 

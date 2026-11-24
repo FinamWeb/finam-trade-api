@@ -30,7 +30,7 @@
       "TRADE_API_SECRET": {
         "type": "string",
         "title": "Trade API Secret",
-        "description": "API token from api.finam.ru/docs/tokens"
+        "description": "API token from tradeapi.finam.ru/docs/tokens/"
       },
       "ACCOUNT_ID": {
         "type": "string",
