@@ -6,7 +6,8 @@ Python SDK Finam для gRPC Trade API. Оборачивает сгенерир�
 - автоматический выпуск JWT и фоновое обновление (через
   `AuthService.SubscribeJwtRenewal`);
 - помощник `from_rpc_error()` для типизированных ошибок;
-- повторы с экспоненциальной задержкой для `UNAVAILABLE` и одобренные сервером
+- повторы с экспоненциальной задержкой для `UNAVAILABLE` (кроме изменяющих
+  заявки `PlaceOrder`, `PlaceSLTPOrder`, `CancelOrder`) и одобренные сервером
   повторы при ограничении частоты запросов.
 
 Методы сервисов вызываются напрямую на сгенерированных заглушках, без
@@ -16,13 +17,13 @@ Python SDK Finam для gRPC Trade API. Оборачивает сгенерир�
 
 Нужен Python 3.10 или новее.
 
-Текущий checkout соответствует версии `2.19.1`. Создайте и активируйте
+Текущий checkout соответствует версии `2.24.0`. Создайте и активируйте
 виртуальное окружение, затем установите пакет:
 
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install finam-sdk==2.19.1
+python -m pip install finam-sdk==2.24.0
 ```
 
 > Дистрибутив в PyPI называется `finam-sdk`; имя импорта в Python —
@@ -148,6 +149,7 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 | `client.assets`      | `AssetsService`       | Инструменты, биржи, расписания, опционы.             |
 | `client.corporate_actions` | `CorporateActionsService` | Сплиты, дивиденды, события по облигациям.      |
 | `client.market_data` | `MarketDataService`   | Свечи, котировки, стакан, потоки сделок.             |
+| `client.news`        | `NewsService`         | Новости: история, отдельная новость, источники, поток. |
 | `client.orders`      | `OrdersService`       | Выставление и отмена заявок, потоки заявок и сделок. |
 | `client.reports`     | `ReportsService`      | Отчёты по счёту (только российский контур).          |
 | `client.metrics`     | `UsageMetricsService` | Метрики использования API и квоты.                   |
@@ -164,6 +166,7 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 | `finam_trade_api.assets`        | `client.assets.*`                                           |
 | `finam_trade_api.corporate_actions` | `client.corporate_actions.*`                            |
 | `finam_trade_api.market_data`   | `client.market_data.*`                                      |
+| `finam_trade_api.news`          | `client.news.*`                                             |
 | `finam_trade_api.orders`        | `client.orders.*` (включая `Side`)                          |
 | `finam_trade_api.reports`       | `client.reports.*`                                          |
 | `finam_trade_api.metrics`       | `client.metrics.*`                                          |
@@ -202,8 +205,8 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 | Метод                                     | Вид | Назначение                                        |
 | ----------------------------------------- | :-: | ------------------------------------------------- |
 | `Exchanges(ExchangesRequest)`             |  ▶  | Список поддерживаемых бирж.                       |
-| `Assets(AssetsRequest)`                   |  ▶  | Торгуемые инструменты (с фильтром).               |
-| `AllAssets(AllAssetsRequest)`             |  ▶  | Полный каталог инструментов.                      |
+| `Assets(AssetsRequest)`                   |  ▶  | **Устарел.** Доступные для торговли инструменты.  |
+| `AllAssets(AllAssetsRequest)`             |  ▶  | Полный каталог (включая архивные), с пагинацией.  |
 | `GetAsset(GetAssetRequest)`               |  ▶  | Один инструмент по символу.                       |
 | `GetAssetParams(GetAssetParamsRequest)`   |  ▶  | Торговые параметры инструмента.                   |
 | `OptionsChain(OptionsChainRequest)`       |  ▶  | Цепочка опционов по базовому активу.              |
@@ -246,7 +249,19 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 | `GetOrder(GetOrderRequest)`                     |  ▶  | Одна заявка по ID.                                            |
 | `SubscribeOrders(SubscribeOrdersRequest)`       |  ⇉  | Поток изменений состояния заявок.                             |
 | `SubscribeTrades(SubscribeTradesRequest)`       |  ⇉  | Поток исполнений.                                             |
-| `SubscribeOrderTrade(stream OrderTradeRequest)` |  ⇄  | Двунаправленный поток — события заявок и сделок по запросу.   |
+| `SubscribeOrderTrade(stream OrderTradeRequest)` |  ⇄  | **Устарел** (`deprecated` в контракте). Используйте `SubscribeOrders` и `SubscribeTrades`. |
+
+`PlaceOrder`, `PlaceSLTPOrder` и `CancelOrder` не повторяются автоматически —
+см. раздел [Повторы](#повторы).
+
+### `client.news` — `NewsService`
+
+| Метод                                           | Вид | Назначение                                                   |
+| ----------------------------------------------- | :-: | ------------------------------------------------------------ |
+| `GetNewsHistory(GetNewsHistoryRequest)`         |  ▶  | Страница новостей за интервал (`time_range` обязателен), с курсором. |
+| `GetNews(GetNewsRequest)`                       |  ▶  | Одна новость по идентификатору.                              |
+| `GetNewsSources(GetNewsSourcesRequest)`         |  ▶  | Список доступных источников новостей.                        |
+| `SubscribeNews(SubscribeNewsRequest)`           |  ⇉  | Поток новых и обновлённых новостей с фильтром.               |
 
 ### `client.reports` — `ReportsService`
 
@@ -285,6 +300,7 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 ```python
 import grpc
 from finam_trade_api import FinamClient, RateLimitError, from_rpc_error
+from finam_trade_api.accounts import GetAccountRequest
 
 with FinamClient(secret="...") as client:
     try:
@@ -304,7 +320,12 @@ with FinamClient(secret="...") as client:
 ## Повторы
 
 Унарные RPC автоматически повторяются при `UNAVAILABLE` с экспоненциальной
-задержкой и джиттером. `RESOURCE_EXHAUSTED` повторяется только когда сервер
+задержкой и джиттером. Исключение — изменяющие заявки вызовы `PlaceOrder`,
+`PlaceSLTPOrder` и `CancelOrder`: они не идемпотентны, и `UNAVAILABLE` может
+прийти уже после того, как биржа приняла заявку, поэтому SDK их **никогда** не
+повторяет (список — `finam_trade_api.retry.NON_RETRYABLE_METHODS`). Перед
+ручным повтором проверьте состояние через `GetOrders` / `GetOrder` или
+`SubscribeOrders` и используйте уникальный `client_order_id`. `RESOURCE_EXHAUSTED` повторяется только когда сервер
 передаёт `grpc-retry-pushback-ms`; иначе SDK возвращает ошибку ограничения
 частоты, а не усиливает нагрузку. Потоковые RPC _не_ повторяются — ожидается,
 что вызывающий код переподключится на осмысленной границе, например с последней
@@ -361,6 +382,7 @@ sdk/python/
     ├── auth_messages.py
     ├── corporate_actions.py
     ├── market_data.py
+    ├── news.py
     ├── orders.py
     ├── reports.py
     ├── metrics.py

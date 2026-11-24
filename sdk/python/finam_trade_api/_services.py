@@ -12,6 +12,7 @@ def service_stubs() -> dict[str, type[Any]]:
     from .proto.grpc.tradeapi.v1.corporateactions import corporate_actions_service_pb2_grpc
     from .proto.grpc.tradeapi.v1.marketdata import marketdata_service_pb2_grpc
     from .proto.grpc.tradeapi.v1.metrics import usage_metrics_service_pb2_grpc
+    from .proto.grpc.tradeapi.v1.news import news_service_pb2_grpc
     from .proto.grpc.tradeapi.v1.orders import orders_service_pb2_grpc
     from .proto.grpc.tradeapi.v1.reports import reports_service_pb2_grpc
 
@@ -21,6 +22,7 @@ def service_stubs() -> dict[str, type[Any]]:
         "assets": assets_service_pb2_grpc.AssetsServiceStub,
         "corporate_actions": corporate_actions_service_pb2_grpc.CorporateActionsServiceStub,
         "market_data": marketdata_service_pb2_grpc.MarketDataServiceStub,
+        "news": news_service_pb2_grpc.NewsServiceStub,
         "orders": orders_service_pb2_grpc.OrdersServiceStub,
         "reports": reports_service_pb2_grpc.ReportsServiceStub,
         "metrics": usage_metrics_service_pb2_grpc.UsageMetricsServiceStub,

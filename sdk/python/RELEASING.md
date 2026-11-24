@@ -84,7 +84,7 @@ publisher» до появления первого релиза.
 6. Проверьте:
    ```sh
    python -m venv /tmp/finam-verify && source /tmp/finam-verify/bin/activate
-   pip install finam-sdk==2.19.1
+   pip install finam-sdk==2.24.0
    python -c "from finam_trade_api import FinamClient; print('ok')"
    ```
 
@@ -102,7 +102,7 @@ publisher» до появления первого релиза.
 
 ### «Tag does not match pyproject.toml version»
 
-Задача `build` проверяет, что тег релиза (`2.19.1`) и версии обоих пакетов
+Задача `build` проверяет, что тег релиза (`2.24.0`) и версии обоих пакетов
 совпадают. Если вы поставили тег до повышения версии: удалите релиз и тег,
 поднимите версию, запушьте и создайте релиз заново.
 

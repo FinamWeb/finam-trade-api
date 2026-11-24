@@ -19,6 +19,7 @@ from finam_trade_api import (
     RetryPolicy,
     from_rpc_error,
 )
+from finam_trade_api.news import GetNewsSourcesRequest
 from finam_trade_api.proto.grpc.tradeapi.v1.accounts.accounts_service_pb2 import (
     GetAccountRequest,
 )
@@ -30,6 +31,7 @@ from finam_trade_api.proto.grpc.tradeapi.v1.marketdata.marketdata_service_pb2 im
 )
 from finam_trade_api.proto.grpc.tradeapi.v1.orders.orders_service_pb2 import (
     CancelOrderRequest,
+    GetOrderRequest,
     Order,
 )
 
@@ -37,6 +39,7 @@ from .fakes import (
     FakeAccountsService,
     FakeAuthService,
     FakeMarketDataService,
+    FakeNewsService,
     FakeOrdersService,
     fake_server,
 )
@@ -71,9 +74,45 @@ def test_unary_call_retries_on_unavailable_then_succeeds() -> None:
         with FinamClient.for_testing(
             secret="s", endpoint=endpoint, retry_policy=_fast_retry()
         ) as client:
-            state = client.orders.PlaceOrder(Order(account_id="A1", symbol="SBER@MISX"))
-            assert state.order_id == "ord-1"
-            assert len(orders.placed) == 1
+            state = client.orders.GetOrder(GetOrderRequest(account_id="A1", order_id="o-1"))
+            assert state.order_id == "o-1"
+            assert orders.get_order_calls == 3
+        auth.close_stream()
+
+
+@pytest.mark.parametrize("rpc", ["PlaceOrder", "PlaceSLTPOrder", "CancelOrder"])
+def test_order_mutations_are_not_retried_on_unavailable(rpc: str) -> None:
+    """A duplicate PlaceOrder/CancelOrder is worse than a surfaced error, so the
+    retry interceptor must pass these calls through untouched."""
+    from finam_trade_api.retry import NON_RETRYABLE_METHODS
+
+    assert f"/grpc.tradeapi.v1.orders.OrdersService/{rpc}" in NON_RETRYABLE_METHODS
+
+
+def test_place_order_is_not_retried_on_unavailable() -> None:
+    auth = FakeAuthService()
+    orders = FakeOrdersService()
+    orders.fail_next(grpc.StatusCode.UNAVAILABLE, times=2)
+    with fake_server(auth=auth, orders=orders) as (endpoint, _):
+        with FinamClient.for_testing(
+            secret="s", endpoint=endpoint, retry_policy=_fast_retry()
+        ) as client:
+            with pytest.raises(grpc.RpcError) as exc_info:
+                client.orders.PlaceOrder(Order(account_id="A1", symbol="SBER@MISX"))
+            assert exc_info.value.code() is grpc.StatusCode.UNAVAILABLE
+            assert orders.place_calls == 1
+            assert orders.placed == []
+        auth.close_stream()
+
+
+def test_news_service_is_wired_with_authorization() -> None:
+    auth = FakeAuthService(initial_token="my-jwt")
+    news = FakeNewsService()
+    with fake_server(auth=auth, news=news) as (endpoint, _):
+        with FinamClient.for_testing(secret="s", endpoint=endpoint) as client:
+            resp = client.news.GetNewsSources(GetNewsSourcesRequest())
+            assert [src.id for src in resp.sources] == ["src-1"]
+            assert dict(news.last_metadata).get("authorization") == "my-jwt"
         auth.close_stream()
 
 
@@ -86,7 +125,7 @@ def test_unary_call_surfaces_typed_error_after_giving_up() -> None:
             secret="s", endpoint=endpoint, retry_policy=_fast_retry()
         ) as client:
             with pytest.raises(grpc.RpcError) as exc_info:
-                client.orders.PlaceOrder(Order(account_id="A1", symbol="SBER@MISX"))
+                client.orders.GetOrder(GetOrderRequest(account_id="A1", order_id="o-1"))
             typed = from_rpc_error(exc_info.value)
             assert typed.code is grpc.StatusCode.UNAVAILABLE
         auth.close_stream()
@@ -380,6 +419,23 @@ async def test_async_unary_retry_does_not_leak_call_objects() -> None:
         async with AsyncFinamClient.for_testing(
             secret="s", endpoint=endpoint, retry_policy=_fast_retry()
         ) as client:
-            state = await client.orders.PlaceOrder(Order(account_id="A1", symbol="SBER@MISX"))
-            assert state.order_id == "ord-1"
+            state = await client.orders.GetOrder(GetOrderRequest(account_id="A1", order_id="o-1"))
+            assert state.order_id == "o-1"
+            assert orders.get_order_calls == 3
+        auth.close_stream()
+
+
+@pytest.mark.asyncio
+async def test_async_place_order_is_not_retried_on_unavailable() -> None:
+    auth = FakeAuthService()
+    orders = FakeOrdersService()
+    orders.fail_next(grpc.StatusCode.UNAVAILABLE, times=2)
+    with fake_server(auth=auth, orders=orders) as (endpoint, _):
+        async with AsyncFinamClient.for_testing(
+            secret="s", endpoint=endpoint, retry_policy=_fast_retry()
+        ) as client:
+            with pytest.raises(grpc.RpcError) as exc_info:
+                await client.orders.PlaceOrder(Order(account_id="A1", symbol="SBER@MISX"))
+            assert exc_info.value.code() is grpc.StatusCode.UNAVAILABLE
+            assert orders.place_calls == 1
         auth.close_stream()

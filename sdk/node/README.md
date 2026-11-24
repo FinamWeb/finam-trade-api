@@ -6,7 +6,8 @@
 - обычные объекты для запросов — без конструкторов сообщений;
 - Promise для унарных RPC и `AsyncIterable` для потоков;
 - автоматический выпуск, подстановка и обновление JWT;
-- типизированные ошибки и повторы при временных сбоях;
+- типизированные ошибки и повторы при временных сбоях (кроме изменяющих заявки
+  `placeOrder`, `placeSLTPOrder`, `cancelOrder`);
 - сгенерированные типы для всего protobuf API.
 
 Пакет отличается от `@finam/grpc-tradeapi` (каталог `js/`): тот содержит
@@ -17,10 +18,10 @@
 
 Нужен Node.js 20 или новее.
 
-Текущий checkout соответствует версии `2.19.1`:
+Текущий checkout соответствует версии `2.24.0`:
 
 ```sh
-npm install @finam/trade-api@2.19.1
+npm install @finam/trade-api@2.24.0
 ```
 
 ## Быстрый старт
@@ -34,7 +35,7 @@ npm install @finam/trade-api@2.19.1
 mkdir finam-node-quickstart
 cd finam-node-quickstart
 npm init -y
-npm install @finam/trade-api@2.19.1
+npm install @finam/trade-api@2.24.0
 ```
 
 Сохраните это как `quickstart.mjs`. Расширение `.mjs` позволяет ESM-импорту
@@ -124,7 +125,8 @@ await withTradeApi({ secret }, async (api) => {
 | `assets` | `AssetsService` | `allAssets`, `getAsset`, `schedule` |
 | `corporateActions` | `CorporateActionsService` | сплиты, облигации, дивиденды |
 | `marketData` | `MarketDataService` | `bars`, `lastQuote`, потоки котировок/стакана/свечей |
-| `orders` | `OrdersService` | выставление, отмена, запрос, потоки заявок/сделок |
+| `news` | `NewsService` | `getNewsHistory`, `getNews`, `getNewsSources`, `subscribeNews` |
+| `orders` | `OrdersService` | выставление, отмена, запрос, потоки заявок/сделок; `subscribeOrderTrade` устарел — используйте `subscribeOrders` и `subscribeTrades` |
 | `reports` | `ReportsService` | `createAccountReport`, `getAccountReportInfo` (только российский контур) |
 | `metrics` | `UsageMetricsService` | `getUsageMetrics` |
 
@@ -160,6 +162,7 @@ const order = await api.orders.placeOrder({
 ```ts
 import type { GetAccountResponse } from "@finam/trade-api/accounts";
 import { TimeFrame } from "@finam/trade-api/market-data";
+import type { GetNewsHistoryRequest } from "@finam/trade-api/news";
 import { OrderType, Side } from "@finam/trade-api/orders";
 import type { CreateAccountReportRequest } from "@finam/trade-api/reports";
 ```
@@ -234,11 +237,15 @@ try {
 или переопределите её для одного вызова:
 
 ```ts
-await api.orders.placeOrder(order, { retry: false });
+await api.assets.getAsset({ symbol: "SBER@MISX" }, { retry: false });
 ```
 
-Для RPC, меняющих состояние, используйте стабильный идентификатор идемпотентности,
-например `clientOrderId`, или отключите повторы для этого вызова.
+`orders.placeOrder`, `orders.placeSLTPOrder` и `orders.cancelOrder` по умолчанию
+**не** повторяются: они не идемпотентны, и `UNAVAILABLE` может прийти уже после
+того, как биржа приняла заявку. Перед ручным повтором проверьте состояние через
+`getOrders` / `getOrder` или `subscribeOrders` и используйте уникальный
+`clientOrderId`. Включить повтор для одного такого вызова можно явно через
+`{ retry: true }`, только если вы уверены, что дубликат невозможен.
 
 ## Локальная разработка
 

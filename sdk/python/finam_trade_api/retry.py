@@ -8,6 +8,12 @@ only when the server explicitly invites a retry via the
 ``grpc-retry-pushback-ms`` trailing metadata, in which case the pushback
 delay overrides the configured backoff for that attempt.
 
+Order mutations (``PlaceOrder``, ``PlaceSLTPOrder``, ``CancelOrder``) are
+**never** retried automatically: they are not idempotent, and an UNAVAILABLE
+status can arrive after the exchange has already accepted the request, so a
+blind retry could duplicate an order. Callers that know a mutation is safe to
+repeat (for example, with a unique ``client_order_id``) retry it themselves.
+
 Streaming calls are not retried automatically — the caller drives the
 iteration and can re-subscribe at a meaningful point (e.g. resuming from
 the last received bar).
@@ -33,6 +39,22 @@ _RETRY_PUSHBACK_KEY = "grpc-retry-pushback-ms"
 # Status codes that are always retried (with backoff). RESOURCE_EXHAUSTED is
 # handled separately — see _retry_delay_for().
 _ALWAYS_RETRYABLE = frozenset({grpc.StatusCode.UNAVAILABLE})
+
+# Full gRPC method paths that are never retried — see the module docstring.
+NON_RETRYABLE_METHODS = frozenset(
+    {
+        "/grpc.tradeapi.v1.orders.OrdersService/PlaceOrder",
+        "/grpc.tradeapi.v1.orders.OrdersService/PlaceSLTPOrder",
+        "/grpc.tradeapi.v1.orders.OrdersService/CancelOrder",
+    }
+)
+
+
+def _is_retryable_method(client_call_details) -> bool:  # type: ignore[no-untyped-def]
+    method = getattr(client_call_details, "method", None)
+    if isinstance(method, bytes):
+        method = method.decode("utf-8", "replace")
+    return method not in NON_RETRYABLE_METHODS
 
 
 @dataclass(frozen=True)
@@ -115,6 +137,8 @@ class _RetryInterceptor(
         self._policy = policy
 
     def intercept_unary_unary(self, continuation, client_call_details, request):  # type: ignore[no-untyped-def]
+        if not _is_retryable_method(client_call_details):
+            return continuation(client_call_details, request)
         for attempt in range(1, self._policy.max_attempts + 1):
             call = continuation(client_call_details, request)
             try:
@@ -153,6 +177,8 @@ class _AsyncRetryUnaryInterceptor(grpc.aio.UnaryUnaryClientInterceptor):
 
     async def intercept_unary_unary(self, continuation, client_call_details, request):  # type: ignore[no-untyped-def]
         call = await continuation(client_call_details, request)
+        if not _is_retryable_method(client_call_details):
+            return call
         for attempt in range(1, self._policy.max_attempts + 1):
             code = await call.code()
             if code == grpc.StatusCode.OK:
@@ -200,6 +226,7 @@ def build_async_interceptors(
 
 __all__ = [
     "DEFAULT_POLICY",
+    "NON_RETRYABLE_METHODS",
     "RetryPolicy",
     "build_async_interceptors",
     "build_sync_interceptor",

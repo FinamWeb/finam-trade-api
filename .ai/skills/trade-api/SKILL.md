@@ -10,7 +10,7 @@ metadata: '{"openclaw": {"emoji": "📈", "homepage": "https://api.finam.ru/", "
 
 To execute Trade API requests, the skill needs one credential:
 
-- `TRADE_API_SECRET` — API token. Get it at [api.finam.ru/docs/tokens](https://api.finam.ru/docs/tokens)
+- `TRADE_API_SECRET` — API token. Get it at [tradeapi.finam.ru/docs/tokens](https://tradeapi.finam.ru/docs/tokens/)
 
 You can use this skill without it — to design strategies, explore docs, or write scripts.
 
@@ -51,7 +51,7 @@ Set up `.env` for the user rather than asking them to type shell commands:
    ```shell
    git rev-parse --is-inside-work-tree >/dev/null 2>&1 && { grep -qxF '.env' .gitignore 2>/dev/null || echo '.env' >> .gitignore; }
    ```
-3. Tell the user the full path to `.env`, ask them to open it in any text editor, paste the token right after `TRADE_API_SECRET=` (no quotes or spaces), save, and let you know. Mention where to get a token ([tokens page](https://api.finam.ru/docs/tokens)) and that a 2-week demo account is available there.
+3. Tell the user the full path to `.env`, ask them to open it in any text editor, paste the token right after `TRADE_API_SECRET=` (no quotes or spaces), save, and let you know. Mention where to get a token ([tokens page](https://tradeapi.finam.ru/docs/tokens/)) and that a 2-week demo account is available there.
 4. When they confirm, retry the request with the auth prefix.
 
 If `.env` already exists but the prefix still reports ❌, skip to step 3 — the key is probably empty or misspelled.
@@ -61,7 +61,7 @@ Users who prefer not to keep a file can export the variable in their own termina
 **Handling the secret** — the token gives full trading access to the user's account, and anything that appears in the conversation is stored in the session history:
 - Don't ask the user to paste the token into the chat, and don't run `export TRADE_API_SECRET=...` with the value on their behalf.
 - Don't display the value or the contents of files that hold it: no `echo $TRADE_API_SECRET`, `env`, `printenv`, no `cat`/Read of `.env` or `.claude/settings.local.json`. Get the value only through the auth prefix.
-- If the user pastes the token into the chat anyway, warn them that it is now exposed and recommend revoking it and issuing a new one on the [tokens page](https://api.finam.ru/docs/tokens).
+- If the user pastes the token into the chat anyway, warn them that it is now exposed and recommend revoking it and issuing a new one on the [tokens page](https://tradeapi.finam.ru/docs/tokens/).
 
 ### Resolving the account ID
 
@@ -80,7 +80,7 @@ echo "ACCOUNT_ID=${ACCOUNT_ID:-❌ could not resolve automatically}"
 - If the token exposes **multiple** accounts and none is pre-set, the command above resolves to empty. In that case, run `printf '%s\n' "$DETAILS" | jq -r '.account_ids'` and ask the user which account to use for this session before making any account-scoped request — don't guess which one.
 - Use `$ACCOUNT_ID` in every request below. Like `$TOKEN`, it lives only within one shell call — once resolved, put the value into later calls yourself (`ACCOUNT_ID=... && ...` after the prefix).
 
-**Demo account:** Can be opened at the [tokens page](https://api.finam.ru/docs/tokens). Valid for 2 weeks; works identically to a real account.
+**Demo account:** Can be opened at the [tokens page](https://tradeapi.finam.ru/docs/tokens/). Valid for 2 weeks; works identically to a real account.
 
 **Rate limits:** 200 requests/min per method by default (some methods are lower) — see [Rate Limits](#rate-limits).
 
@@ -297,33 +297,36 @@ curl -sL "https://api.finam.ru/v1/instruments/$SYMBOL/bars?timeframe=$TIMEFRAME&
 
 ## News
 
-### Get Latest Market News
+News is served by the Trade API `NewsService` (`proto/grpc/tradeapi/v1/news/`) and
+needs the same JWT as every other call. Do not scrape RSS feeds or web pages for
+news. In the Python SDK use `client.news` with message types from
+`finam_trade_api.news`; in Node use `api.news` with types from
+`@finam/trade-api/news`.
 
-Fetch and display the latest news headlines via Finam. No JWT token required.
+| RPC | REST | Purpose |
+| --- | --- | --- |
+| `GetNewsHistory` | `GET /v1/news/history` | Page of news in a time range (`time_range` is required; `page_size` 1..100, 0 = default 50; paginate with `cursor`/`next_cursor`) |
+| `GetNews` | `GET /v1/news/{news_id}` | One news item by its public id |
+| `GetNewsSources` | `GET /v1/news/sources` | Available news sources |
+| `SubscribeNews` | gRPC stream only | Live stream of new and updated items, filtered by `symbols` / `sources` |
 
-Russian market news
+```python
+import os
+from datetime import datetime, timedelta, timezone
+from finam_trade_api import FinamClient
+from finam_trade_api.news import GetNewsHistoryRequest, NewsFilter
 
-```shell
-curl -sL "https://www.finam.ru/analysis/conews/rsspoint/" | python3 -c "
-import sys, xml.etree.ElementTree as ET
-root = ET.parse(sys.stdin).getroot()
-for item in reversed(root.findall('.//item')):
-    t=item.findtext('title',''); d=item.findtext('description','').split('...')[0]
-    print(f'* {t}. {d}')
-"
+with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
+    end = datetime.now(timezone.utc)
+    req = GetNewsHistoryRequest(filter=NewsFilter(symbols=["SBER@MISX"]), page_size=20)
+    req.time_range.to.FromDatetime(end)
+    getattr(req.time_range, "from").FromDatetime(end - timedelta(days=1))
+    for item in client.news.GetNewsHistory(req).items:
+        print(f"{item.published_at.ToDatetime():%Y-%m-%d %H:%M} [{item.source}] {item.title}")
 ```
 
-US market news
-
-```shell
-curl -sL "https://www.finam.ru/international/advanced/rsspoint/" | python3 -c "
-import sys, xml.etree.ElementTree as ET
-root = ET.parse(sys.stdin).getroot()
-for item in reversed(root.findall('.//item')):
-    t=item.findtext('title',''); d=item.findtext('description','').split('...')[0]
-    print(f'* {t}. {d}')
-"
-```
+`news.*` requires `finam-sdk` / `@finam/trade-api` newer than 2.24.0. With older
+SDKs call the REST endpoints above with the JWT.
 
 ## Order Management
 
@@ -393,20 +396,24 @@ For one-off runs use `FinamClient` (sync). For continuous bots, use `AsyncFinamC
 
 ### Momentum strategy
 
-Buy if the stock grew over the last N days, sell otherwise:
+Buy if the stock grew over the last N days and you hold no position; sell only an existing long position when it fell. Like the strategies in `examples/strategies/`, the template is a dry run unless `TRADE_API_EXECUTE=1`, and it never sells what the account does not hold (a SELL without a position would open a short):
 
 ```python
 import os
 from datetime import datetime, timedelta, timezone
 from google.type.decimal_pb2 import Decimal
+from decimal import Decimal as D
+from uuid import uuid4
 from finam_trade_api import FinamClient
+from finam_trade_api.accounts import GetAccountRequest
 from finam_trade_api.auth_messages import TokenDetailsRequest
 from finam_trade_api.market_data import BarsRequest, TimeFrame
 from finam_trade_api.orders import Order, OrderType, Side, TimeInForce
 
 SYMBOLS = ["SBER@MISX", "GAZP@MISX", "LKOH@MISX"]
 LOOKBACK_DAYS = 30
-QUANTITY = "1"
+QUANTITY = D("1")
+EXECUTE = os.environ.get("TRADE_API_EXECUTE") == "1"  # confirm with the user first
 
 def get_growth(client, symbol, days):
     end = datetime.now(timezone.utc)
@@ -419,6 +426,11 @@ def get_growth(client, symbol, days):
         return None
     first, last = float(bars[0].close.value), float(bars[-1].close.value)
     return (last - first) / first * 100
+
+def held_quantity(client, account_id, symbol) -> D:
+    account = client.accounts.GetAccount(GetAccountRequest(account_id=account_id))
+    match = next((p for p in account.positions if p.symbol == symbol), None)
+    return D(match.quantity.value) if match else D(0)
 
 def resolve_account_id(client) -> str:
     if account_id := os.environ.get("ACCOUNT_ID"):
@@ -440,19 +452,30 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
             print(f"{symbol}: not enough data, skipping")
             continue
 
-        side = Side.SIDE_BUY if growth > 0 else Side.SIDE_SELL
-        print(f"{symbol}: growth={growth:+.1f}% → {'BUY' if side == Side.SIDE_BUY else 'SELL'}")
+        held = held_quantity(client, account_id, symbol)
+        if growth > 0 and held == 0:
+            side, qty = Side.SIDE_BUY, QUANTITY
+        elif growth <= 0 and held > 0:
+            side, qty = Side.SIDE_SELL, min(held, QUANTITY)  # only close a long
+        else:
+            print(f"{symbol}: growth={growth:+.1f}%, held={held} → no action")
+            continue
+        label = "BUY" if side == Side.SIDE_BUY else "SELL"
+        print(f"{symbol}: growth={growth:+.1f}%, held={held} → {label} {qty}")
 
-        # IMPORTANT: confirm with user before uncommenting
-        # state = client.orders.PlaceOrder(Order(
-        #     account_id=account_id,
-        #     symbol=symbol,
-        #     quantity=Decimal(value=QUANTITY),
-        #     side=side,
-        #     type=OrderType.ORDER_TYPE_MARKET,
-        #     time_in_force=TimeInForce.TIME_IN_FORCE_DAY,
-        # ))
-        # print(f"  Order placed: {state.order_id}")
+        if not EXECUTE:
+            print("  DRY RUN: set TRADE_API_EXECUTE=1 after the user confirms")
+            continue
+        state = client.orders.PlaceOrder(Order(
+            account_id=account_id,
+            symbol=symbol,
+            quantity=Decimal(value=format(qty, "f")),
+            side=side,
+            type=OrderType.ORDER_TYPE_MARKET,
+            time_in_force=TimeInForce.TIME_IN_FORCE_DAY,
+            client_order_id=uuid4().hex[:20],
+        ))
+        print(f"  Order placed: {state.order_id}")
 ```
 
 ### Backtesting
@@ -461,9 +484,9 @@ To backtest a strategy on historical data, shift the `start`/`end` window in `Ba
 
 ```python
 # Continues the momentum example above (same imports and `client`)
-# Simulate momentum over 2024
-backtest_end = datetime(2025, 1, 1, tzinfo=timezone.utc)
-backtest_start = datetime(2024, 1, 1, tzinfo=timezone.utc)
+# Simulate momentum over the second half of 2024 (TIME_FRAME_D allows at most 365 days per request)
+backtest_end = datetime(2024, 12, 31, tzinfo=timezone.utc)
+backtest_start = datetime(2024, 7, 1, tzinfo=timezone.utc)
 
 req = BarsRequest(symbol="SBER@MISX", timeframe=TimeFrame.TIME_FRAME_D)
 req.interval.start_time.FromDatetime(backtest_start)
@@ -525,7 +548,7 @@ Use for low-latency and streaming scenarios: real-time quotes, order book, trade
 
 ### WebSocket / AsyncAPI
 
-Endpoints: `api.finam.ru/ws` or `api.finam.ru/tradinginfo`
+Endpoint: `wss://api.finam.ru/ws` (the only channel address in `specs/asyncapi/asyncapi-v1.0.0.yaml`). Subscription types: `ORDERS`, `TRADES`, `QUOTES`, `ORDER_BOOK`, `BARS`, `INSTRUMENT_TRADES`, `ACCOUNT`.
 
 Use when you need a browser-compatible or firewall-friendly alternative to gRPC for real-time data: streaming quotes, order book updates, and trade events over a standard WebSocket connection.
 
@@ -596,13 +619,26 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
 
 ### Place a limit order and cancel it
 
+This places a **real** order that can fill before it is cancelled. Mirror
+`examples/sdk/python/place_limit_order.py`: require an explicit opt-in flag and an
+explicit price (never a hard-coded "far from market" guess), and give every order a
+unique `client_order_id`. Confirm all parameters with the user first.
+
 ```python
 import os
+from uuid import uuid4
 from google.type.decimal_pb2 import Decimal
 from finam_trade_api import FinamClient
 from finam_trade_api.orders import (
     CancelOrderRequest, Order, OrderType, Side, TimeInForce,
 )
+
+if os.environ.get("TRADE_API_EXECUTE") != "1":
+    raise RuntimeError("set TRADE_API_EXECUTE=1 to acknowledge that this places a real order")
+try:
+    limit_price = os.environ["TRADE_API_LIMIT_PRICE"]
+except KeyError as exc:
+    raise RuntimeError("set TRADE_API_LIMIT_PRICE to the intended limit price") from exc
 
 with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
     account_id = resolve_account_id(client)
@@ -614,8 +650,8 @@ with FinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
         side=Side.SIDE_BUY,
         type=OrderType.ORDER_TYPE_LIMIT,
         time_in_force=TimeInForce.TIME_IN_FORCE_DAY,
-        limit_price=Decimal(value="100.00"),  # far below market — won't fill
-        client_order_id="example-001",
+        limit_price=Decimal(value=limit_price),
+        client_order_id=uuid4().hex[:20],  # unique per order
     ))
     print(f"Placed: {state.order_id} status={state.status}")
 
@@ -644,23 +680,36 @@ asyncio.run(main(sys.argv[1:] or ["SBER@MISX"]))
 
 ### Reconnection loop for long-running bots
 
-Streams can disconnect for two reasons: the server closes them after ~86400 s, or the JWT token expires mid-stream (`UNAUTHENTICATED`). In both cases the client must be recreated — reusing the same `AsyncFinamClient` instance after `UNAUTHENTICATED` will fail again immediately. Create the client **inside** the loop:
+Streams are not retried by the SDK. The server closes them after ~86400 s, and transient network errors (`UNAVAILABLE`) also end them, so recreate the client **inside** the loop and reconnect with exponential backoff. The SDK renews the JWT in the background; `UNAUTHENTICATED` or `PERMISSION_DENIED` therefore means the secret is invalid, revoked, or lacks access — stop and tell the user instead of reconnecting:
 
 ```python
-import asyncio, os, grpc
+import asyncio, os, random, grpc
 from finam_trade_api import AsyncFinamClient
 from finam_trade_api.market_data import SubscribeQuoteRequest
 
+FATAL = {grpc.StatusCode.UNAUTHENTICATED, grpc.StatusCode.PERMISSION_DENIED}
+
+def process(tick) -> None:
+    print(tick, flush=True)  # replace with your handler
+
 async def stream_with_reconnect(symbols: list[str]) -> None:
+    delay = 1.0
     while True:
         try:
             async with AsyncFinamClient(secret=os.environ["TRADE_API_SECRET"]) as client:
                 async for tick in client.market_data.SubscribeQuote(
                     SubscribeQuoteRequest(symbols=symbols)
                 ):
+                    delay = 1.0  # healthy stream: reset the backoff
                     process(tick)
-        except grpc.RpcError:
-            await asyncio.sleep(5)  # brief pause before reconnect
+        except grpc.RpcError as exc:
+            # A revoked/invalid secret or a missing permission will not fix itself:
+            # stop instead of hammering the API.
+            if exc.code() in FATAL:
+                raise
+        # Exponential backoff with jitter, capped at 60 s.
+        await asyncio.sleep(delay + random.uniform(0, delay / 4))
+        delay = min(delay * 2, 60.0)
 ```
 
 ## Strategy Examples

@@ -243,6 +243,7 @@ components:
         - ORDER_BOOK
         - BARS
         - INSTRUMENT_TRADES
+        - ACCOUNT
       description: "Тип подписки"
 
     WsError:

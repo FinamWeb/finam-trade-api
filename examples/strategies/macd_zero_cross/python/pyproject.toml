@@ -4,7 +4,7 @@ version = "0.0.0"
 description = "MACD 12/26/9 zero-cross example for the Finam Trade API"
 requires-python = ">=3.10"
 dependencies = [
-    "finam-sdk==2.19.0",
+    "finam-sdk==2.24.0",
     "protobuf>=7.35",
     "googleapis-common-protos>=1.62",
 ]

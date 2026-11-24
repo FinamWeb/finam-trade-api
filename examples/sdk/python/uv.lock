@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -88,7 +88,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "finam-sdk", specifier = "==2.19.0" },
+    { name = "finam-sdk", specifier = "==2.24.0" },
     { name = "googleapis-common-protos", specifier = ">=1.62" },
     { name = "protobuf", specifier = ">=7.35" },
 ]
@@ -101,16 +101,16 @@ dev = [
 
 [[package]]
 name = "finam-sdk"
-version = "2.19.0"
+version = "2.24.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "googleapis-common-protos" },
     { name = "grpcio" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/82/0fd4e8cee204a51aa1238977d8362a0c2ffb1f90f4f28d7dfc3e0383102c/finam_sdk-2.19.0.tar.gz", hash = "sha256:355919af42916e523852cc686df86a175b2e35cf389dd9a2664f812823686c15", size = 127719, upload-time = "2026-08-13T09:55:34.064Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5d/84/5856920b109f1db4492b60200192a6ab5a727d03196bd6db6ea7594bad2b/finam_sdk-2.24.0.tar.gz", hash = "sha256:0387195d7a63f016449368128bb5649b2cb10fc53fd586735c33e923b4bb7e8f", size = 144236, upload-time = "2026-11-16T17:22:50.493Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/77/166d0f1210a5e1fafbc96dafd707df7d9347884d4200978dfdd5a991552f/finam_sdk-2.19.0-py3-none-any.whl", hash = "sha256:cca47c20b431eda325b5639cb02755af72c6ab9edca90ddee5fabf329a4c64ab", size = 150927, upload-time = "2026-08-13T09:55:32.723Z" },
+    { url = "https://files.pythonhosted.org/packages/47/f5/17d8bd35d3d610fa4ac738483eb61dd1a5c6ee3e1f844038109a5deb3aa3/finam_sdk-2.24.0-py3-none-any.whl", hash = "sha256:8e5622d1e0eff83e0d097b5e67dc947ab0110f44ca0404079459250bfd5d1865", size = 169741, upload-time = "2026-11-16T17:22:49.114Z" },
 ]
 
 [[package]]

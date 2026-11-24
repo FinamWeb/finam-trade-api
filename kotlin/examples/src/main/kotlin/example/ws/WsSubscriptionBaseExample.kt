@@ -1,6 +1,7 @@
 package example.ws
 
-import example.FINAM_SECRET_KEY
+import example.SECRET_ENV
+import example.secretFromEnv
 import kotlinx.coroutines.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,9 +22,9 @@ abstract class WsSubscriptionBaseExample {
         withAuthorizationHeader: Boolean = true,
         onMessage: (String) -> Unit
     ) = runBlocking {
-        val secret = System.getenv(FINAM_SECRET_KEY)
+        val secret = secretFromEnv()
         if (secret.isNullOrEmpty()) {
-            throw IllegalStateException("$FINAM_SECRET_KEY env is not set")
+            throw IllegalStateException("$SECRET_ENV env is not set")
         }
         val unsubscribeRequest = subscribeRequest.copy(action = Action.UNSUBSCRIBE)
 
