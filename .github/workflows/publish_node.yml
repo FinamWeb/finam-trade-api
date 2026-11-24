@@ -4,8 +4,9 @@ name: Publish Node SDK to npm
 #   2.18.1          -> npm dist-tag "latest"
 #   2.19.0-rc.1     -> npm dist-tag "next"
 #
-# Publishing authenticates with the repository secret NPM_TOKEN.
-# See sdk/node/RELEASING.md.
+# Publishing authenticates with npm trusted publishing (OIDC): no npm token is
+# stored in the repository. The package's trusted publisher on npmjs.com must
+# name this repository and this workflow file. See sdk/node/RELEASING.md.
 
 on:
   release:
@@ -119,6 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write  # Required for npm trusted publishing (OIDC)
 
     steps:
       - name: Checkout release tag
@@ -139,17 +141,10 @@ jobs:
           name: node-package-${{ needs.build.outputs.package_version }}
           path: package
 
-      - name: Verify npm token is configured
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "::error::Add a repository Actions secret named NPM_TOKEN"
-            exit 1
-          fi
+      - name: Ensure npm supports trusted publishing
+        run: npm install -g npm@^11.5.1
 
       - name: Publish package
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           DIST_TAG: ${{ needs.build.outputs.dist_tag }}
         run: npm publish "$GITHUB_WORKSPACE"/package/*.tgz --access public --tag "$DIST_TAG"
