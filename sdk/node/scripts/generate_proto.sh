@@ -32,7 +32,20 @@ PROTO_FILES+=(
   "$PROTO_ROOT/google/type/money.proto"
 )
 
-"$NODE_DIR/node_modules/.bin/grpc_tools_node_protoc" \
+# grpc-tools bundles an x86_64-only protoc on macOS, which Apple Silicon cannot
+# run without Rosetta. Use a native protoc there when one is installed
+# (`brew install protobuf`); everywhere else keep the bundled one.
+# PROTOC overrides the choice on any platform.
+PROTOC="${PROTOC:-}"
+if [ -z "$PROTOC" ]; then
+  if [ "$(uname -s)" = "Darwin" ] && [ "$(uname -m)" = "arm64" ] && command -v protoc >/dev/null 2>&1; then
+    PROTOC="$(command -v protoc)"
+  else
+    PROTOC="$NODE_DIR/node_modules/.bin/grpc_tools_node_protoc"
+  fi
+fi
+
+"$PROTOC" \
   --proto_path="$PROTO_ROOT" \
   --plugin=protoc-gen-ts_proto="$NODE_DIR/node_modules/.bin/protoc-gen-ts_proto" \
   --ts_proto_out="$BUILD_DIR" \
