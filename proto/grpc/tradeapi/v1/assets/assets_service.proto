@@ -400,6 +400,16 @@ message GetAssetResponse {
   string quote_currency = 13;
   // Шаг цены, зависящий от цены заявки. Заполняется только когда min_step = 0: используйте step, если цена заявки ниже threshold_price, и step_from_threshold, если равна или выше
   PriceStep price_step = 17;
+  // Коэффициент преобразования котировки в денежную стоимость одной единицы
+  // инструмента (для деривативов — одного контракта) в валюте quote_currency.
+  // Денежная стоимость шага цены равна произведению шага цены на price_cost.
+  // При min_step > 0 шаг цены равен min_step / 10^decimals.
+  // При min_step = 0 и заполненном price_step шаг выбирается по цене заявки:
+  // price_step.step, если цена ниже price_step.threshold_price;
+  // price_step.step_from_threshold, если цена равна порогу или выше.
+  // Значения шагов из price_step используются без масштабирования.
+  // Если min_step = 0 и price_step отсутствует, данных для расчета шага недостаточно.
+  double price_cost = 18;
 
   oneof asset_details {
     // Специфичные параметры для инструмента типа "Фьючерс"
